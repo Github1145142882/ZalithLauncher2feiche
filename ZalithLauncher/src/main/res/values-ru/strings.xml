@@ -32,7 +32,7 @@
     <string name="generic_unpacking">Распаковка %s</string>
     <string name="generic_unknown">Неизвестно</string>
     <string name="generic_follow_global">По умолчанию</string>
-    <string name="generic_custom">Кастом</string>
+    <string name="generic_custom">Пользовательский</string>
     <string name="generic_search">Поиск</string>
     <string name="generic_loading">Загрузка</string>
     <string name="generic_in_progress">В процессе</string>
@@ -123,7 +123,7 @@
     <string name="download_game_addon_recommended">Рекомендуется %s</string>
     <string name="download_game_addon_not_installable">Не устанавливается автоматически</string>
     <string name="download_game_install_title">Установка игры</string>
-    <string name="download_game_install_vanilla">Загрузка Vanilla %s</string>
+    <string name="download_game_install_vanilla">Загрузка ваниллы %s</string>
     <string name="download_game_install_base_download_file">Загрузка основного файла %1$s %2$s</string>
     <string name="download_game_install_base_install">Установка %s</string>
     <string name="download_game_install_base_installing">Установка %s в фоновом режиме</string>
@@ -368,7 +368,7 @@
     <string name="settings_renderer_full_screen_title">Игнорирование выреза</string>
     <string name="settings_renderer_full_screen_summary">Игнорирует вырез под фронтальную камеру и даёт дополнительное место для изображение под ней</string>
     <string name="settings_renderer_sustained_performance_title">Режим стабильной производительности</string>
-    <string name="settings_renderer_sustained_performance_summary">При включении система обеспечивает более стабильную производительность для игры, подходящую для длительных игровых сессий, но может немного снизить отзывчивость устройства для предотвращения перегрева</string>
+    <string name="settings_renderer_sustained_performance_summary">При включении снижает производительность устройства для предотвращения тротлинга, подходит для длительных игровых сессий</string>
     <string name="settings_renderer_shader_dump_title">Логирование шейдеров</string>
     <string name="settings_renderer_shader_dump_summary">Выводить преобразованный код шейдеров во время работы игры в лог-файл для упрощения отладки и анализа рендеринга графики</string>
     <string name="settings_renderer_vulkan_driver_system_title">Использовать системный драйвер Vulkan</string>
@@ -418,15 +418,15 @@
     <string name="settings_control_gesture_trigger_mouse_right">Правый клик</string>
     <string name="settings_control_gesture_long_press_delay_title">Задержка длительного нажатия жестом</string>
     <string name="settings_launcher_color_theme_title">Цветовая тема</string>
-    <string name="settings_launcher_color_theme_summary">Настройте цвета лаунчера</string>
+    <string name="settings_launcher_color_theme_summary">Настройте цветовую тему лаунчера</string>
     <string name="settings_launcher_full_screen_title">Полноэкранный режим</string>
     <string name="settings_launcher_full_screen_summary">Сделать страницы лаунчера полноэкранными, игнорируя безопасные области, такие как вырезы и отверстия</string>
     <string name="settings_launcher_animate_speed_title">Скорость анимации</string>
-    <string name="settings_launcher_animate_speed_summary">Настроить множитель скорости воспроизведения анимаций лаунчера</string>
+    <string name="settings_launcher_animate_speed_summary">Настройте скорость анимаций в лаунчере</string>
     <string name="settings_launcher_animate_extent_title">Интенсивность анимации</string>
-    <string name="settings_launcher_animate_extent_summary">Настроить интенсивность анимаций лаунчера</string>
+    <string name="settings_launcher_animate_extent_summary">Настройте интенсивность анимаций в лаунчере</string>
     <string name="settings_launcher_swap_animate_type_title">Анимация перехода</string>
-    <string name="settings_launcher_swap_animate_type_summary">Выберите анимацию перехода между страницами, которая лучше всего соответствует вашим предпочтениям</string>
+    <string name="settings_launcher_swap_animate_type_summary">Выберите анимацию перехода между страницами</string>
     <!-- About -->
     <string name="about_plugin_title">Загруженные плагины</string>
     <string name="about_library_title">Сторонние библиотеки</string>
@@ -604,7 +604,7 @@
     <string name="game_menu_option_replacement_control">Заменить раскладку</string>
     <string name="game_menu_option_hotbar_rule">Правило позиционирования хотбара</string>
     <string name="game_menu_option_hotbar_rule_auto">Адаптивная (может быть неточной)</string>
-    <string name="game_menu_option_hotbar_rule_custom">Кастом</string>
+    <string name="game_menu_option_hotbar_rule_custom">Пользовательский</string>
     <string name="game_menu_option_hotbar_width">Ширина хотбара</string>
     <string name="game_menu_option_hotbar_height">Высота хотбара</string>
     <string name="renderer_version_storage_permissions">Текущий визуализатор %s можно настроить через файл конфигурации. Пожалуйста, сначала предоставьте лаунчеру разрешение на доступ к внешнему хранилищу, иначе он не сможет прочитать и загрузить настройки визуализатора!</string>
@@ -664,7 +664,7 @@
     <string name="versions_manage_game_path_storage_permissions_sdk30">Хотите установить игру на внешнее хранилище? Пожалуйста, сначала предоставьте лаунчеру разрешение «Управление всеми файлами на устройстве», иначе он не сможет установить игру во внешний каталог!</string>
     <string name="versions_manage_game_storage_permissions">Хотите использовать внешний путь для игры? Пожалуйста, сначала предоставьте лаунчеру разрешение на доступ к внешнему хранилищу, иначе он не сможет получить доступ к внешним игровым файлам!</string>
     <string name="versions_manage_game_storage_permissions_sdk30">Хотите использовать внешний путь для игры? Пожалуйста, сначала предоставьте лаунчеру разрешение «Управление всеми файлами на устройстве», иначе он не сможет получить доступ к внешним игровым файлам!</string>
-    <string name="versions_manage_category_vanilla">Vanilla</string>
+    <string name="versions_manage_category_vanilla">Ванилла</string>
     <string name="versions_manage_category_modloader">Мод-лоудеры</string>
     <string name="versions_manage_cleanup">Очистить игровые файлы</string>
     <string name="versions_manage_cleanup_tip">Лаунчер проверит установленные игровые файлы, сравнит их с файлами, необходимыми для существующих версий, а затем удалит не необходимые файлы. Это может значительно сэкономить место на вашем устройстве.</string>
@@ -702,8 +702,8 @@
     <string name="settings_control_physical_key_bind_ime_summary">Нажмите чтобы забиндить клавишу для вывода окна ввода текста</string>
     <string name="settings_control_physical_key_bind_ime_bound">Забинденая клавиша: %s</string>
     <string name="settings_control_physical_key_bind_ime_un_bind">Не забиндена</string>
-    <string name="settings_control_mouse_hide_title">Скрыть виртуальную мышь</string>
-    <string name="settings_control_mouse_hide_summary">Эта настройка скрывает виртуальную мышь, но не влияет на управление физической мышью или свайпами.</string>
+    <string name="settings_control_mouse_hide_title">Скрыть виртуальный курсор мыши</string>
+    <string name="settings_control_mouse_hide_summary">Эта настройка скрывает виртуальный курсор мышь, но не влияет на управление физической мышью или свайпами.</string>
     <string name="settings_control_mouse_sensitivity_summary">Настройте скорость перемещения виртуальной мыши в обычном режиме</string>
     <string name="settings_control_mouse_capture_sensitivity_title">Чувствительность мыши в режиме захвата</string>
     <string name="settings_control_mouse_capture_sensitivity_summary">Настройте чувствительность мыши в режиме захвата, например, чувствительность при перемещении камеры.</string>
