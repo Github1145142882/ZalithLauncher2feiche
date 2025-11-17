@@ -59,6 +59,7 @@ import com.movtery.zalithlauncher.ui.components.SimpleIntSliderLayout
 import com.movtery.zalithlauncher.ui.components.SwitchLayout
 import com.movtery.zalithlauncher.ui.components.TitleAndSummary
 import com.movtery.zalithlauncher.ui.screens.content.elements.VersionIconImage
+import kotlin.math.min
 
 @DslMarker
 annotation class VersionSettingsLayoutDsl
@@ -223,7 +224,10 @@ class VersionSettingsLayoutScope {
     ) {
         Row(verticalAlignment = Alignment.Bottom) {
             var checked by remember { mutableStateOf(currentValue >= valueRange.start) }
-            var value by remember { mutableIntStateOf(currentValue.takeIf { it >= valueRange.start } ?: defaultValue) }
+            var value by remember {
+                val v1 = currentValue.takeIf { it >= valueRange.start } ?: defaultValue
+                mutableIntStateOf(min(v1, valueRange.endInclusive.toInt()))
+            }
 
             if (!enabled) checked = false
 

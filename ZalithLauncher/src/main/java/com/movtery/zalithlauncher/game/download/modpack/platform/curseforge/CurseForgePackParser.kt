@@ -20,9 +20,12 @@ package com.movtery.zalithlauncher.game.download.modpack.platform.curseforge
 
 import com.movtery.zalithlauncher.game.download.modpack.platform.PackPlatform
 import com.movtery.zalithlauncher.game.download.modpack.platform.SimplePackParser
+import com.movtery.zalithlauncher.game.download.modpack.platform.mcbbs.MCBBSManifest
+import com.movtery.zalithlauncher.game.download.modpack.platform.mcbbs.MCBBSPackMetaParser
 import com.movtery.zalithlauncher.game.download.modpack.platform.multimc.MultiMCManifest
 import com.movtery.zalithlauncher.game.download.modpack.platform.multimc.MultiMCPackParser
 import com.movtery.zalithlauncher.utils.GSON
+import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import java.io.File
 
 /**
@@ -33,18 +36,28 @@ object CurseForgePackParser : SimplePackParser<CurseForgeManifest>(
     manifestClass = CurseForgeManifest::class.java,
     extraProcess = extraProcess@{ root ->
         //排除 MultiMC 整合包误判
-        val manifestFile = File(root, MultiMCPackParser.indexFilePath)
-        if (manifestFile.exists()) {
+        val mccManifest = File(root, MultiMCPackParser.indexFilePath)
+        if (mccManifest.exists()) {
             try {
-                GSON.fromJson(manifestFile.readText(), MultiMCManifest::class.java)
+                GSON.fromJson(mccManifest.readText(), MultiMCManifest::class.java)
                 //成功识别为 MultiMC 整合包，则说明是误判为 CurseForge 整合包
-                false
-            } catch (_: Throwable) {
-                return@extraProcess true
+                return@extraProcess false
+            } catch (th: Throwable) {
+                lWarning("An exception occurred while trying to exclude the MultiMC modpack.", th)
             }
-        } else {
-            true
         }
+        //排除 MCBBS 整合包误判
+        val mcbbsMeta = File(root, MCBBSPackMetaParser.indexFilePath)
+        if (mcbbsMeta.exists()) {
+            try {
+                GSON.fromJson(mcbbsMeta.readText(), MCBBSManifest::class.java)
+                //成功识别为 MCBBS 整合包，则说明是误判为 CurseForge 整合包
+                return@extraProcess false
+            } catch (th: Throwable) {
+                lWarning("An exception occurred while trying to exclude the MCBBS modpack.", th)
+            }
+        }
+        true
     },
     buildPack = { root, manifest ->
         CurseForgePack(root = root, manifest = manifest)

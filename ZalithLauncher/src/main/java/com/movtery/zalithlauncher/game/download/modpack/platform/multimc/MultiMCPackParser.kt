@@ -30,7 +30,7 @@ object MultiMCPackParser : SimplePackParser<MultiMCManifest>(
     buildPack = { root, manifest ->
         //需要确保提供了 Minecraft 版本，兜底检查：组件不应该为空！
         if (manifest.getMinecraftVersion() == null || manifest.components.isEmpty()) {
-            throw IllegalArgumentException("This MMC modpack does not provide game version information and cannot be installed!")
+            error("This MMC modpack does not provide game version information and cannot be installed!")
         }
 
         MultiMCPack(root = root, manifest = manifest)

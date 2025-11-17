@@ -300,6 +300,8 @@ private suspend fun <T> extractZipEntries(
                 .forEach { entry ->
                     ensureActive()
                     val relativePath = entry.name.removePrefix(prefix)
+                    //跳过空路径（如果prefix与entry.name完全匹配）
+                    if (relativePath.isEmpty()) return@forEach
                     val targetFile = File(outputDir, relativePath).canonicalFile
 
                     if (!targetFile.toPath().startsWith(outputDirCanonical.toPath())) {
@@ -309,9 +311,11 @@ private suspend fun <T> extractZipEntries(
                     when {
                         entry.isDirectory -> targetFile.mkdirs()
                         else -> {
-                            inputStreamProvider(entry).use { input ->
+                            inputStreamProvider(entry).use { inputStream ->
                                 targetFile.ensureParentDirectory()
-                                input.copyTo(targetFile.outputStream())
+                                FileOutputStream(targetFile).use { outputStream ->
+                                    inputStream.copyTo(outputStream, bufferSize = 8192)
+                                }
                             }
                         }
                     }
@@ -398,6 +402,7 @@ suspend fun copyDirectoryContents(
     val allFiles = mutableListOf<File>()
 
     normalizedFrom.walkTopDown().forEach { file ->
+        ensureActive()
         val targetPath = File(normalizedTo, file.relativeTo(normalizedFrom).path)
         if (file.isDirectory) {
             targetPath.mkdirs()
@@ -414,6 +419,7 @@ suspend fun copyDirectoryContents(
     }
 
     allFiles.forEachIndexed { index, file ->
+        ensureActive()
         val targetFile = File(normalizedTo, file.relativeTo(normalizedFrom).path)
         try {
             targetFile.ensureParentDirectory()

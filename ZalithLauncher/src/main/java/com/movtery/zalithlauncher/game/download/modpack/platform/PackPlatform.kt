@@ -46,6 +46,12 @@ enum class PackPlatform(val identifier: String) {
         override fun getIcon(): Painter {
             return painterResource(R.drawable.img_platform_multimc)
         }
+    },
+    MCBBS("MCBBS") {
+        @Composable
+        override fun getIcon(): Painter {
+            return painterResource(R.drawable.img_chest)
+        }
     };
 
     /**
