@@ -58,6 +58,7 @@ import kotlin.math.roundToInt
  * @param enableSnap 是否开启吸附
  * @param snapInAllLayers 是否在全控制层范围内吸附
  * @param snapMode 吸附模式
+ * @param focusedLayer 聚焦的层级，需要针对性对某一层级进行编辑时
  * @param localSnapRange 局部吸附范围（仅在Local模式下有效）
  * @param snapThresholdValue 吸附距离阈值
  */
@@ -68,6 +69,7 @@ fun ControlEditorLayer(
     enableSnap: Boolean,
     snapInAllLayers: Boolean,
     snapMode: SnapMode,
+    focusedLayer: ObservableControlLayer? = null,
     localSnapRange: Dp = 20.dp,
     snapThresholdValue: Dp = 4.dp
 ) {
@@ -77,11 +79,15 @@ fun ControlEditorLayer(
 
         val guideLines = remember { mutableStateMapOf<ObservableWidget, List<GuideLine>>() }
 
-        val renderingLayers = layers
-            //仅渲染编辑器可见层
-            .fastFilter { !it.editorHide }
-            //反转：将最后一层视为底层，逐步向上渲染
-            .reversed()
+        val renderingLayers = when (focusedLayer) {
+            null -> layers
+                //仅渲染编辑器可见层
+                .fastFilter { !it.editorHide }
+                //反转：将最后一层视为底层，逐步向上渲染
+                .reversed()
+            //开启聚焦模式
+            else -> listOf(focusedLayer)
+        }
 
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize()

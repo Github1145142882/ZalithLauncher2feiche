@@ -181,7 +181,7 @@ fun EditorMenu(
     layers: List<ObservableControlLayer>,
     onReorder: (from: Int, to: Int) -> Unit,
     selectedLayer: ObservableControlLayer?,
-    onLayerSelected: (ObservableControlLayer) -> Unit,
+    onLayerSelected: (ObservableControlLayer?) -> Unit,
     createLayer: () -> Unit,
     onAttribute: (ObservableControlLayer) -> Unit,
     addNewButton: () -> Unit,
@@ -408,7 +408,7 @@ private fun ColumnScope.ControlLayerMenu(
     layers: List<ObservableControlLayer>,
     onReorder: (from: Int, to: Int) -> Unit,
     selectedLayer: ObservableControlLayer?,
-    onLayerSelected: (ObservableControlLayer) -> Unit,
+    onLayerSelected: (ObservableControlLayer?) -> Unit,
     createLayer: () -> Unit,
     onAttribute: (ObservableControlLayer) -> Unit,
     influencedByBackground: Boolean = false,
@@ -444,6 +444,9 @@ private fun ColumnScope.ControlLayerMenu(
                     onSelected = {
                         onLayerSelected(layer)
                     },
+                    onUnSelected = {
+                        onLayerSelected(null)
+                    },
                     onAttribute = {
                         onAttribute(layer)
                     },
@@ -471,6 +474,7 @@ private fun ControlLayerItem(
     dragButtonModifier: Modifier,
     selected: Boolean,
     onSelected: () -> Unit,
+    onUnSelected: () -> Unit,
     onAttribute: () -> Unit,
     influencedByBackground: Boolean = false,
     color: Color = itemLayoutColor(influencedByBackground = influencedByBackground),
@@ -496,8 +500,8 @@ private fun ControlLayerItem(
         shape = shape,
         shadowElevation = shadowElevation,
         onClick = {
-            if (selected) return@Surface
-            onSelected()
+            if (selected) onUnSelected()
+            else onSelected()
         },
         enabled = enabled
     ) {
