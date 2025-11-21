@@ -18,7 +18,6 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.download.assets.elements
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -31,6 +30,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +40,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -184,17 +183,11 @@ private fun DownloadDialog(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        MarqueeText(
-                            text = stringResource(R.string.download_assets_install_assets_for_versions),
-                            style = MaterialTheme.typography.titleMedium
-                        )
-
                         Row(
                             modifier = Modifier
-                                .weight(1f)
+                                .weight(1f, fill = false)
                                 .fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             if (dependencyProjects.isNotEmpty()) {
                                 val listState = rememberLazyListState()
@@ -202,8 +195,7 @@ private fun DownloadDialog(
                                 LazyColumn(
                                     modifier = Modifier
                                         .fadeEdge(state = listState)
-                                        .weight(1f)
-                                        .fillMaxHeight(),
+                                        .weight(1f),
                                     contentPadding = PaddingValues(vertical = 8.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                     state = listState
@@ -225,22 +217,43 @@ private fun DownloadDialog(
                                         )
                                     }
                                 }
-
-                                VerticalDivider(
-                                    modifier = Modifier.fillMaxHeight(0.8f)
-                                )
                             }
 
-                            //选择游戏版本
-                            ChoseGameVersionLayout(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f),
-                                versions = versions1,
-                                selectedVersions = selectedVersions,
-                                onVersionSelected = { selectedVersions.add(it) },
-                                onVersionUnSelected = { selectedVersions.remove(it) }
-                            )
+                            Column(
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                if (dependencyProjects.isNotEmpty()) {
+                                    MarqueeText(
+                                        modifier = Modifier.padding(top = 8.dp),
+                                        text = stringResource(R.string.download_assets_install_assets_for_versions),
+                                        style = MaterialTheme.typography.labelLarge
+                                    )
+                                } else {
+                                    MarqueeText(
+                                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                                        text = stringResource(R.string.download_assets_install_assets_for_versions),
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+                                }
+
+                                val listState = rememberLazyListState()
+
+                                LaunchedEffect(Unit) {
+                                    versions.indexOf(selectedVersions[0]).takeIf { it != -1 }?.let { index ->
+                                        listState.animateScrollToItem(index)
+                                    }
+                                }
+
+                                //选择游戏版本
+                                ChoseGameVersionLayout(
+                                    modifier = Modifier.fadeEdge(state = listState),
+                                    versions = versions1,
+                                    selectedVersions = selectedVersions,
+                                    onVersionSelected = { selectedVersions.add(it) },
+                                    onVersionUnSelected = { selectedVersions.remove(it) },
+                                    listState = listState
+                                )
+                            }
                         }
 
                         Row(
@@ -278,48 +291,27 @@ private fun ChoseGameVersionLayout(
     selectedVersions: List<Version>,
     onVersionSelected: (Version) -> Unit,
     onVersionUnSelected: (Version) -> Unit,
-    shape: Shape = MaterialTheme.shapes.large,
-    color: Color = itemLayoutColorOnSurface(),
-    contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    shadowElevation: Dp = 1.dp
+    listState: LazyListState
 ) {
-    Surface(
-        modifier = modifier,
-        shape = shape,
-        color = color,
-        contentColor = contentColor,
-        shadowElevation = shadowElevation
-    ) {
-        if (versions.isNotEmpty()) {
-            val listState = rememberLazyListState()
-
-            LaunchedEffect(Unit) {
-                versions.indexOf(selectedVersions[0]).takeIf { it != -1 }?.let { index ->
-                    listState.animateScrollToItem(index)
-                }
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fadeEdge(state = listState)
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                state = listState
-            ) {
-                items(versions) { version ->
-                    SelectVersionListItem(
-                        modifier = Modifier.fillMaxWidth(),
-                        version = version,
-                        checked = selectedVersions.contains(version),
-                        onChose = {
-                            onVersionSelected(version)
-                        },
-                        onCancel = {
-                            onVersionUnSelected(version)
-                        }
-                    )
-                }
+    if (versions.isNotEmpty()) {
+        LazyColumn(
+            modifier = modifier,
+            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            state = listState
+        ) {
+            items(versions) { version ->
+                SelectVersionListItem(
+                    modifier = Modifier.fillMaxWidth(),
+                    version = version,
+                    checked = selectedVersions.contains(version),
+                    onChose = {
+                        onVersionSelected(version)
+                    },
+                    onCancel = {
+                        onVersionUnSelected(version)
+                    }
+                )
             }
         }
     }
@@ -331,37 +323,45 @@ private fun SelectVersionListItem(
     version: Version,
     checked: Boolean,
     onChose: () -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    shape: Shape = MaterialTheme.shapes.large,
+    color: Color = itemLayoutColorOnSurface(),
+    contentColor: Color = MaterialTheme.colorScheme.onSurface,
+    shadowElevation: Dp = 1.dp
 ) {
-    Row(
-        modifier = modifier
-            .clip(shape = MaterialTheme.shapes.large)
-            .clickable(
-                onClick = {
-                    if (checked) {
-                        onCancel()
-                    } else {
+    Surface(
+        modifier = modifier,
+        shape = shape,
+        color = color,
+        contentColor = contentColor,
+        shadowElevation = shadowElevation,
+        onClick = {
+            if (checked) {
+                onCancel()
+            } else {
+                onChose()
+            }
+        }
+    ) {
+        Row(
+            modifier = modifier.padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = checked,
+                onCheckedChange = {
+                    if (it) {
                         onChose()
+                    } else {
+                        onCancel()
                     }
                 }
             )
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Checkbox(
-            checked = checked,
-            onCheckedChange = {
-                if (it) {
-                    onChose()
-                } else {
-                    onCancel()
-                }
-            }
-        )
-        CommonVersionInfoLayout(
-            modifier = Modifier.weight(1f),
-            version = version
-        )
+            CommonVersionInfoLayout(
+                modifier = Modifier.weight(1f),
+                version = version
+            )
+        }
     }
 }
 
@@ -423,7 +423,7 @@ private fun AssetsVersionDependencyItem(
                 modifier = Modifier
                     .padding(all = 8.dp)
                     .clip(shape = RoundedCornerShape(10.dp)),
-                size = 42.dp,
+                size = 48.dp,
                 iconUrl = iconUrl
             )
             Column(
