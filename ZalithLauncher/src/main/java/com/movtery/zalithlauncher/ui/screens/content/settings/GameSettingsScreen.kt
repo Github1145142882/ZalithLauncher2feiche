@@ -33,6 +33,7 @@ import androidx.navigation3.runtime.NavKey
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.multirt.RuntimesManager
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.unit.floatRange
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedColumn
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
@@ -111,7 +112,7 @@ fun GameSettingsScreen(
                         unit = AllSettings.ramAllocation,
                         title = stringResource(R.string.settings_game_java_memory_title),
                         summary = stringResource(R.string.settings_game_java_memory_summary),
-                        valueRange = 256f..getMaxMemoryForSettings(LocalContext.current).toFloat(),
+                        valueRange = AllSettings.ramAllocation.floatRange.start..getMaxMemoryForSettings(LocalContext.current).toFloat(),
                         suffix = "MB",
                         fineTuningControl = true
                     )
@@ -155,7 +156,7 @@ fun GameSettingsScreen(
                         unit = AllSettings.logTextSize,
                         title = stringResource(R.string.settings_game_log_text_size_title),
                         summary = stringResource(R.string.settings_game_log_text_size_summary),
-                        valueRange = 5f..20f,
+                        valueRange = AllSettings.logTextSize.floatRange,
                         suffix = "Sp",
                         fineTuningControl = true
                     )
@@ -165,7 +166,7 @@ fun GameSettingsScreen(
                         unit = AllSettings.logBufferFlushInterval,
                         title = stringResource(R.string.settings_game_log_buffer_flush_interval_title),
                         summary = stringResource(R.string.settings_game_log_buffer_flush_interval_summary),
-                        valueRange = 100f..1000f,
+                        valueRange = AllSettings.logBufferFlushInterval.floatRange,
                         suffix = "ms",
                         fineTuningControl = true
                     )

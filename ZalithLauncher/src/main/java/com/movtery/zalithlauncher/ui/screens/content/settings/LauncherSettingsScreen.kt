@@ -54,6 +54,7 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.DarkMode
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
+import com.movtery.zalithlauncher.setting.unit.floatRange
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedColumn
 import com.movtery.zalithlauncher.ui.components.ColorPickerDialog
@@ -178,7 +179,7 @@ fun LauncherSettingsScreen(
                             unit = AllSettings.launcherBackgroundOpacity,
                             title = stringResource(R.string.settings_launcher_background_opacity_title),
                             summary = stringResource(R.string.settings_launcher_background_opacity_summary),
-                            valueRange = 20f..100f,
+                            valueRange = AllSettings.launcherBackgroundOpacity.floatRange,
                             suffix = "%",
                             enabled = backgroundViewModel.isValid,
                             fineTuningControl = true
@@ -197,7 +198,7 @@ fun LauncherSettingsScreen(
                         unit = AllSettings.launcherAnimateSpeed,
                         title = stringResource(R.string.settings_launcher_animate_speed_title),
                         summary = stringResource(R.string.settings_launcher_animate_speed_summary),
-                        valueRange = 0f..10f,
+                        valueRange = AllSettings.launcherAnimateSpeed.floatRange,
                         steps = 9,
                         suffix = "x"
                     )
@@ -207,7 +208,7 @@ fun LauncherSettingsScreen(
                         unit = AllSettings.launcherAnimateExtent,
                         title = stringResource(R.string.settings_launcher_animate_extent_title),
                         summary = stringResource(R.string.settings_launcher_animate_extent_summary),
-                        valueRange = 0f..10f,
+                        valueRange = AllSettings.launcherAnimateExtent.floatRange,
                         steps = 9,
                         suffix = "x"
                     )
@@ -251,7 +252,7 @@ fun LauncherSettingsScreen(
                         unit = AllSettings.launcherLogRetentionDays,
                         title = stringResource(R.string.settings_launcher_log_retention_days_title),
                         summary = stringResource(R.string.settings_launcher_log_retention_days_summary),
-                        valueRange = 1f..14f,
+                        valueRange = AllSettings.launcherLogRetentionDays.floatRange,
                         suffix = stringResource(R.string.unit_day)
                     )
 

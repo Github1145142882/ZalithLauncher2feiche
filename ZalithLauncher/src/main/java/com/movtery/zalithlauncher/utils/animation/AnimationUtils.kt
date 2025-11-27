@@ -34,7 +34,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
  * 获取动画的持续时长
  */
 fun getAnimateSpeed(): Int = calculateAnimationTime(
-    AllSettings.launcherAnimateSpeed.state.coerceIn(0, 10),
+    AllSettings.launcherAnimateSpeed.state,
     1500,
     0.1f
 )
@@ -45,7 +45,7 @@ fun getAnimateSpeed(): Int = calculateAnimationTime(
 fun getAdjustedDelayMillis(baseDelayMillis: Int): Int {
     if (baseDelayMillis == 0) return 0
     val adjustedAnimationTime = calculateAnimationTime(
-        AllSettings.launcherAnimateSpeed.state.coerceIn(0, 10),
+        AllSettings.launcherAnimateSpeed.state,
         baseDelayMillis
     )
     return adjustedAnimationTime

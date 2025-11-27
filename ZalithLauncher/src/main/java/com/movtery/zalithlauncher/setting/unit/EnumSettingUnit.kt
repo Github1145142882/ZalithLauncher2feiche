@@ -34,8 +34,9 @@ class EnumSettingUnit<E : Enum<E>>(
             .also { state = it }
     }
 
-    override fun saveValue(v: E) {
+    override fun saveValue(v: E): E {
         launcherMMKV().putString(key, v.name).apply()
+        return v
     }
 }
 

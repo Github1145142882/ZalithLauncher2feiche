@@ -20,7 +20,11 @@ package com.movtery.zalithlauncher.setting.unit
 
 import com.movtery.zalithlauncher.setting.launcherMMKV
 
-class NullableIntSettingUnit(key: String, defaultValue: Int?) : AbstractSettingUnit<Int?>(key, defaultValue) {
+class NullableIntSettingUnit(
+    key: String,
+    defaultValue: Int?,
+    val valueRange: IntRange
+) : AbstractSettingUnit<Int?>(key, defaultValue) {
     override fun getValue(): Int? {
         val mmkv = launcherMMKV()
         return if (mmkv.containsKey(key)) {
@@ -30,12 +34,19 @@ class NullableIntSettingUnit(key: String, defaultValue: Int?) : AbstractSettingU
         }.also { state = it }
     }
 
-    override fun saveValue(v: Int?) {
+    override fun saveValue(v: Int?): Int? {
         val mmkv = launcherMMKV()
-        if (v == null) {
+        return if (v == null) {
             mmkv.remove(key).apply()
+            null
         } else {
-            mmkv.putInt(key, v).apply()
+            v.coerceIn(valueRange).also { value ->
+                mmkv.putInt(key, value).apply()
+            }
         }
+    }
+
+    override fun updateState(value: Int?) {
+        this.state = value?.coerceIn(valueRange)
     }
 }

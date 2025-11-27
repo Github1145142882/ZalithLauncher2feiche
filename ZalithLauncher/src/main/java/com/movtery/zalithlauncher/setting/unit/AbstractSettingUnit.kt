@@ -34,7 +34,7 @@ abstract class AbstractSettingUnit<V>(
     /**
      * 保存设置值
      */
-    protected abstract fun saveValue(v: V)
+    protected abstract fun saveValue(v: V): V
 
     /**
      * 可观察的状态
@@ -43,21 +43,20 @@ abstract class AbstractSettingUnit<V>(
         protected set
 
     fun init() {
-        this.state = getValue()
+        getValue()
     }
 
     /**
-     * @return 存入值，并返回一个设置构建器
+     * @return 存入值
      */
     fun save(value: V) {
-        this.state = value
-        return saveValue(value)
+        this.state = saveValue(value)
     }
 
     /**
      * @return **仅更新状态**，不保存值
      */
-    fun updateState(value: V) {
+    open fun updateState(value: V) {
         this.state = value
     }
 
@@ -65,7 +64,6 @@ abstract class AbstractSettingUnit<V>(
      * 重置当前设置单元为默认值
      */
     fun reset() {
-        this.state = defaultValue
-        saveValue(defaultValue)
+        this.state = saveValue(defaultValue)
     }
 }

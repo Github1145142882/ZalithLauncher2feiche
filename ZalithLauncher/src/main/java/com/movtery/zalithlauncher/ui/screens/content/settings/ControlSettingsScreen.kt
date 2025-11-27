@@ -64,6 +64,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.GestureActionType
 import com.movtery.zalithlauncher.setting.enums.MouseControlMode
 import com.movtery.zalithlauncher.setting.unit.ParcelableSettingUnit
+import com.movtery.zalithlauncher.setting.unit.floatRange
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedColumn
 import com.movtery.zalithlauncher.ui.components.IconTextButton
@@ -267,7 +268,7 @@ fun ControlSettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         unit = AllSettings.mouseSize,
                         title = stringResource(R.string.settings_control_mouse_size_title),
-                        valueRange = 5f..50f,
+                        valueRange = AllSettings.mouseSize.floatRange,
                         suffix = "Dp",
                         fineTuningControl = true
                     )
@@ -300,7 +301,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.cursorSensitivity,
                         title = stringResource(R.string.settings_control_mouse_sensitivity_title),
                         summary = stringResource(R.string.settings_control_mouse_sensitivity_summary),
-                        valueRange = 25f..300f,
+                        valueRange = AllSettings.cursorSensitivity.floatRange,
                         suffix = "%",
                         fineTuningControl = true
                     )
@@ -310,7 +311,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.mouseCaptureSensitivity,
                         title = stringResource(R.string.settings_control_mouse_capture_sensitivity_title),
                         summary = stringResource(R.string.settings_control_mouse_capture_sensitivity_summary),
-                        valueRange = 25f..300f,
+                        valueRange = AllSettings.mouseCaptureSensitivity.floatRange,
                         suffix = "%",
                         fineTuningControl = true
                     )
@@ -320,7 +321,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.mouseLongPressDelay,
                         title = stringResource(R.string.settings_control_mouse_long_press_delay_title),
                         summary = stringResource(R.string.settings_control_mouse_long_press_delay_summary),
-                        valueRange = 100f..1000f,
+                        valueRange = AllSettings.mouseLongPressDelay.floatRange,
                         suffix = "ms",
                         fineTuningControl = true
                     )
@@ -363,7 +364,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.gestureLongPressDelay,
                         title = stringResource(R.string.settings_control_gesture_long_press_delay_title),
                         summary = stringResource(R.string.settings_control_mouse_long_press_delay_summary),
-                        valueRange = 100f..1000f,
+                        valueRange = AllSettings.gestureLongPressDelay.floatRange,
                         suffix = "ms",
                         enabled = AllSettings.gestureControl.state,
                         fineTuningControl = true
@@ -410,7 +411,7 @@ fun ControlSettingsScreen(
                         modifier = Modifier.fillMaxWidth(),
                         unit = AllSettings.gyroscopeSensitivity,
                         title = stringResource(R.string.settings_control_gyroscope_sensitivity_title),
-                        valueRange = 25f..300f,
+                        valueRange = AllSettings.gyroscopeSensitivity.floatRange,
                         suffix = "%",
                         enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state,
                         fineTuningControl = true
@@ -421,7 +422,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.gyroscopeSampleRate,
                         title = stringResource(R.string.settings_control_gyroscope_sample_rate_title),
                         summary = stringResource(R.string.settings_control_gyroscope_sample_rate_summary),
-                        valueRange = 5f..50f,
+                        valueRange = AllSettings.gyroscopeSampleRate.floatRange,
                         suffix = "ms",
                         enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state,
                         fineTuningControl = true
@@ -440,7 +441,7 @@ fun ControlSettingsScreen(
                         unit = AllSettings.gyroscopeSmoothingWindow,
                         title = stringResource(R.string.settings_control_gyroscope_smoothing_window_title),
                         summary = stringResource(R.string.settings_control_gyroscope_smoothing_window_summary),
-                        valueRange = 2f..10f,
+                        valueRange = AllSettings.gyroscopeSmoothingWindow.floatRange,
                         enabled = isGyroscopeAvailable && AllSettings.gyroscopeControl.state && AllSettings.gyroscopeSmoothing.state
                     )
 

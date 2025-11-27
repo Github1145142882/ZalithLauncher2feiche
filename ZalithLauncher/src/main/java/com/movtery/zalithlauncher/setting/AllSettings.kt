@@ -51,7 +51,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 分辨率
      */
-    val resolutionRatio = intSetting("resolutionRatio", 100)
+    val resolutionRatio = intSetting("resolutionRatio", 100, 25..300)
 
     /**
      * 游戏页面全屏化
@@ -112,7 +112,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 游戏内存分配大小
      */
-    val ramAllocation = intSetting("ramAllocation", -1)
+    val ramAllocation = intSetting("ramAllocation", -1, min = 256)
 
     /**
      * 自定义Jvm启动参数
@@ -127,12 +127,12 @@ object AllSettings : SettingsRegistry() {
     /**
      * 日志字体大小
      */
-    val logTextSize = intSetting("logTextSize", 15)
+    val logTextSize = intSetting("logTextSize", 15, 5..20)
 
     /**
      * 日志缓冲区刷新时间
      */
-    val logBufferFlushInterval = intSetting("logBufferFlushInterval", 200)
+    val logBufferFlushInterval = intSetting("logBufferFlushInterval", 200, 100..1000)
 
     //Control
     /**
@@ -153,7 +153,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 虚拟鼠标大小（Dp）
      */
-    val mouseSize = intSetting("mouseSize", 24)
+    val mouseSize = intSetting("mouseSize", 24, 5..50)
 
     /**
      * 虚拟鼠标箭头热点坐标
@@ -198,12 +198,12 @@ object AllSettings : SettingsRegistry() {
     /**
      * 虚拟鼠标灵敏度
      */
-    val cursorSensitivity = intSetting("cursorSensitivity", 100)
+    val cursorSensitivity = intSetting("cursorSensitivity", 100, 25..300)
 
     /**
      * 被抓获指针移动灵敏度
      */
-    val mouseCaptureSensitivity = intSetting("mouseCaptureSensitivity", 100)
+    val mouseCaptureSensitivity = intSetting("mouseCaptureSensitivity", 100, 25..300)
 
     /**
      * 虚拟鼠标控制模式
@@ -213,7 +213,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 鼠标控制长按延迟
      */
-    val mouseLongPressDelay = intSetting("mouseLongPressDelay", 300)
+    val mouseLongPressDelay = intSetting("mouseLongPressDelay", 300, 100..1000)
 
     /**
      * 是否启用手柄控制
@@ -223,7 +223,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 摇杆死区缩放
      */
-    val gamepadDeadZoneScale = intSetting("gamepadDeadZoneScale", 100)
+    val gamepadDeadZoneScale = intSetting("gamepadDeadZoneScale", 100, 50..200)
 
     /**
      * 摇杆控制模式
@@ -233,12 +233,12 @@ object AllSettings : SettingsRegistry() {
     /**
      * 手柄摇杆控制鼠标指针时的灵敏度
      */
-    val gamepadCursorSensitivity = intSetting("gamepadCursorSensitivity", 100)
+    val gamepadCursorSensitivity = intSetting("gamepadCursorSensitivity", 100, 25..300)
 
     /**
      * 手柄摇杆控制游戏视角时的灵敏度
      */
-    val gamepadCameraSensitivity = intSetting("gamepadCameraSensitivity", 100)
+    val gamepadCameraSensitivity = intSetting("gamepadCameraSensitivity", 100, 25..300)
 
     /**
      * 手势控制
@@ -258,7 +258,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 手势控制长按延迟
      */
-    val gestureLongPressDelay = intSetting("gestureLongPressDelay", 300)
+    val gestureLongPressDelay = intSetting("gestureLongPressDelay", 300, 100..1000)
 
     /**
      * 陀螺仪控制
@@ -268,12 +268,12 @@ object AllSettings : SettingsRegistry() {
     /**
      * 陀螺仪控制灵敏度
      */
-    val gyroscopeSensitivity = intSetting("gyroscopeSensitivity", 100)
+    val gyroscopeSensitivity = intSetting("gyroscopeSensitivity", 100, 25..300)
 
     /**
      * 陀螺仪采样率
      */
-    val gyroscopeSampleRate = intSetting("gyroscopeSampleRate", 16)
+    val gyroscopeSampleRate = intSetting("gyroscopeSampleRate", 16, 5..50)
 
     /**
      * 陀螺仪数值平滑
@@ -283,7 +283,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 陀螺仪平滑处理的窗口大小
      */
-    val gyroscopeSmoothingWindow = intSetting("gyroscopeSmoothingWindow", 4)
+    val gyroscopeSmoothingWindow = intSetting("gyroscopeSmoothingWindow", 4, 2..10)
 
     /**
      * 反转 X 轴
@@ -324,12 +324,12 @@ object AllSettings : SettingsRegistry() {
     /**
      * 动画倍速
      */
-    val launcherAnimateSpeed = intSetting("launcherAnimateSpeed", 5)
+    val launcherAnimateSpeed = intSetting("launcherAnimateSpeed", 5, 0..10)
 
     /**
      * 动画幅度
      */
-    val launcherAnimateExtent = intSetting("launcherAnimateExtent", 5)
+    val launcherAnimateExtent = intSetting("launcherAnimateExtent", 5, 0..10)
 
     /**
      * 启动器页面切换动画类型
@@ -339,12 +339,12 @@ object AllSettings : SettingsRegistry() {
     /**
      * 启动器背景元素不透明度
      */
-    val launcherBackgroundOpacity = intSetting("launcherBackgroundOpacity", 80)
+    val launcherBackgroundOpacity = intSetting("launcherBackgroundOpacity", 80, 20..100)
 
     /**
      * 启动器日志保留天数
      */
-    val launcherLogRetentionDays = intSetting("launcherLogRetentionDays", 7)
+    val launcherLogRetentionDays = intSetting("launcherLogRetentionDays", 7, 1..14)
 
     /**
      * 下载版本附加内容镜像源类型
@@ -396,7 +396,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 游戏菜单悬浮窗不透明度
      */
-    val menuBallOpacity = intSetting("menuBallOpacity", 100)
+    val menuBallOpacity = intSetting("menuBallOpacity", 100, 20..100)
 
     /**
      * 快捷栏判定箱计算规则
@@ -405,21 +405,18 @@ object AllSettings : SettingsRegistry() {
 
     /**
      * 快捷栏宽度百分比
-     * 0~1000
      */
-    val hotbarWidth = intSetting("hotbarWidth", 500)
+    val hotbarWidth = intSetting("hotbarWidth", 500, 0..1000)
 
     /**
      * 快捷栏高度百分比
-     * 0~1000
      */
-    val hotbarHeight = intSetting("hotbarHeight", 100)
+    val hotbarHeight = intSetting("hotbarHeight", 100, 0..1000)
 
     /**
      * 游戏内控制布局的整体不透明度
-     * 0~100
      */
-    val controlsOpacity = intSetting("controlsOpacity", 100)
+    val controlsOpacity = intSetting("controlsOpacity", 100, 0..100)
 
     /**
      * 控制布局编辑器：是否开启控件吸附功能

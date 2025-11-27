@@ -56,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.unit.floatRange
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedLazyColumn
 import com.movtery.zalithlauncher.ui.components.CheckChip
@@ -154,7 +155,7 @@ fun GamepadSettingsScreen(
                         unit = AllSettings.gamepadDeadZoneScale,
                         title = stringResource(R.string.settings_gamepad_deadzone_title),
                         summary = stringResource(R.string.settings_gamepad_deadzone_summary),
-                        valueRange = 50f..200f,
+                        valueRange = AllSettings.gamepadDeadZoneScale.floatRange,
                         suffix = "%",
                         enabled = AllSettings.gamepadControl.state,
                         fineTuningControl = true
@@ -165,7 +166,7 @@ fun GamepadSettingsScreen(
                         unit = AllSettings.gamepadCursorSensitivity,
                         title = stringResource(R.string.settings_gamepad_cursor_sensitivity_title),
                         summary = stringResource(R.string.settings_gamepad_cursor_sensitivity_summary),
-                        valueRange = 25f..300f,
+                        valueRange = AllSettings.gamepadCursorSensitivity.floatRange,
                         suffix = "%",
                         enabled = AllSettings.gamepadControl.state,
                         fineTuningControl = true
@@ -176,7 +177,7 @@ fun GamepadSettingsScreen(
                         unit = AllSettings.gamepadCameraSensitivity,
                         title = stringResource(R.string.settings_gamepad_camera_sensitivity_title),
                         summary = stringResource(R.string.settings_gamepad_camera_sensitivity_summary),
-                        valueRange = 25f..300f,
+                        valueRange = AllSettings.gamepadCameraSensitivity.floatRange,
                         suffix = "%",
                         enabled = AllSettings.gamepadControl.state,
                         fineTuningControl = true

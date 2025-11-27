@@ -18,16 +18,13 @@
 
 package com.movtery.zalithlauncher.setting.unit
 
-import com.movtery.zalithlauncher.setting.launcherMMKV
+val DEFAULT_INT_RANGE: IntRange = Int.MIN_VALUE..Int.MAX_VALUE
 
-class StringSettingUnit(key: String, defaultValue: String) : AbstractSettingUnit<String>(key, defaultValue) {
-    override fun getValue(): String {
-        return launcherMMKV().getString(key ,defaultValue)!!
-            .also { state = it }
-    }
+val DEFAULT_FLOAT_RANGE: ClosedFloatingPointRange<Float> = Float.MIN_VALUE..Float.MAX_VALUE
 
-    override fun saveValue(v: String): String {
-        launcherMMKV().putString(key, v).apply()
-        return v
-    }
-}
+val DEFAULT_LONG_RANGE: LongRange = Long.MIN_VALUE..Long.MAX_VALUE
+
+fun IntRange.toFloatRange(): ClosedFloatingPointRange<Float> = start.toFloat()..endInclusive.toFloat()
+
+val IntSettingUnit.floatRange: ClosedFloatingPointRange<Float>
+    get() = valueRange.toFloatRange()

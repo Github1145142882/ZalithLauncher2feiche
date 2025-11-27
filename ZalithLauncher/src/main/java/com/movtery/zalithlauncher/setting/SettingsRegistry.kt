@@ -21,6 +21,9 @@ package com.movtery.zalithlauncher.setting
 import android.os.Parcelable
 import com.movtery.zalithlauncher.setting.unit.AbstractSettingUnit
 import com.movtery.zalithlauncher.setting.unit.BooleanSettingUnit
+import com.movtery.zalithlauncher.setting.unit.DEFAULT_FLOAT_RANGE
+import com.movtery.zalithlauncher.setting.unit.DEFAULT_INT_RANGE
+import com.movtery.zalithlauncher.setting.unit.DEFAULT_LONG_RANGE
 import com.movtery.zalithlauncher.setting.unit.FloatSettingUnit
 import com.movtery.zalithlauncher.setting.unit.IntSettingUnit
 import com.movtery.zalithlauncher.setting.unit.LongSettingUnit
@@ -37,17 +40,29 @@ abstract class SettingsRegistry {
     protected fun boolSetting(key: String, def: Boolean) =
         BooleanSettingUnit(key, def).also { refreshableList.add(it) }
 
-    protected fun intSetting(key: String, def: Int) =
-        IntSettingUnit(key, def).also { refreshableList.add(it) }
+    protected fun intSetting(key: String, def: Int, valueRange: IntRange = DEFAULT_INT_RANGE) =
+        IntSettingUnit(key, def, valueRange).also { refreshableList.add(it) }
 
-    protected fun intSetting(key: String, def: Int?) =
-        NullableIntSettingUnit(key, def).also { refreshableList.add(it) }
+    protected fun intSetting(key: String, def: Int, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE) =
+        IntSettingUnit(key, def, min..max).also { refreshableList.add(it) }
 
-    protected fun floatSetting(key: String, def: Float) =
-        FloatSettingUnit(key, def).also { refreshableList.add(it) }
+    protected fun intSetting(key: String, def: Int?, valueRange: IntRange = DEFAULT_INT_RANGE) =
+        NullableIntSettingUnit(key, def, valueRange).also { refreshableList.add(it) }
 
-    protected fun longSetting(key: String, def: Long) =
-        LongSettingUnit(key, def).also { refreshableList.add(it) }
+    protected fun intSetting(key: String, def: Int?, min: Int = Int.MIN_VALUE, max: Int = Int.MAX_VALUE) =
+        NullableIntSettingUnit(key, def, min..max).also { refreshableList.add(it) }
+
+    protected fun floatSetting(key: String, def: Float, valueRange: ClosedFloatingPointRange<Float> = DEFAULT_FLOAT_RANGE) =
+        FloatSettingUnit(key, def, valueRange).also { refreshableList.add(it) }
+
+    protected fun floatSetting(key: String, def: Float, min: Float = Float.MIN_VALUE, max: Float = Float.MAX_VALUE) =
+        FloatSettingUnit(key, def, min..max).also { refreshableList.add(it) }
+
+    protected fun longSetting(key: String, def: Long, valueRange: LongRange = DEFAULT_LONG_RANGE) =
+        LongSettingUnit(key, def, valueRange).also { refreshableList.add(it) }
+
+    protected fun longSetting(key: String, def: Long, min: Long = Long.MIN_VALUE, max: Long = Long.MAX_VALUE) =
+        LongSettingUnit(key, def, min..max).also { refreshableList.add(it) }
 
     protected fun stringSetting(key: String, def: String) =
         StringSettingUnit(key, def).also { refreshableList.add(it) }

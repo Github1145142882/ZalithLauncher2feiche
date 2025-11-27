@@ -134,7 +134,7 @@ private fun LogList(
             Text(
                 text = log,
                 modifier = Modifier.fillParentMaxWidth(),
-                fontSize = TextUnit(AllSettings.logTextSize.getValue().toFloat(), TextUnitType.Sp)
+                fontSize = TextUnit(AllSettings.logTextSize.state.toFloat(), TextUnitType.Sp)
             )
         }
     }

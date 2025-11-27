@@ -26,7 +26,8 @@ class BooleanSettingUnit(key: String, defaultValue: Boolean) : AbstractSettingUn
             .also { state = it }
     }
 
-    override fun saveValue(v: Boolean) {
+    override fun saveValue(v: Boolean): Boolean {
         launcherMMKV().putBoolean(key, v).apply()
+        return v
     }
 }

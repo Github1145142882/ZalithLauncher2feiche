@@ -30,17 +30,14 @@ class ParcelableSettingUnit<E: Parcelable>(
     private val clazz: Class<E>
 ): AbstractSettingUnit<E>(key, defaultValue) {
     override fun getValue(): E {
-        val mmkv = launcherMMKV()
-        val value: E? = mmkv.decodeParcelable(key, clazz)
-        return (value ?: defaultValue).also {
-            state = it
-        }
+        val value: E? = launcherMMKV().decodeParcelable(key, clazz)
+        return (value ?: defaultValue)
+            .also { state = it }
     }
 
-    override fun saveValue(v: E) {
-        val mmkv = launcherMMKV()
-        mmkv.encode(key, v)
-        state = v
+    override fun saveValue(v: E): E {
+        launcherMMKV().encode(key, v)
+        return v
     }
 }
 
