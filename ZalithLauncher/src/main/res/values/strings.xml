@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="generic_cancel">Cancel</string>
-    <string name="generic_confirm">Confirm</string>
+    <string name="generic_cancel">Tang</string>
+    <string name="generic_confirm">Tang</string>
     <string name="generic_error">Error</string>
     <string name="generic_tip">Tip</string>
     <string name="generic_warning">Warning</string>
