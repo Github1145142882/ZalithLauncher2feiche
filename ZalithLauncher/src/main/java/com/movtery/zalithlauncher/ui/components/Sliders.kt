@@ -97,7 +97,8 @@ fun SimpleTextSlider(
     }
 
     Row(
-        modifier = modifier
+        modifier = modifier,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         if (shorter) {
             IndicatorSlider(
