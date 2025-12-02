@@ -19,19 +19,27 @@
 package com.movtery.zalithlauncher.game.addons.modloader.forgelike.forge
 
 import com.movtery.zalithlauncher.game.addons.modloader.forgelike.forge.ForgeVersionToken.ForgeFile
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ForgeVersionToken(
+    @SerialName("branch")
     val branch: String? = null,
+    @SerialName("version")
     val version: String,
+    @SerialName("modified")
     val modified: String,
+    @SerialName("files")
     val files: List<ForgeFile>
 ) {
     @Serializable
     data class ForgeFile(
+        @SerialName("category")
         val category: String,
+        @SerialName("format")
         val format: String,
+        @SerialName("hash")
         val hash: String
     )
 }

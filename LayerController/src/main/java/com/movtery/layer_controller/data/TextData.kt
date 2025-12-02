@@ -20,6 +20,7 @@ package com.movtery.layer_controller.data
 
 import com.movtery.layer_controller.data.lang.TranslatableString
 import com.movtery.layer_controller.utils.getAButtonUUID
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -27,15 +28,25 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class TextData(
+    @SerialName("text")
     val text: TranslatableString,
+    @SerialName("uuid")
     val uuid: String,
+    @SerialName("position")
     val position: ButtonPosition,
+    @SerialName("buttonSize")
     val buttonSize: ButtonSize,
+    @SerialName("buttonStyle")
     val buttonStyle: String? = null,
+    @SerialName("textAlignment")
     val textAlignment: TextAlignment = TextAlignment.Left,
+    @SerialName("textBold")
     val textBold: Boolean = false,
+    @SerialName("textItalic")
     val textItalic: Boolean = false,
+    @SerialName("textUnderline")
     val textUnderline: Boolean = false,
+    @SerialName("visibilityType")
     val visibilityType: VisibilityType
 ): Widget
 

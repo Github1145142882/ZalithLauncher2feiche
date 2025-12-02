@@ -26,21 +26,37 @@ import java.util.List;
 import java.util.Map;
 
 public class GameManifest {
+    @SerializedName("arguments")
     private Arguments arguments;
+    @SerializedName("assetIndex")
     private AssetIndex assetIndex;
+    @SerializedName("assets")
     private String assets;
+    @SerializedName("complianceLevel")
     private int complianceLevel;
+    @SerializedName("downloads")
     private Downloads downloads;
+    @SerializedName("id")
     private String id;
+    @SerializedName("javaVersion")
     private JavaVersion javaVersion;
+    @SerializedName("libraries")
     private List<Library> libraries;
+    @SerializedName("mainClass")
     private String mainClass;
+    @SerializedName("minecraftArguments")
     private String minecraftArguments;
+    @SerializedName("minimumLauncherVersion")
     private int minimumLauncherVersion;
+    @SerializedName("releaseTime")
     private String releaseTime;
+    @SerializedName("time")
     private String time;
+    @SerializedName("type")
     private String type;
+    @SerializedName("logging")
     private Logging logging;
+    @SerializedName("inheritsFrom")
     private String inheritsFrom; //作为非合并版本的标记
 
     public Arguments getArguments() {
@@ -172,7 +188,9 @@ public class GameManifest {
     }
 
     public static class Arguments {
+        @SerializedName("game")
         private List<Object> game;
+        @SerializedName("jvm")
         private List<Object> jvm;
 
         public List<Object> getGame() {
@@ -193,10 +211,15 @@ public class GameManifest {
     }
 
     public static class AssetIndex {
+        @SerializedName("id")
         private String id;
+        @SerializedName("sha1")
         private String sha1;
+        @SerializedName("size")
         private long size;
+        @SerializedName("totalSize")
         private long totalSize;
+        @SerializedName("url")
         private String url;
 
         public String getId() {
@@ -241,9 +264,11 @@ public class GameManifest {
     }
 
     public static class Downloads {
+        @SerializedName("client")
         private Client client;
         @SerializedName("client_mappings")
         private ClientMappings clientMappings;
+        @SerializedName("server")
         private Server server;
         @SerializedName("server_mappings")
         private ServerMappings serverMappings;
@@ -282,8 +307,11 @@ public class GameManifest {
     }
 
     public static class Client {
+        @SerializedName("sha1")
         private String sha1;
+        @SerializedName("size")
         private long size;
+        @SerializedName("url")
         private String url;
 
         public String getSha1() {
@@ -312,8 +340,11 @@ public class GameManifest {
     }
 
     public static class ClientMappings {
+        @SerializedName("sha1")
         private String sha1;
+        @SerializedName("size")
         private long size;
+        @SerializedName("url")
         private String url;
 
         public String getSha1() {
@@ -342,8 +373,11 @@ public class GameManifest {
     }
 
     public static class Server {
+        @SerializedName("sha1")
         private String sha1;
+        @SerializedName("size")
         private long size;
+        @SerializedName("url")
         private String url;
 
         public String getSha1() {
@@ -372,8 +406,11 @@ public class GameManifest {
     }
 
     public static class ServerMappings {
+        @SerializedName("sha1")
         private String sha1;
+        @SerializedName("size")
         private long size;
+        @SerializedName("url")
         private String url;
 
         public String getSha1() {
@@ -402,8 +439,11 @@ public class GameManifest {
     }
 
     public static class JavaVersion {
+        @SerializedName("component")
         private String component;
+        @SerializedName("majorVersion")
         private int majorVersion;
+        @SerializedName("version")
         private int version; // parameter used by LabyMod 4
 
         public String getComponent() {
@@ -427,12 +467,21 @@ public class GameManifest {
     }
 
     public static class Library {
+        @SerializedName("downloads")
         private DownloadsX downloads;
+        @SerializedName("name")
         private String name;
-        @Nullable private Map<OperatingSystem, String> natives;
+        @Nullable
+        @SerializedName("natives")
+        private Map<OperatingSystem, String> natives;
+        @SerializedName("rules")
         private List<Rule> rules;
+        @SerializedName("url")
         private String url;
-        @Nullable private String sha1;
+        @Nullable
+        @SerializedName("sha1")
+        private String sha1;
+        @SerializedName("size")
         private long size;
 
         public DownloadsX getDownloads() {
@@ -497,6 +546,7 @@ public class GameManifest {
     }
 
     public static class DownloadsX {
+        @SerializedName("artifact")
         private Artifact artifact;
 
         public Artifact getArtifact() {
@@ -508,9 +558,13 @@ public class GameManifest {
     }
 
     public static class Artifact {
+        @SerializedName("path")
         private String path;
+        @SerializedName("sha1")
         private String sha1;
+        @SerializedName("size")
         private long size;
+        @SerializedName("url")
         private String url;
 
         public String getPath() {
@@ -547,9 +601,13 @@ public class GameManifest {
     }
 
     public static class Rule {
+        @SerializedName("action")
         private Action action;
+        @SerializedName("os")
         private Os os;
+        @SerializedName("features")
         private Features features;
+        @SerializedName("value")
         private List<Object> value;
 
         public Action getAction() {
@@ -607,7 +665,9 @@ public class GameManifest {
     }
 
     public static class Os {
+        @SerializedName("name")
         private String name;
+        @SerializedName("arch")
         private String arch;
 
         public String getName() {
@@ -691,6 +751,7 @@ public class GameManifest {
     }
 
     public static class Logging {
+        @SerializedName("client")
         private LoggingClient client;
 
         public LoggingClient getClient() {
@@ -703,8 +764,11 @@ public class GameManifest {
     }
 
     public static class LoggingClient {
+        @SerializedName("argument")
         private String argument;
+        @SerializedName("file")
         private LoggingFile file;
+        @SerializedName("type")
         private String type;
 
         public String getArgument() {
@@ -733,9 +797,13 @@ public class GameManifest {
     }
 
     public static class LoggingFile {
+        @SerializedName("id")
         private String id;
+        @SerializedName("sha1")
         private String sha1;
+        @SerializedName("size")
         private long size;
+        @SerializedName("url")
         private String url;
 
         public String getId() {

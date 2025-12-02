@@ -19,22 +19,32 @@
 package com.movtery.zalithlauncher.game.addons.modloader.forgelike.neoforge.models
 
 import com.movtery.zalithlauncher.game.addons.modloader.forgelike.neoforge.NeoForgeVersion
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class BMCLAPIMaven(
+    @SerialName("files")
     val files: List<File>,
+    @SerialName("name")
     val name: String = "",
+    @SerialName("type")
     val type: String = "",
     @Transient
     val isLegacy: Boolean = false
 ): NeoForgeMergeableMaven<BMCLAPIMaven> {
     @Serializable
     data class File(
+        @SerialName("contentLength")
         val contentLength: Int? = null,
+        @SerialName("contentType")
         val contentType: String? = null,
+        @SerialName("lastModifiedTime")
         val lastModifiedTime: Double? = null,
+        @SerialName("name")
         val name: String,
+        @SerialName("type")
         val type: String
     )
 

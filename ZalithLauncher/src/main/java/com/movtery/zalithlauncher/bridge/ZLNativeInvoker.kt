@@ -22,6 +22,7 @@ import android.app.Activity
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context.CLIPBOARD_SERVICE
+import androidx.annotation.Keep
 import com.movtery.zalithlauncher.context.GlobalContext
 import com.movtery.zalithlauncher.game.launch.Launcher
 import com.movtery.zalithlauncher.info.InfoDistributor
@@ -31,10 +32,12 @@ import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
 import com.movtery.zalithlauncher.utils.network.openLink
 import java.io.File
 
+@Keep
 object ZLNativeInvoker {
     @JvmStatic
     var staticLauncher: Launcher? = null
 
+    @Keep
     @JvmStatic
     fun openLink(link: String) {
         (GlobalContext as? Activity)?.let { activity ->
@@ -55,6 +58,7 @@ object ZLNativeInvoker {
         }
     }
 
+    @Keep
     @JvmStatic
     fun querySystemClipboard() {
         (GlobalContext as? Activity)?.let { activity ->
@@ -72,6 +76,7 @@ object ZLNativeInvoker {
         }
     }
 
+    @Keep
     @JvmStatic
     fun putClipboardData(data: String, mimeType: String) {
         (GlobalContext as? Activity)?.let { activity ->
@@ -88,11 +93,13 @@ object ZLNativeInvoker {
         }
     }
 
+    @Keep
     @JvmStatic
     fun putFpsValue(fps: Int) {
         ZLBridgeStates.currentFPS = fps
     }
 
+    @Keep
     @JvmStatic
     fun jvmExit(exitCode: Int, isSignal: Boolean) {
         staticLauncher?.exit()

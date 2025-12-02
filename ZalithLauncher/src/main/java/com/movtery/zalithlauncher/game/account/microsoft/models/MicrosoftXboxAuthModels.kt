@@ -59,7 +59,10 @@ data class XSTSProperties(
     val userTokens: List<String>
 )
 
+@Serializable
 data class XSTSAuthResult(
+    @SerialName("token")
     val token: String,
+    @SerialName("uhs")
     val uhs: String
 )

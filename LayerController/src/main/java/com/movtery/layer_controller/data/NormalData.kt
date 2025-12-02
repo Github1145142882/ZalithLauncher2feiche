@@ -32,19 +32,33 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class NormalData(
+    @SerialName("text")
     val text: TranslatableString,
+    @SerialName("uuid")
     val uuid: String,
+    @SerialName("position")
     val position: ButtonPosition,
+    @SerialName("buttonSize")
     val buttonSize: ButtonSize,
+    @SerialName("buttonStyle")
     val buttonStyle: String? = null,
+    @SerialName("textAlignment")
     val textAlignment: TextAlignment = TextAlignment.Left,
+    @SerialName("textBold")
     val textBold: Boolean = false,
+    @SerialName("textItalic")
     val textItalic: Boolean = false,
+    @SerialName("textUnderline")
     val textUnderline: Boolean = false,
+    @SerialName("visibilityType")
     val visibilityType: VisibilityType,
-    @SerialName("clickEvents") private var _clickEvents: List<ClickEvent> = emptyList(),
+    @SerialName("clickEvents")
+    private var _clickEvents: List<ClickEvent> = emptyList(),
+    @SerialName("isSwipple")
     val isSwipple: Boolean,
+    @SerialName("isPenetrable")
     val isPenetrable: Boolean,
+    @SerialName("isToggleable")
     val isToggleable: Boolean
 ): Widget {
     val clickEvents: List<ClickEvent> get() = _clickEvents

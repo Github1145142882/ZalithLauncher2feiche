@@ -20,6 +20,7 @@ package com.movtery.zalithlauncher.game.version.installed
 
 import android.os.Parcel
 import android.os.Parcelable
+import com.google.gson.annotations.SerializedName
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager.getZalithVersionPath
 import com.movtery.zalithlauncher.setting.AllSettings
@@ -32,31 +33,48 @@ import com.movtery.zalithlauncher.utils.toBoolean
 import java.io.File
 import java.io.FileWriter
 
-class VersionConfig(private var versionPath: File) : Parcelable {
+class VersionConfig(
+    @Transient
+    private var versionPath: File
+) : Parcelable {
+    @SerializedName("isolationType")
     var isolationType: SettingState = SettingState.FOLLOW_GLOBAL
         get() = getSettingStateNotNull(field)
+    @SerializedName("skipGameIntegrityCheck")
     var skipGameIntegrityCheck: SettingState = SettingState.FOLLOW_GLOBAL
         get() = getSettingStateNotNull(field)
+    @SerializedName("javaRuntime")
     var javaRuntime: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("jvmArgs")
     var jvmArgs: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("renderer")
     var renderer: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("driver")
     var driver: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("control")
     var control: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("customPath")
     var customPath: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("customInfo")
     var customInfo: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("versionSummary")
     var versionSummary: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("serverIp")
     var serverIp: String = ""
         get() = getStringNotNull(field)
+    @SerializedName("ramAllocation")
     var ramAllocation: Int = -1
+    @SerializedName("enableTouchProxy")
     var enableTouchProxy: Boolean = false
+    @SerializedName("touchVibrateDuration")
     var touchVibrateDuration: Int = 100
 
     constructor(

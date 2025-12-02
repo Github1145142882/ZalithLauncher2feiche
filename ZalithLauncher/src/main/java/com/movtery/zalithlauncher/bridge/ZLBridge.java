@@ -20,6 +20,9 @@ package com.movtery.zalithlauncher.bridge;
 
 import android.content.Context;
 
+import androidx.annotation.Keep;
+
+@Keep
 public final class ZLBridge {
     //AWT
     public static final int EVENT_TYPE_CHAR = 1000;
@@ -56,25 +59,25 @@ public final class ZLBridge {
     }
 
     //Game
-    public static native void initializeGameExitHook();
-    public static native void setupExitMethod(Context context);
+    @Keep public static native void initializeGameExitHook();
+    @Keep public static native void setupExitMethod(Context context);
 
     //Launch
-    public static native void setLdLibraryPath(String ldLibraryPath);
-    public static native boolean dlopen(String libPath);
+    @Keep public static native void setLdLibraryPath(String ldLibraryPath);
+    @Keep public static native boolean dlopen(String libPath);
 
     //Render
-    public static native void setupBridgeWindow(Object surface);
-    public static native void releaseBridgeWindow();
-    public static native void moveWindow(int xOffset, int yOffset);
-    public static native int[] renderAWTScreenFrame();
+    @Keep public static native void setupBridgeWindow(Object surface);
+    @Keep public static native void releaseBridgeWindow();
+    @Keep public static native void moveWindow(int xOffset, int yOffset);
+    @Keep public static native int[] renderAWTScreenFrame();
 
     //Input
-    public static native void sendInputData(int type, int i1, int i2, int i3, int i4);
-    public static native void clipboardReceived(String data, String mimeTypeSub);
+    @Keep public static native void sendInputData(int type, int i1, int i2, int i3, int i4);
+    @Keep public static native void clipboardReceived(String data, String mimeTypeSub);
 
     //Utils
-    public static native int chdir(String path);
+    @Keep public static native int chdir(String path);
 
     static {
         System.loadLibrary("exithook");

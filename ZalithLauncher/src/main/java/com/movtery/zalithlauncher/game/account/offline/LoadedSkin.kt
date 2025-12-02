@@ -19,6 +19,7 @@
 package com.movtery.zalithlauncher.game.account.offline
 
 import com.movtery.zalithlauncher.game.account.wardrobe.SkinModelType
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
@@ -31,10 +32,15 @@ import kotlinx.serialization.Serializable
  */
 @Serializable
 data class LoadedSkin(
+    @SerialName("skinHash")
     val skinHash: String? = null,
+    @SerialName("skinBytes")
     val skinBytes: ByteArray? = null,
+    @SerialName("capeHash")
     val capeHash: String? = null,
+    @SerialName("capeBytes")
     val capeBytes: ByteArray? = null,
+    @SerialName("model")
     val model: SkinModelType = SkinModelType.NONE
 ) {
     override fun equals(other: Any?): Boolean {

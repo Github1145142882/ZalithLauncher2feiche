@@ -18,23 +18,28 @@
 
 package com.movtery.zalithlauncher.bridge;
 
+import androidx.annotation.Keep;
+
 /**
  * Singleton class made to log on one file
  * The singleton part can be removed but will require more implementation from the end-dev
  * <a href="https://github.com/PojavLauncherTeam/PojavLauncher/blob/f1cb9e6/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/Logger.java">Modified from PojavLauncher</a>
  */
+@Keep
 public final class LoggerBridge {
     /** Reset the log file, effectively erasing any previous logs */
-    public static native void start(String filePath);
+    @Keep public static native void start(String filePath);
 
     /** Print the text to the log file if not censored */
-    public static native void append(String log);
+    @Keep public static native void append(String log);
 
     /** Link a log listener to the logger */
-    public static native void setListener(EventLogListener listener);
+    @Keep public static native void setListener(EventLogListener listener);
 
     /** Small listener for anything listening to the log */
+    @Keep
     public interface EventLogListener {
+        @Keep
         void onEventLogged(String text);
     }
 

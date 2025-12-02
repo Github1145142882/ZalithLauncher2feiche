@@ -38,7 +38,9 @@ enum class PlatformDependencyType(val curseforgeCode: Int) {
     @SerialName("embedded")
     EMBEDDED(1),            //嵌入式
 
+    @SerialName("tool")
     TOOL(4),                //工具 (CurseForge)
+    @SerialName("include")
     INCLUDE(6);             //包括 (CurseForge)
 
     companion object {

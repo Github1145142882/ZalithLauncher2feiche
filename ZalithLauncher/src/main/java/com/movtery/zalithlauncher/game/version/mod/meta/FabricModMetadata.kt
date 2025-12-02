@@ -26,19 +26,30 @@ import com.google.gson.JsonPrimitive
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import com.google.gson.annotations.JsonAdapter
+import com.google.gson.annotations.SerializedName
 import java.lang.reflect.Type
 
 data class FabricModMetadata(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("name")
     val name: String,
+    @SerializedName("version")
     val version: String,
+    @SerializedName("description")
     val description: String? = null,
+    @SerializedName("icon")
     val icon: String? = null,
+    @SerializedName("authors")
     val authors: List<FabricModAuthor>? = null,
+    @SerializedName("contact")
     val contact: Map<String, String>? = null
 ) {
     @JsonAdapter(FabricModAuthorSerializer::class)
-    data class FabricModAuthor(val name: String? = null)
+    data class FabricModAuthor(
+        @SerializedName("name")
+        val name: String? = null
+    )
 
     class FabricModAuthorSerializer : JsonSerializer<FabricModAuthor>,
         JsonDeserializer<FabricModAuthor> {

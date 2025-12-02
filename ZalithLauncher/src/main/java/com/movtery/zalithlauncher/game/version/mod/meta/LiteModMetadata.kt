@@ -18,17 +18,30 @@
 
 package com.movtery.zalithlauncher.game.version.mod.meta
 
+import com.google.gson.annotations.SerializedName
+
 data class LiteModMetadata(
+    @SerializedName("name")
     val name: String,
+    @SerializedName("version")
     val version: String,
+    @SerializedName("mcversion")
     val mcversion: String,
+    @SerializedName("revision")
     val revision: String? = null,
+    @SerializedName("author")
     val author: String? = null,
+    @SerializedName("classTransformerClasses")
     val classTransformerClasses: Array<String>? = null,
+    @SerializedName("description")
     val description: String? = null,
+    @SerializedName("modpackName")
     val modpackName: String? = null,
+    @SerializedName("modpackVersion")
     val modpackVersion: String? = null,
+    @SerializedName("checkUpdateUrl")
     val checkUpdateUrl: String? = null,
+    @SerializedName("updateURI")
     val updateURI: String? = null
 ) {
     override fun equals(other: Any?): Boolean {

@@ -18,11 +18,18 @@
 
 package com.movtery.zalithlauncher.game.download.game.models
 
+import com.google.gson.annotations.SerializedName
+
 data class LibraryComponents(
+    @SerializedName("groupId")
     val groupId: String,
+    @SerializedName("artifactId")
     val artifactId: String,
+    @SerializedName("version")
     val version: String,
+    @SerializedName("classifier")
     val classifier: String? = null,
+    @SerializedName("extension")
     val extension: String = "jar"
 ) {
     val descriptor: String by lazy {

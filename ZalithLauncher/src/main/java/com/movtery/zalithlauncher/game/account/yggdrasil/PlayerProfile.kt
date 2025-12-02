@@ -19,31 +19,46 @@
 package com.movtery.zalithlauncher.game.account.yggdrasil
 
 import com.movtery.zalithlauncher.game.account.wardrobe.SkinModelType
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonElement
 
 @Serializable
 data class PlayerProfile(
+    @SerialName("id")
     val id: String,
+    @SerialName("name")
     val name: String,
+    @SerialName("skins")
     val skins: List<Skin>,
+    @SerialName("capes")
     val capes: List<Cape>,
+    @SerialName("profileActions")
     val profileActions: JsonElement? = null
 ) {
     @Serializable
     data class Skin(
+        @SerialName("id")
         val id: String,
+        @SerialName("state")
         val state: String,
+        @SerialName("url")
         val url: String,
+        @SerialName("textureKey")
         val textureKey: String,
+        @SerialName("variant")
         val variant: String
     )
 
     @Serializable
     data class Cape(
+        @SerialName("id")
         val id: String,
+        @SerialName("state")
         val state: String,
+        @SerialName("url")
         val url: String,
+        @SerialName("alias")
         val alias: String
     )
 }

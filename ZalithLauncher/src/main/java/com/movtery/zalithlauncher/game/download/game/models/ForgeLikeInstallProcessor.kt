@@ -18,11 +18,18 @@
 
 package com.movtery.zalithlauncher.game.download.game.models
 
+import com.google.gson.annotations.SerializedName
+
 class ForgeLikeInstallProcessor(
+    @SerializedName("sides")
     private val sides: List<String>?,
+    @SerializedName("jar")
     private val jar: String,
+    @SerializedName("classpath")
     private val classpath: List<String>?,
+    @SerializedName("args")
     private val args: List<String>?,
+    @SerializedName("outputs")
     private val outputs: Map<String, String>?
 ) {
     fun isSide(side: String): Boolean {

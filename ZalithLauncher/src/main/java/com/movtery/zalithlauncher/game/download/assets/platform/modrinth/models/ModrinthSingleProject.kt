@@ -249,7 +249,7 @@ class ModrinthSingleProject(
 
     override fun platformTitle(): String = title
 
-    override fun platformSummary(): String? = description
+    override fun platformSummary(): String = description
 
     override fun platformAuthor(): String? = null
 

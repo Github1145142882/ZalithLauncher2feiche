@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import dalvik.annotation.optimization.CriticalNative;
 
+@Keep
 public class CallbackBridge {
     public static final Choreographer sChoreographer = Choreographer.getInstance();
     private static boolean isGrabbing = false;
@@ -127,6 +128,7 @@ public class CallbackBridge {
 
     // Called from JRE side
     @SuppressWarnings("unused")
+    @Keep
     public static @Nullable String accessAndroidClipboard(int type, String copy) {
         ClipboardManager clipboard = (ClipboardManager) ContextsKt.getGlobalContext().getSystemService(Context.CLIPBOARD_SERVICE);
         switch (type) {
@@ -189,6 +191,7 @@ public class CallbackBridge {
 
     //Called from JRE side
     @SuppressWarnings("unused")
+    @Keep
     private static void onGrabStateChanged(final boolean grabbing) {
         isGrabbing = grabbing;
         sChoreographer.postFrameCallbackDelayed((time) -> {
@@ -205,6 +208,7 @@ public class CallbackBridge {
 
     //Called from JRE side
     @SuppressWarnings("unused")
+    @Keep
     private static void onCursorShapeChanged(final int shape) {
         cursorShape = shape;
         sChoreographer.postFrameCallbackDelayed((time) -> {

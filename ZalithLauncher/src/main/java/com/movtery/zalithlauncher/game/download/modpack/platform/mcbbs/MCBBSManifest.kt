@@ -24,30 +24,49 @@ import com.movtery.zalithlauncher.game.download.modpack.platform.PackManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.GameManifest
 
 data class MCBBSManifest(
+    @SerializedName("manifestType")
     val manifestType: String,
+    @SerializedName("manifestVersion")
     val manifestVersion: Int,
+    @SerializedName("name")
     val name: String,
+    @SerializedName("version")
     val version: String,
+    @SerializedName("author")
     val author: String,
+    @SerializedName("description")
     val description: String,
+    @SerializedName("fileApi")
     val fileApi: String?,
+    @SerializedName("url")
     val url: String,
+    @SerializedName("forceUpdate")
     val forceUpdate: Boolean,
+    @SerializedName("origins")
     val origins: List<Origin>,
+    @SerializedName("addons")
     val addons: List<Addon>,
+    @SerializedName("libraries")
     val libraries: List<GameManifest.Library>,
+    @SerializedName("files")
     val files: List<AddonFile>,
+    @SerializedName("settings")
     val settings: Settings,
+    @SerializedName("launchInfo")
     val launchInfo: LaunchInfo
 ): PackManifest {
 
     data class Origin(
+        @SerializedName("type")
         val type: String,
+        @SerializedName("id")
         val id: Int
     )
 
     data class Addon(
+        @SerializedName("id")
         val id: String,
+        @SerializedName("version")
         val version: String
     )
 
@@ -60,13 +79,18 @@ data class MCBBSManifest(
     )
 
     data class AddonFile(
+        @SerializedName("force")
         val force: Boolean,
+        @SerializedName("path")
         val path: String,
+        @SerializedName("hash")
         val hash: String
     )
 
     data class LaunchInfo(
+        @SerializedName("minMemory")
         val minMemory: Int,
+        @SerializedName("supportJava")
         val supportJava: List<Int>?,
 
         @SerializedName("launchArgument")
@@ -77,6 +101,7 @@ data class MCBBSManifest(
     )
 
     data class ServerInfo(
+        @SerializedName("authlibInjectorServer")
         val authlibInjectorServer: String?
     )
 
