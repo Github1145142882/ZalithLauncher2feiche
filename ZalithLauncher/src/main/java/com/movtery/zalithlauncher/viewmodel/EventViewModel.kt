@@ -57,6 +57,12 @@ class EventViewModel : ViewModel() {
             /** [com.movtery.zalithlauncher.game.launch.handler.AbstractHandler.onResume] */
             data object OnResume: Game
         }
+        sealed interface Terracotta : Event {
+            /** 申请 VPN 权限 */
+            data object RequestVPN : Terracotta
+            /** 关停 VPN */
+            data object StopVPN : Terracotta
+        }
         /** 在浏览器访问链接 */
         data class OpenLink(val url: String) : Event
         /** 刷新全屏 */

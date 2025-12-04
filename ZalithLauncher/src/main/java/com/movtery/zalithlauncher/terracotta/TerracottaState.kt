@@ -6,10 +6,12 @@ import com.google.gson.JsonParseException
 import com.google.gson.JsonParser
 import com.google.gson.TypeAdapter
 import com.google.gson.TypeAdapterFactory
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.terracotta.TerracottaState.Exception.Type
 import com.movtery.zalithlauncher.terracotta.profile.TerracottaProfile
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -20,7 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 sealed class TerracottaState {
     open fun isUIFakeState(): Boolean = false
-    open fun isForkOf(state: TerracottaState): Boolean = false
+    open fun isForkOf(state: TerracottaState?): Boolean = false
 
     object Bootstrap : TerracottaState()
 
@@ -42,10 +44,25 @@ sealed class TerracottaState {
 
     class Launching : TerracottaState()
 
-    sealed class PortSpecific(var port: Int) : TerracottaState()
+    sealed class PortSpecific(
+        @Transient
+        var port: Int
+    ) : TerracottaState()
 
-    sealed class Ready(port: Int, val index: Int, val state: String) : PortSpecific(port) {
+    sealed class Ready(
+        port: Int,
+        @SerializedName("index")
+        val index: Int,
+        @SerializedName("state")
+        val state: String
+    ) : PortSpecific(port) {
         override fun isUIFakeState(): Boolean = index == -1
+
+        override fun toString(): String {
+            val simple = javaClass.getSimpleName()
+            val withUnderscore = simple.replace("([a-z])([A-Z])".toRegex(), "$1_$2")
+            return withUnderscore.lowercase()
+        }
     }
 
     class Unknown(port: Int) : PortSpecific(port)
@@ -58,16 +75,15 @@ sealed class TerracottaState {
         port: Int,
         index: Int,
         state: String,
+        @SerializedName("room")
         val code: String?,
+        @SerializedName("profile_index")
         val profileIndex: Int,
+        @SerializedName("profiles")
         val profiles: List<TerracottaProfile>?
     ) : Ready(port, index, state) {
-        fun validate() {
-            require(code != null) { "code is null" }
-            require(profiles != null) { "profiles is null" }
-        }
 
-        override fun isForkOf(state: TerracottaState): Boolean =
+        override fun isForkOf(state: TerracottaState?): Boolean =
             state is HostOK && (this.index - state.index) <= profileIndex
     }
 
@@ -77,15 +93,15 @@ sealed class TerracottaState {
         port: Int,
         index: Int,
         state: String,
+        @SerializedName("url")
         val url: String?,
+        @SerializedName("profile_index")
         val profileIndex: Int,
+        @SerializedName("profiles")
         val profiles: List<TerracottaProfile>?
     ) : Ready(port, index, state) {
-        fun validate() {
-            require(profiles != null) { "profiles is null" }
-        }
 
-        override fun isForkOf(state: TerracottaState): Boolean =
+        override fun isForkOf(state: TerracottaState?): Boolean =
             state is GuestOK && (this.index - state.index) <= profileIndex
     }
 
@@ -97,10 +113,6 @@ sealed class TerracottaState {
             HOST_ET_CRASH(R.string.terracotta_status_exception_desc_host_et_crash),
             PING_SERVER_RST(R.string.terracotta_status_exception_desc_ping_server_rst),
             SCAFFOLDING_INVALID_RESPONSE(R.string.terracotta_status_exception_desc_scaffolding_invalid_response)
-        }
-
-        fun validate() {
-            require(type in Type.entries.indices) { "Type must be within [0, ${Type.entries.size})" }
         }
 
         fun getEnumType(): Type = Type.entries[type]
@@ -161,7 +173,9 @@ class TerracottaStateTypeAdapterFactory : TypeAdapterFactory {
 
             override fun read(reader: JsonReader): TerracottaState.Ready {
                 val jsonElement = JsonParser.parseReader(reader).asJsonObject
-                val result: TerracottaState.Ready = when (val stateName = jsonElement.get("state")?.asString) {
+                val stateName = jsonElement.get("state")?.asString
+
+                val result: TerracottaState.Ready = when (stateName) {
                     "waiting" -> waitingAdapter.fromJsonTree(jsonElement)
                     "host-scanning" -> hostScanningAdapter.fromJsonTree(jsonElement)
                     "host-starting" -> hostStartingAdapter.fromJsonTree(jsonElement)
@@ -171,8 +185,30 @@ class TerracottaStateTypeAdapterFactory : TypeAdapterFactory {
                     "exception" -> exceptionAdapter.fromJsonTree(jsonElement)
                     else -> throw JsonParseException("Unknown state type: $stateName")
                 }
+
+                //统一进行校验
+                validateResult(result)
+
                 return result
             }
         } as TypeAdapter<T>
+    }
+
+    private fun validateResult(result: TerracottaState.Ready) {
+        when (result) {
+            is TerracottaState.HostOK -> {
+                require(result.code != null) { "HostOK.code is null" }
+                require(result.profiles != null) { "HostOK.profiles is null" }
+            }
+            is TerracottaState.GuestOK -> {
+                require(result.profiles != null) { "GuestOK.profiles is null" }
+            }
+            is TerracottaState.Exception -> {
+                val type = result.type
+                val max = Type.entries.size
+                require(type in 0 until max) { "Exception.type=$type must be in [0, $max)" }
+            }
+            else -> {}
+        }
     }
 }

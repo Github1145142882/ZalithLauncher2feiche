@@ -424,6 +424,7 @@ fun GameScreen(
     surfaceOffset: Offset,
     incrementScreenOffset: (Offset) -> Unit,
     resetScreenOffset: () -> Unit,
+    getAccountName: () -> String,
     eventViewModel: EventViewModel,
     gamepadViewModel: GamepadViewModel
 ) {
@@ -434,7 +435,11 @@ fun GameScreen(
     val isGrabbing = remember(ZLBridgeStates.cursorMode) {
         ZLBridgeStates.cursorMode == CURSOR_DISABLED
     }
-    val terracottaViewModel = rememberTerracottaViewModel(version.toString() + "_Terracotta")
+    val terracottaViewModel = rememberTerracottaViewModel(
+        keyTag = version.toString() + "_Terracotta",
+        eventViewModel = eventViewModel,
+        getUserName = getAccountName
+    )
 
     SendKeycodeOperation(
         operation = viewModel.sendKeycodeState,
@@ -456,8 +461,7 @@ fun GameScreen(
     )
 
     TerracottaOperation(
-        operation = terracottaViewModel.operation,
-        onChange = { terracottaViewModel.operation = it }
+        viewModel = terracottaViewModel
     )
 
     BoxWithConstraints(

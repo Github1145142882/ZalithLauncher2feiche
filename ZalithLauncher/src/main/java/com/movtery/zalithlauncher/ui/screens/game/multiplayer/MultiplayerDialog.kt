@@ -18,20 +18,26 @@
 
 package com.movtery.zalithlauncher.ui.screens.game.multiplayer
 
+import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,20 +45,34 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.constraintlayout.compose.Dimension
 import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.terracotta.Terracotta
+import com.movtery.zalithlauncher.terracotta.TerracottaState
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
+import com.movtery.zalithlauncher.ui.components.MarqueeText
 
+/**
+ * 多人联机菜单Dialog
+ * @param terracottaVer 陶瓦联机核心版本号
+ * @param easyTierVer EasyTier版本号
+ * @param onHostRoleClick 用户选择成为房主
+ * @param onHostCopyCode 房主复制房间邀请码
+ * @param onHostBack 房主退出扫描/取消启动房间/退出房间
+ */
 @Composable
 fun MultiplayerDialog(
-    onClose: () -> Unit
+    onClose: () -> Unit,
+    dialogState: TerracottaState.Ready?,
+    terracottaVer: String?,
+    easyTierVer: String?,
+    onHostRoleClick: () -> Unit,
+    onHostCopyCode: (TerracottaState.HostOK) -> Unit,
+    onHostBack: () -> Unit
 ) {
     Dialog(
         onDismissRequest = {},
@@ -63,22 +83,18 @@ fun MultiplayerDialog(
         )
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth(0.7f)
-                .fillMaxHeight()
-                .padding(vertical = 24.dp)
+            modifier = Modifier.fillMaxWidth(0.7f),
+            contentAlignment = Alignment.Center
         ) {
             Surface(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(all = 6.dp),
                 shape = MaterialTheme.shapes.extraLarge,
                 shadowElevation = 6.dp
             ) {
                 Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(all = 16.dp),
+                    modifier = Modifier.padding(all = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     Text(
@@ -86,39 +102,68 @@ fun MultiplayerDialog(
                         style = MaterialTheme.typography.titleLarge
                     )
 
-                    Row(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        //房主
-                        SimpleCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Filled.Home,
-                            title = stringResource(R.string.terracotta_status_waiting_host_title),
-                            description = stringResource(R.string.terracotta_status_waiting_host_desc)
-                        ) {
+                    val commonModifier = Modifier
+                        .weight(1f, fill = false)
+                        .fillMaxWidth()
 
+                    when (dialogState) {
+                        null -> {
+                            Box(
+                                modifier = commonModifier,
+                                contentAlignment = Alignment.Center
+                            ) {
+                                CircularProgressIndicator()
+                            }
                         }
-
-                        //房客
-                        SimpleCard(
-                            modifier = Modifier.weight(1f),
-                            icon = Icons.Filled.Group,
-                            title = stringResource(R.string.terracotta_status_waiting_guest_title),
-                            description = stringResource(R.string.terracotta_status_waiting_guest_desc)
-                        ) {
-
+                        is TerracottaState.Waiting -> {
+                            WaitingUI(
+                                modifier = commonModifier,
+                                onHostClick = onHostRoleClick,
+                                onGuestClick = {}
+                            )
                         }
+                        is TerracottaState.HostScanning -> {
+                            HostScanningUI(
+                                modifier = commonModifier,
+                                onBack = onHostBack
+                            )
+                        }
+                        is TerracottaState.HostStarting -> {
+                            HostStartingUI(
+                                modifier = commonModifier,
+                                onBack = onHostBack
+                            )
+                        }
+                        is TerracottaState.HostOK -> {
+                            HostOkRoomUI(
+                                modifier = commonModifier,
+                                onCopy = {
+                                    onHostCopyCode(dialogState)
+                                },
+                                onExit = onHostBack
+                            )
+                        }
+                        is TerracottaState.GuestStarting -> {}
+                        is TerracottaState.GuestOK -> {}
+                        is TerracottaState.Exception -> {}
                     }
 
-                    Row(modifier = Modifier.fillMaxWidth()) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
                         //版本号
                         Column(modifier = Modifier.weight(1f)) {
-                            val meta = Terracotta.getMetadata()
-                            Text(text = stringResource(R.string.terracotta_metadata_ver, meta.terracottaVersion))
-                            Text(text = stringResource(R.string.terracotta_metadata_easytier_ver, meta.easyTierVersion))
+                            val terracottaVer0 = terracottaVer ?: stringResource(R.string.generic_loading)
+                            val easyTierVer0 = easyTierVer ?: stringResource(R.string.generic_loading)
+                            Text(
+                                text = stringResource(R.string.terracotta_metadata_ver, terracottaVer0),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                            Text(
+                                text = stringResource(R.string.terracotta_metadata_easytier_ver, easyTierVer0),
+                                style = MaterialTheme.typography.labelMedium
+                            )
                         }
 
                         //关闭
@@ -134,8 +179,176 @@ fun MultiplayerDialog(
     }
 }
 
+/**
+ * 等待选择角色
+ */
 @Composable
-private fun SimpleCard(
+private fun WaitingUI(
+    onHostClick: () -> Unit,
+    onGuestClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState()
+) {
+    Column(
+        modifier = modifier.verticalScroll(scrollState),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        //房主
+        SimpleCardButton(
+            modifier = Modifier.fillMaxWidth(),
+            icon = Icons.Filled.Home,
+            title = stringResource(R.string.terracotta_status_waiting_host_title),
+            description = stringResource(R.string.terracotta_status_waiting_host_desc),
+            onClick = onHostClick
+        )
+
+        //房客
+        SimpleCardButton(
+            modifier = Modifier.fillMaxWidth(),
+            icon = Icons.Filled.Group,
+            title = stringResource(R.string.terracotta_status_waiting_guest_title),
+            description = stringResource(R.string.terracotta_status_waiting_guest_desc),
+            onClick = onGuestClick
+        )
+    }
+}
+
+/**
+ * 房主：扫描游戏端口
+ */
+@Composable
+private fun HostScanningUI(
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit
+) {
+    CommonProgressLayout(
+        modifier = modifier,
+        progress = stringResource(R.string.terracotta_status_host_scanning),
+        text = {
+            Text(text = stringResource(R.string.terracotta_status_host_scanning_desc))
+        },
+        backDescription = stringResource(R.string.terracotta_status_host_scanning_back),
+        onBack = onBack
+    )
+}
+
+/**
+ * 房主：启动房间中
+ */
+@Composable
+private fun HostStartingUI(
+    modifier: Modifier = Modifier,
+    onBack: () -> Unit
+) {
+    CommonProgressLayout(
+        modifier = modifier,
+        progress = stringResource(R.string.terracotta_status_host_starting),
+        backDescription = stringResource(R.string.terracotta_status_host_starting_back),
+        onBack = onBack
+    )
+}
+
+/**
+ * 房主：已进入房间
+ */
+@Composable
+private fun HostOkRoomUI(
+    modifier: Modifier = Modifier,
+    onCopy: () -> Unit,
+    onExit: () -> Unit,
+) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Column(
+            modifier = Modifier.weight(1f),
+        ) {
+            //文字部分
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Text(text = stringResource(R.string.terracotta_status_host_ok))
+                HorizontalDivider(modifier = Modifier.fillMaxWidth())
+                Text(text = stringResource(R.string.terracotta_status_host_ok_code))
+            }
+            //按钮部分
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                //复制按钮
+                SimpleRowButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = Icons.AutoMirrored.Default.ArrowLeft,
+                    title = stringResource(R.string.terracotta_status_host_ok_code_copy),
+                    description = stringResource(R.string.terracotta_status_host_ok_code_desc),
+                    onClick = onCopy
+                )
+                //退出按钮
+                SimpleRowButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    icon = Icons.AutoMirrored.Default.ArrowLeft,
+                    title = stringResource(R.string.terracotta_back),
+                    description = stringResource(R.string.terracotta_status_host_ok_back),
+                    onClick = onExit
+                )
+            }
+        }
+
+        //玩家列表
+        LazyColumn(
+            modifier = Modifier.weight(1f)
+        ) {
+            //TODO 玩家列表
+        }
+    }
+}
+
+@Composable
+private fun CommonProgressLayout(
+    progress: String,
+    backTitle: String = stringResource(R.string.terracotta_back),
+    backDescription: String,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    text: (@Composable ColumnScope.() -> Unit)? = null,
+    scrollState: ScrollState = rememberScrollState(),
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        //文字部分
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(scrollState),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) c1@{
+            Text(text = progress)
+            LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
+            text?.invoke(this@c1)
+        }
+        //退出按钮
+        SimpleCardButton(
+            modifier = Modifier.fillMaxWidth(),
+            icon = Icons.AutoMirrored.Default.ArrowLeft,
+            title = backTitle,
+            description = backDescription,
+            onClick = onBack
+        )
+    }
+}
+
+/**
+ * 用Card实现的可点击按钮
+ */
+@Composable
+private fun SimpleCardButton(
     modifier: Modifier = Modifier,
     icon: ImageVector,
     title: String,
@@ -147,42 +360,75 @@ private fun SimpleCard(
         influencedByBackground = false,
         onClick = onClick
     ) {
-        ConstraintLayout(
+        Row(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 16.dp)
-                .padding(bottom = 16.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            val (icons, desc) = createRefs()
+            Icon(
+                imageVector = icon,
+                contentDescription = title
+            )
 
-            //图文区
             Column(
-                modifier = Modifier.constrainAs(icons) {
-                    top.linkTo(parent.top)
-                    bottom.linkTo(parent.bottom, margin = 24.dp)
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                },
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(6.dp)
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = title
-                )
+                //标题
                 Text(
+                    modifier = Modifier.fillMaxWidth(),
                     text = title,
                     style = MaterialTheme.typography.titleMedium
                 )
+                //描述
+                Text(
+                    modifier = Modifier.fillMaxWidth().alpha(0.7f),
+                    text = description,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
+        }
+    }
+}
 
-            //这个卡片的描述
+/**
+ * 紧凑型可点击按钮，这个按钮的[description]描述被锁定为单行显示
+ */
+@Composable
+private fun SimpleRowButton(
+    modifier: Modifier = Modifier,
+    icon: ImageVector,
+    title: String,
+    description: String,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = title
+        )
+
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            //标题
             Text(
-                modifier = Modifier.constrainAs(desc) {
-                    start.linkTo(parent.start)
-                    end.linkTo(parent.end)
-                    bottom.linkTo(parent.bottom)
-                },
+                modifier = Modifier.fillMaxWidth(),
+                text = title,
+                style = MaterialTheme.typography.titleMedium
+            )
+            //描述
+            MarqueeText(
+                modifier = Modifier.fillMaxWidth().alpha(0.7f),
                 text = description,
                 style = MaterialTheme.typography.bodySmall
             )

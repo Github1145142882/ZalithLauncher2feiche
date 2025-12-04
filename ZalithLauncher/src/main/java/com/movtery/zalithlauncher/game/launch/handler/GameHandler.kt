@@ -75,7 +75,7 @@ class GameHandler(
     eventViewModel: EventViewModel,
     private val gamepadViewModel: GamepadViewModel,
     getWindowSize: () -> IntSize,
-    gameLauncher: GameLauncher,
+    private val gameLauncher: GameLauncher,
     onExit: (code: Int) -> Unit
 ) : AbstractHandler(HandlerType.GAME, eventViewModel, getWindowSize, gameLauncher, onExit) {
     private val isTouchProxyEnabled = version.isTouchProxyEnabled()
@@ -185,6 +185,7 @@ class GameHandler(
             surfaceOffset = surfaceOffset,
             incrementScreenOffset = incrementScreenOffset,
             resetScreenOffset = resetScreenOffset,
+            getAccountName = { gameLauncher.account.username },
             eventViewModel = eventViewModel,
             gamepadViewModel = gamepadViewModel
         )

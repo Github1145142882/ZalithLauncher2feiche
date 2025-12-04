@@ -70,6 +70,12 @@ class GameLauncher(
     private lateinit var gameManifest: GameManifest
     private val offlineServer = OfflineYggdrasilServer(0)
 
+    /**
+     * 当前游戏使用的账号
+     */
+    lateinit var account: Account
+        private set
+
     override fun exit() {
         offlineServer.stop()
     }
@@ -83,7 +89,7 @@ class GameLauncher(
         CallbackBridge.nativeSetUseInputStackQueue(gameManifest.arguments != null)
 
         val currentAccount = AccountsManager.currentAccountFlow.value!!
-        val account = if (version.offlineAccountLogin) {
+        account = if (version.offlineAccountLogin) {
             //使用临时离线账号启动游戏
             currentAccount.copy(
                 accountType = AccountType.LOCAL.tag

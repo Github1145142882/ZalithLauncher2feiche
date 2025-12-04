@@ -19,46 +19,171 @@
 package com.movtery.zalithlauncher.ui.screens.game.multiplayer
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.net.VpnService
+import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
+import androidx.activity.result.ActivityResult
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.terracotta.Terracotta
+import com.movtery.zalithlauncher.terracotta.TerracottaState
+import com.movtery.zalithlauncher.terracotta.TerracottaVPNService
+import com.movtery.zalithlauncher.utils.copyText
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.filterIsInstance
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
-class TerracottaViewModel: ViewModel() {
+class TerracottaViewModel(
+    val eventViewModel: EventViewModel,
+    val getUserName: () -> String?
+): ViewModel() {
     var operation by mutableStateOf<TerracottaOperation>(TerracottaOperation.None)
+
+    /**
+     * 联机菜单状态
+     */
+    var dialogState by mutableStateOf<TerracottaState.Ready?>(null)
+
+    /**
+     * 陶瓦联机核心版本号，在初始化完成后非null
+     */
+    var terracottaVer by mutableStateOf<String?>(null)
+
+    /**
+     * EasyTier版本号，在初始化完成后非null
+     */
+    var easyTierVer by mutableStateOf<String?>(null)
+
+    /**
+     * VPN权限申请，由TerracottaOperation设置
+     */
+    var vpnLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>? = null
+
+    private val allJobs: MutableList<Job> = mutableListOf()
 
     /**
      * 打开陶瓦联机菜单
      */
-    fun openMenu(context: Activity) {
+    fun openMenu(activity: Activity) {
         if (operation !is TerracottaOperation.None) return
 
-//        if (!Terracotta.initialized) initialize(context)
+        if (!Terracotta.initialized) initialize(activity)
+        if (allJobs.isEmpty()) initJobs(activity)
+
         operation = TerracottaOperation.ShowMenu
+    }
+
+    /**
+     * 复制房间邀请码到系统剪贴板
+     */
+    fun copyInviteCode(
+        context: Context,
+        state: TerracottaState.HostOK
+    ) {
+        val code = state.code ?: return //理论上不会是null
+        copyText(
+            label = "invite_code",
+            text = code,
+            context = context
+        )
+        Toast.makeText(context, context.getString(R.string.terracotta_status_host_ok_code_copy_toast), Toast.LENGTH_SHORT).show()
     }
 
     /**
      * 初始化陶瓦联机
      */
-    private fun initialize(context: Activity) {
-        Terracotta.initialize(context, viewModelScope)
+    private fun initialize(context: Context) {
+        Terracotta.initialize(context, viewModelScope, eventViewModel)
         Terracotta.setWaiting(context, true)
+
+        val metadata = Terracotta.getMetadata()
+        terracottaVer = metadata.terracottaVersion
+        easyTierVer = metadata.easyTierVersion
     }
 
-    //TODO 主要逻辑实现在 ViewModel
+    private fun initJobs(activity: Activity) {
+        val stateChangeJob = viewModelScope.launch {
+            Terracotta.stateChanges.collect { (old, new) ->
+                if (new is TerracottaState.HostOK) {
+                    if (old !is TerracottaState.HostOK) {
+                        //刚切换到这个状态，默认复制一次邀请码
+                        copyInviteCode(activity, new)
+                    }
+                    if (new.isForkOf(old)) {
+                        //TODO refresh hostOk UI
+                        return@collect
+                    }
+                } else if (new is TerracottaState.GuestOK) {
+                    if (new.isForkOf(old)) {
+                        //TODO refresh guestOk UI
+                        return@collect
+                    }
+                }
+                dialogState = new
+            }
+        }
+
+        val eventJob = viewModelScope.launch {
+            eventViewModel.events
+                .filterIsInstance<EventViewModel.Event.Terracotta>()
+                .collect { event ->
+                    when (event) {
+                        is EventViewModel.Event.Terracotta.RequestVPN -> {
+                            withContext(Dispatchers.Main) {
+                                val intent = VpnService.prepare(activity)
+                                if (intent != null) {
+                                    vpnLauncher?.launch(intent)
+                                } else {
+                                    val vpnIntent = Intent(activity, TerracottaVPNService::class.java).apply {
+                                        action = TerracottaVPNService.ACTION_START
+                                    }
+                                    ContextCompat.startForegroundService(activity, vpnIntent)
+                                }
+                            }
+                        }
+                        is EventViewModel.Event.Terracotta.StopVPN -> {
+                            if (TerracottaVPNService.isRunning()) {
+                                val vpnIntent = Intent(activity, TerracottaVPNService::class.java).apply {
+                                    action = TerracottaVPNService.ACTION_STOP
+                                }
+                                ContextCompat.startForegroundService(activity, vpnIntent)
+                            }
+                        }
+                    }
+                }
+        }
+
+        allJobs.add(stateChangeJob)
+        allJobs.add(eventJob)
+    }
+
+    override fun onCleared() {
+        allJobs.forEach { it.cancel() }
+        allJobs.clear()
+    }
 }
 
 @Composable
 fun rememberTerracottaViewModel(
-    keyTag: String
+    keyTag: String,
+    eventViewModel: EventViewModel,
+    getUserName: () -> String?
 ): TerracottaViewModel {
     return viewModel(
         key = keyTag
     ) {
-        TerracottaViewModel()
+        TerracottaViewModel(eventViewModel, getUserName)
     }
 }
