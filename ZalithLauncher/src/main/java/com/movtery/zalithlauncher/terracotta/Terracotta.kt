@@ -18,11 +18,10 @@
 
 package com.movtery.zalithlauncher.terracotta
 
-import android.app.Activity
 import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
 import com.movtery.zalithlauncher.coroutine.MutableTransitionStateFlow
-import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
+import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,8 +29,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import net.burningtnt.terracotta.TerracottaAndroidAPI
-import java.io.IOException
-import java.io.StringWriter
 import java.util.concurrent.atomic.AtomicReference
 
 /**
@@ -65,14 +62,16 @@ object Terracotta {
     private val stateRef = AtomicReference<TerracottaState.Ready?>(null)
 
     fun initialize(
-        activity: Activity,
         lifecycleScope: CoroutineScope,
         eventViewModel: EventViewModel
     ) {
         if (initialized) return
         this.eventViewModel = eventViewModel
 
-        metadata = TerracottaAndroidAPI.initialize(activity) {
+        metadata = TerracottaAndroidAPI.initialize(
+            PathManager.DIR_TERRACOTTA.absolutePath,
+            PathManager.FILE_TERRACOTTA_LOG.absolutePath
+        ) {
             eventViewModel.sendEvent(EventViewModel.Event.Terracotta.RequestVPN)
             lifecycleScope.startNotificationJob()
         }
@@ -132,24 +131,6 @@ object Terracotta {
 
     fun getMetadata(): TerracottaAndroidAPI.Metadata =
         metadata ?: TerracottaAndroidAPI.Metadata("unknown", 0, "unknown")
-
-    fun collectLogs(): String? {
-        if (!initialized) return null
-        return try {
-            TerracottaAndroidAPI.collectLogs().use { reader ->
-                val writer = StringWriter()
-                val buf = CharArray(4096)
-                var n: Int
-                while (reader.read(buf).also { n = it } != -1) {
-                    writer.write(buf, 0, n)
-                }
-                writer.toString()
-            }
-        } catch (e: IOException) {
-            e.message?.let { lWarning(it) }
-            "Failed to collect logs: ${e.message}"
-        }
-    }
 
     @Deprecated("This API is exposed for debug purpose.")
     fun testNativePanic() {

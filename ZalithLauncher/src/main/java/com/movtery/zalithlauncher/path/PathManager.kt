@@ -45,6 +45,7 @@ class PathManager {
         lateinit var DIR_NATIVE_LOGS: File
         lateinit var DIR_IMAGE_CACHE: File
         lateinit var DIR_CONTROL_LAYOUTS: File
+        lateinit var DIR_TERRACOTTA: File
 
         lateinit var FILE_CRASH_REPORT: File
         lateinit var FILE_SETTINGS: File
@@ -75,6 +76,7 @@ class PathManager {
             DIR_NATIVE_LOGS = File(DIR_LAUNCHER_LOGS, "native")
             DIR_IMAGE_CACHE = File(DIR_CACHE, "images")
             DIR_CONTROL_LAYOUTS = File(DIR_FILES_EXTERNAL, "control_layouts")
+            DIR_TERRACOTTA = File(DIR_FILES_PRIVATE, "net.burningtnt.terracotta")
 
             FILE_CRASH_REPORT = File(DIR_LAUNCHER_LOGS, "launcher_crash.log")
             FILE_SETTINGS = File(DIR_FILES_PRIVATE, "settings.json")
@@ -102,6 +104,7 @@ class PathManager {
             DIR_NATIVE_LOGS.mkdirs()
             DIR_IMAGE_CACHE.mkdirs()
             DIR_CONTROL_LAYOUTS.mkdirs()
+            DIR_TERRACOTTA.mkdirs()
         }
     }
 }

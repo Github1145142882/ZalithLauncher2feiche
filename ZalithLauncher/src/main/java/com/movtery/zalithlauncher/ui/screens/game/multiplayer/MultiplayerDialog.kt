@@ -39,7 +39,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -77,7 +76,6 @@ import com.movtery.zalithlauncher.ui.components.MarqueeText
  * @param onHostCopyCode 房主复制房间邀请码
  * @param onGuestPositive 房客正确输入邀请码
  * @param onGuestCopyUrl 房客复制备用链接
- * @param onCollectLogs 导出联机核心日志
  * @param onBack 退出当前步骤
  */
 @Composable
@@ -92,7 +90,6 @@ fun MultiplayerDialog(
     onHostCopyCode: (TerracottaState.HostOK) -> Unit,
     onGuestPositive: (roomCode: String) -> Unit,
     onGuestCopyUrl: (TerracottaState.GuestOK) -> Unit,
-    onCollectLogs: () -> Unit,
     onBack: () -> Unit
 ) {
     Dialog(
@@ -210,8 +207,7 @@ fun MultiplayerDialog(
                             ExceptionUI(
                                 modifier = commonModifier,
                                 title = stringResource(dialogState.getEnumType().textRes),
-                                onExit = onBack,
-                                onCollectLogs = onCollectLogs
+                                onExit = onBack
                             )
                         }
                     }
@@ -431,7 +427,6 @@ private fun TerracottaProfileLayout(
 private fun ExceptionUI(
     title: String,
     onExit: () -> Unit,
-    onCollectLogs: () -> Unit,
     modifier: Modifier = Modifier,
     scrollState: ScrollState = rememberScrollState()
 ) {
@@ -448,28 +443,19 @@ private fun ExceptionUI(
         ) {
             Text(text = title)
             HorizontalDivider(modifier = Modifier.fillMaxWidth())
-        }
-        //按钮部分
-        Column(
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            //退出按钮
-            SimpleRowButton(
-                modifier = Modifier.fillMaxWidth(),
-                icon = Icons.AutoMirrored.Default.ArrowBack,
-                title = stringResource(R.string.terracotta_back),
-                description = stringResource(R.string.terracotta_status_exception_back),
-                onClick = onExit
-            )
-            //导出日志按钮
-            SimpleRowButton(
-                modifier = Modifier.fillMaxWidth(),
-                icon = Icons.Default.IosShare,
-                title = stringResource(R.string.terracotta_export_log),
-                description = stringResource(R.string.terracotta_export_log_desc),
-                onClick = onCollectLogs
+            Text(
+                text = stringResource(R.string.terracotta_export_log),
+                style = MaterialTheme.typography.labelMedium
             )
         }
+        //退出按钮
+        SimpleRowButton(
+            modifier = Modifier.fillMaxWidth(),
+            icon = Icons.AutoMirrored.Default.ArrowBack,
+            title = stringResource(R.string.terracotta_back),
+            description = stringResource(R.string.terracotta_status_exception_back),
+            onClick = onExit
+        )
     }
 }
 

@@ -8,12 +8,9 @@
     <string name="terracotta_back">退出</string>
     <string name="terracotta_enable">启用多人联机</string>
     <string name="terracotta_feedback_title">填写反馈表</string>
-    <string name="terracotta_export_log">导出联机核心日志</string>
-    <string name="terracotta_export_log_desc">为分析错误提供更多信息</string>
-    <string name="terracotta_export_log_done">联机核心日志成功导出至日志文件夹</string>
-    <string name="terracotta_export_log_failed">无法导出日志</string>
+    <string name="terracotta_export_log">可在启动器多人联机页面中分享日志，为分析错误提供更多信息</string>
     <string name="terracotta_export_log_share">分享联机核心日志</string>
-    <string name="terracotta_export_log_share_null">未找到联机核心日志，请先在游戏内联机菜单导出日志</string>
+    <string name="terracotta_export_log_share_null">未找到联机核心日志</string>
     <string name="terracotta_status_uninitialized_desc">您承诺，在多人联机全过程中，您将严格遵守您所在国家或地区的全部法律法规。</string>
     <string name="terracotta_confirm_title">用户须知</string>
     <string name="terracotta_confirm_software">陶瓦联机是第三方开源自由软件，您在使用过程中所遇到的问题请通过相关渠道进行反馈。</string>

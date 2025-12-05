@@ -124,9 +124,6 @@ fun TerracottaOperation(
                 onGuestCopyUrl = { state ->
                     viewModel.copyServerAddress(state)
                 },
-                onCollectLogs = {
-                    viewModel.collectLogs()
-                },
                 onBack = {
                     Terracotta.setWaiting(true)
                 }

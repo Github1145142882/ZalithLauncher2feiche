@@ -33,13 +33,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.launch.handler.GameHandler
-import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.terracotta.Terracotta
 import com.movtery.zalithlauncher.terracotta.TerracottaState
 import com.movtery.zalithlauncher.terracotta.TerracottaVPNService
 import com.movtery.zalithlauncher.terracotta.profile.TerracottaProfile
 import com.movtery.zalithlauncher.utils.copyText
-import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -48,8 +46,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class TerracottaViewModel(
@@ -142,32 +138,6 @@ class TerracottaViewModel(
         Toast.makeText(context, toast(context), Toast.LENGTH_SHORT).show()
     }
 
-    private val logMutex = Mutex()
-    /**
-     * 导出联机核心日志
-     */
-    fun collectLogs() {
-        viewModelScope.launch(Dispatchers.IO) {
-            logMutex.withLock {
-                val logString = Terracotta.collectLogs()
-                val logFile = PathManager.FILE_TERRACOTTA_LOG
-                val context = gameHandler.activity
-
-                runCatching {
-                    logFile.writeText(logString!!)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, context.getString(R.string.terracotta_export_log_done), Toast.LENGTH_SHORT).show()
-                    }
-                }.onFailure {
-                    lWarning("Failed to export terracotta's logs!", it)
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(context, context.getString(R.string.terracotta_export_log_failed), Toast.LENGTH_SHORT).show()
-                    }
-                }
-            }
-        }
-    }
-
     /**
      * 更新当前陶瓦联机的玩家列表
      */
@@ -182,7 +152,7 @@ class TerracottaViewModel(
      * 初始化陶瓦联机
      */
     private fun initialize() {
-        Terracotta.initialize(gameHandler.activity, viewModelScope, eventViewModel)
+        Terracotta.initialize(viewModelScope, eventViewModel)
         Terracotta.setWaiting(true)
 
         val metadata = Terracotta.getMetadata()
