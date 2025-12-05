@@ -290,6 +290,7 @@ private fun ModPackInstallOperation(
         is ModPackInstallOperation.None -> {}
         is ModPackInstallOperation.WarningForNotification -> {
             NotificationCheck(
+                text = stringResource(R.string.notification_data_jvm_service_message),
                 onGranted = {
                     //权限被授予，开始安装
                     updateOperation(ModPackInstallOperation.Warning(operation.version, operation.iconUrl))

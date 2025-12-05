@@ -256,6 +256,7 @@ private fun GameInstallOperation(
         is GameInstallOperation.None -> {}
         is GameInstallOperation.WarningForNotification -> {
             NotificationCheck(
+                text = stringResource(R.string.notification_data_jvm_service_message),
                 onGranted = {
                     //权限被授予，开始安装
                     onInstall(gameInstallOperation.info)

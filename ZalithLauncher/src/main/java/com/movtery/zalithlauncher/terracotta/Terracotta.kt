@@ -19,11 +19,9 @@
 package com.movtery.zalithlauncher.terracotta
 
 import android.app.Activity
-import android.content.Context
 import com.google.gson.JsonParseException
 import com.google.gson.reflect.TypeToken
 import com.movtery.zalithlauncher.coroutine.MutableTransitionStateFlow
-import com.movtery.zalithlauncher.terracotta.profile.ProfileKind
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -127,10 +125,6 @@ object Terracotta {
         return TerracottaAndroidAPI.setGuesting(room, player)
     }
 
-    fun parseException(context: Context, e: TerracottaState.Exception): String {
-        return TODO("直接用e.getEnumType().textRes")
-    }
-
     fun parseRoomCode(room: String?): TerracottaAndroidAPI.RoomType? {
         if (!initialized || room == null) return null
         return TerracottaAndroidAPI.parseRoomCode(room)
@@ -178,7 +172,8 @@ object Terracotta {
         notificationJob = launch(Dispatchers.Default) {
             state.collect { state ->
                 if (state != null && state !is TerracottaState.Waiting) {
-                    eventViewModel?.sendEvent(EventViewModel.Event.Terracotta.VPNUpdateState("terracotta_status_$state")) //TODO 本地化
+                    val stringRes = state.localStringRes()
+                    eventViewModel?.sendEvent(EventViewModel.Event.Terracotta.VPNUpdateState(stringRes))
                 }
             }
         }

@@ -37,6 +37,8 @@ import com.movtery.zalithlauncher.notification.NotificationManager
  */
 @Composable
 fun NotificationCheck(
+    title: String = stringResource(R.string.notification_title),
+    text: String,
     onGranted: () -> Unit = {},
     onIgnore: () -> Unit = {},
     onDismiss: () -> Unit = {}
@@ -53,10 +55,8 @@ fun NotificationCheck(
         }
 
     SimpleAlertDialog(
-        title = stringResource(R.string.notification_title),
-        text = {
-            Text(text = stringResource(R.string.notification_data_jvm_service_message))
-        },
+        title = title,
+        text = { Text(text = text) },
         confirmText = stringResource(R.string.notification_request),
         dismissText = stringResource(R.string.generic_ignore),
         onConfirm = {

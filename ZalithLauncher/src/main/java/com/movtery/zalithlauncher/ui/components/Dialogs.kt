@@ -119,6 +119,7 @@ fun SimpleAlertDialog(
  *
  * @param title 对话框标题
  * @param text 对话框内容
+ * @param dismissByDialog 是否允许Dialog自己请求关闭
  * @param onDismiss 点击确认或对话框外部的回调
  */
 @Composable
@@ -126,10 +127,13 @@ fun SimpleAlertDialog(
     title: String,
     text: String,
     confirmText: String = stringResource(R.string.generic_confirm),
+    dismissByDialog: Boolean = true,
     onDismiss: () -> Unit
 ) {
     AlertDialog(
-        onDismissRequest = onDismiss,
+        onDismissRequest = {
+            if (dismissByDialog) onDismiss()
+        },
         title = {
             Text(
                 text = title,

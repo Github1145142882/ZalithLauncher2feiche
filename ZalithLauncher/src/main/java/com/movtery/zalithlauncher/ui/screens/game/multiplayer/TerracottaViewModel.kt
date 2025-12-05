@@ -33,11 +33,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.launch.handler.GameHandler
+import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.terracotta.Terracotta
 import com.movtery.zalithlauncher.terracotta.TerracottaState
 import com.movtery.zalithlauncher.terracotta.TerracottaVPNService
 import com.movtery.zalithlauncher.terracotta.profile.TerracottaProfile
 import com.movtery.zalithlauncher.utils.copyText
+import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -46,6 +48,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 class TerracottaViewModel(
@@ -74,6 +78,11 @@ class TerracottaViewModel(
      * VPN权限申请，由TerracottaOperation设置
      */
     var vpnLauncher: ManagedActivityResultLauncher<Intent, ActivityResult>? = null
+
+    /**
+     * 在等待状态页面中是否允许进行交互
+     */
+    var isWaitingInteractive by mutableStateOf(false)
 
     private val _profiles = MutableStateFlow<List<TerracottaProfile>>(emptyList())
     /**
@@ -133,6 +142,32 @@ class TerracottaViewModel(
         Toast.makeText(context, toast(context), Toast.LENGTH_SHORT).show()
     }
 
+    private val logMutex = Mutex()
+    /**
+     * 导出联机核心日志
+     */
+    fun collectLogs() {
+        viewModelScope.launch(Dispatchers.IO) {
+            logMutex.withLock {
+                val logString = Terracotta.collectLogs()
+                val logFile = PathManager.FILE_TERRACOTTA_LOG
+                val context = gameHandler.activity
+
+                runCatching {
+                    logFile.writeText(logString!!)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, context.getString(R.string.terracotta_export_log_done), Toast.LENGTH_SHORT).show()
+                    }
+                }.onFailure {
+                    lWarning("Failed to export terracotta's logs!", it)
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(context, context.getString(R.string.terracotta_export_log_failed), Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * 更新当前陶瓦联机的玩家列表
      */
@@ -160,28 +195,40 @@ class TerracottaViewModel(
 
         val stateChangeJob = viewModelScope.launch {
             Terracotta.stateChanges.collect { (old, new) ->
-                if (new is TerracottaState.HostOK) {
-                    if (old !is TerracottaState.HostOK) {
-                        //刚切换到这个状态，默认复制一次邀请码
-                        copyInviteCode(new)
-                        //然后首次更新玩家列表状态
-                        updateProfiles(new.profiles)
+                when (new) {
+                    is TerracottaState.Waiting -> {
+                        if (old !is TerracottaState.Waiting) {
+                            //首次或再次进入等待大厅
+                            isWaitingInteractive = true
+                        }
                     }
-                    if (new.isForkOf(old)) {
-                        updateProfiles(new.profiles)
-                        return@collect
+                    is TerracottaState.HostOK -> {
+                        if (old !is TerracottaState.HostOK) {
+                            //刚切换到这个状态，默认复制一次邀请码
+                            copyInviteCode(new)
+                            //然后首次更新玩家列表状态
+                            updateProfiles(new.profiles)
+                        }
+                        if (new.isForkOf(old)) {
+                            updateProfiles(new.profiles)
+                            return@collect
+                        }
                     }
-                } else if (new is TerracottaState.GuestOK) {
-                    if (old !is TerracottaState.GuestOK) {
-                        updateProfiles(new.profiles)
+                    is TerracottaState.GuestOK -> {
+                        if (old !is TerracottaState.GuestOK) {
+                            updateProfiles(new.profiles)
+                        }
+                        if (new.isForkOf(old)) {
+                            updateProfiles(new.profiles)
+                            return@collect
+                        }
                     }
-                    if (new.isForkOf(old)) {
-                        updateProfiles(new.profiles)
-                        return@collect
+                    else -> {
+                        if (_profiles.value.isNotEmpty()) {
+                            //当前已经不在房间内，所以需要清空所有玩家配置
+                            updateProfiles(emptyList())
+                        }
                     }
-                } else if (_profiles.value.isNotEmpty()) {
-                    //当前已经不在房间内，所以需要清空所有玩家配置
-                    updateProfiles(emptyList())
                 }
                 dialogState = new
             }
@@ -208,7 +255,7 @@ class TerracottaViewModel(
                             withContext(Dispatchers.Main) {
                                 val vpnIntent = Intent(activity, TerracottaVPNService::class.java)
                                     .setAction(TerracottaVPNService.ACTION_UPDATE_STATE)
-                                    .putExtra(TerracottaVPNService.EXTRA_STATE_TEXT, event.text)
+                                    .putExtra(TerracottaVPNService.EXTRA_STATE_TEXT, event.stringRes)
                                 activity.startForegroundService(vpnIntent)
                             }
                         }

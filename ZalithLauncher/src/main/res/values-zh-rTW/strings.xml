@@ -107,6 +107,7 @@
     <string name="notification_data_jvm_service_message">為使安裝順利進行，啟動器需要在前景執行安裝程式。我們會嘗試啟動一個前景服務來確保穩定性，但這需要開啟通知權限。能協助我們開啟通知權限嗎？這樣可以避免安裝中斷喔！</string>
     <string name="notification_data_jvm_service_name">前景安裝服務</string>
     <string name="notification_data_jvm_service_running">正在透過前景服務安裝遊戲中</string>
+    <string name="notification_data_terracotta_message">在多人連線的過程中，啟動器會使用前台服務來顯示當前連線狀態，因此需要您開啟通知權限。</string>
     <!--  麥克風  -->
     <string name="microphone_check_title">檢查麥克風輸入</string>
     <string name="microphone_check_volume">音量：%d</string>

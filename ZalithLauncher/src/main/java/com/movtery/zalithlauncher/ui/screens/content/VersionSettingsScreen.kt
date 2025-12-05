@@ -473,6 +473,7 @@ private fun UpdateLoaderOperation(
         is UpdateLoaderOperation.None -> {}
         is UpdateLoaderOperation.WarningForNotification -> {
             NotificationCheck(
+                text = stringResource(R.string.notification_data_jvm_service_message),
                 onGranted = {
                     changeOperation(UpdateLoaderOperation.Tip(operation.diffs, operation.info))
                 },

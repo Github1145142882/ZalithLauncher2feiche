@@ -71,7 +71,8 @@ public class TerracottaVPNService extends VpnService {
 
         if (ACTION_UPDATE_STATE.equals(action)) {
             if (intent.hasExtra(EXTRA_STATE_TEXT)) {
-                currentStateText = intent.getStringExtra(EXTRA_STATE_TEXT);
+                int stringRes = intent.getIntExtra(EXTRA_STATE_TEXT, -1);
+                currentStateText = getString(stringRes);
             }
 
             if (!isStopping) {
@@ -86,7 +87,8 @@ public class TerracottaVPNService extends VpnService {
         if (ACTION_REPOST.equals(action) && fromDelete && !isStopping) {
             Log.d(TAG, "Repost VPN notification after user cleared it.");
             if (intent.hasExtra(EXTRA_STATE_TEXT)) {
-                currentStateText = intent.getStringExtra(EXTRA_STATE_TEXT);
+                int stringRes = intent.getIntExtra(EXTRA_STATE_TEXT, -1);
+                currentStateText = getString(stringRes);
             }
             Notification notification = buildVpnNotification();
             if (notification == null)
@@ -143,7 +145,7 @@ public class TerracottaVPNService extends VpnService {
         if (currentStateText == null) {
             TerracottaState.Ready state = Terracotta.INSTANCE.getState().getValue();
             if (state != null && !(state instanceof TerracottaState.Waiting)) {
-                currentStateText = "terracotta_status_" + state; //TODO 本地化
+                currentStateText = getString(state.localStringRes());
             }
         }
         String contentText = String.format(getString(R.string.terracotta_notification_desc), modeText, currentStateText);

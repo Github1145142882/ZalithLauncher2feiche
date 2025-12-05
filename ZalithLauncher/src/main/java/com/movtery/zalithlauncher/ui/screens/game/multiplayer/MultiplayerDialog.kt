@@ -39,6 +39,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -68,6 +69,7 @@ import com.movtery.zalithlauncher.ui.components.MarqueeText
 
 /**
  * 多人联机菜单Dialog
+ * @param isWaitingInteractive 在等待页面是否可以进行交互
  * @param terracottaVer 陶瓦联机核心版本号
  * @param easyTierVer EasyTier版本号
  * @param profiles 陶瓦联机当前房间所有玩家配置
@@ -75,12 +77,14 @@ import com.movtery.zalithlauncher.ui.components.MarqueeText
  * @param onHostCopyCode 房主复制房间邀请码
  * @param onGuestPositive 房客正确输入邀请码
  * @param onGuestCopyUrl 房客复制备用链接
+ * @param onCollectLogs 导出联机核心日志
  * @param onBack 退出当前步骤
  */
 @Composable
 fun MultiplayerDialog(
     onClose: () -> Unit,
     dialogState: TerracottaState.Ready?,
+    isWaitingInteractive: Boolean,
     terracottaVer: String?,
     easyTierVer: String?,
     profiles: List<TerracottaProfile>,
@@ -88,6 +92,7 @@ fun MultiplayerDialog(
     onHostCopyCode: (TerracottaState.HostOK) -> Unit,
     onGuestPositive: (roomCode: String) -> Unit,
     onGuestCopyUrl: (TerracottaState.GuestOK) -> Unit,
+    onCollectLogs: () -> Unit,
     onBack: () -> Unit
 ) {
     Dialog(
@@ -135,7 +140,8 @@ fun MultiplayerDialog(
                             WaitingUI(
                                 modifier = commonModifier,
                                 onHostClick = onHostRoleClick,
-                                onGuestPositive = onGuestPositive
+                                onGuestPositive = onGuestPositive,
+                                isInteractive = isWaitingInteractive
                             )
                         }
                         is TerracottaState.HostScanning -> {
@@ -143,7 +149,10 @@ fun MultiplayerDialog(
                                 modifier = commonModifier,
                                 progress = stringResource(R.string.terracotta_status_host_scanning),
                                 text = {
-                                    Text(text = stringResource(R.string.terracotta_status_host_scanning_desc))
+                                    Text(
+                                        text = stringResource(R.string.terracotta_status_host_scanning_desc),
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
                                 },
                                 backDescription = stringResource(R.string.terracotta_status_host_scanning_back),
                                 onBack = onBack
@@ -198,7 +207,12 @@ fun MultiplayerDialog(
                             )
                         }
                         is TerracottaState.Exception -> {
-
+                            ExceptionUI(
+                                modifier = commonModifier,
+                                title = stringResource(dialogState.getEnumType().textRes),
+                                onExit = onBack,
+                                onCollectLogs = onCollectLogs
+                            )
                         }
                     }
 
@@ -238,6 +252,7 @@ fun MultiplayerDialog(
  */
 @Composable
 private fun WaitingUI(
+    isInteractive: Boolean,
     onHostClick: () -> Unit,
     onGuestPositive: (roomCode: String) -> Unit,
     modifier: Modifier = Modifier,
@@ -255,7 +270,8 @@ private fun WaitingUI(
             icon = Icons.Filled.Home,
             title = stringResource(R.string.terracotta_status_waiting_host_title),
             description = stringResource(R.string.terracotta_status_waiting_host_desc),
-            onClick = onHostClick
+            onClick = onHostClick,
+            enabled = isInteractive
         )
 
         //房客
@@ -266,7 +282,8 @@ private fun WaitingUI(
             description = stringResource(R.string.terracotta_status_waiting_guest_desc),
             onClick = {
                 guestOperation = GuestWaitingOperation.OnClick
-            }
+            },
+            enabled = isInteractive
         )
     }
 
@@ -407,6 +424,55 @@ private fun TerracottaProfileLayout(
     }
 }
 
+/**
+ * 出现错误
+ */
+@Composable
+private fun ExceptionUI(
+    title: String,
+    onExit: () -> Unit,
+    onCollectLogs: () -> Unit,
+    modifier: Modifier = Modifier,
+    scrollState: ScrollState = rememberScrollState()
+) {
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        //文字部分
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(scrollState),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            Text(text = title)
+            HorizontalDivider(modifier = Modifier.fillMaxWidth())
+        }
+        //按钮部分
+        Column(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            //退出按钮
+            SimpleRowButton(
+                modifier = Modifier.fillMaxWidth(),
+                icon = Icons.AutoMirrored.Default.ArrowBack,
+                title = stringResource(R.string.terracotta_back),
+                description = stringResource(R.string.terracotta_status_exception_back),
+                onClick = onExit
+            )
+            //导出日志按钮
+            SimpleRowButton(
+                modifier = Modifier.fillMaxWidth(),
+                icon = Icons.Default.IosShare,
+                title = stringResource(R.string.terracotta_export_log),
+                description = stringResource(R.string.terracotta_export_log_desc),
+                onClick = onCollectLogs
+            )
+        }
+    }
+}
+
 @Composable
 private fun CommonProgressLayout(
     progress: String,
@@ -453,11 +519,13 @@ private fun SimpleCardButton(
     title: String,
     description: String,
     onClick: () -> Unit,
+    enabled: Boolean = true
 ) {
     BackgroundCard(
         modifier = modifier,
         influencedByBackground = false,
-        onClick = onClick
+        onClick = onClick,
+        enabled = enabled
     ) {
         Row(
             modifier = Modifier

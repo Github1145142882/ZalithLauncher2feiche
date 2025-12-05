@@ -78,6 +78,7 @@ fun BackgroundCard(
     elevation: CardElevation = CardDefaults.cardElevation(),
     border: BorderStroke? = null,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Card(
@@ -87,6 +88,7 @@ fun BackgroundCard(
         elevation = elevation,
         border = border,
         onClick = onClick,
+        enabled = enabled,
         content = content
     )
 }

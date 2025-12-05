@@ -1,5 +1,6 @@
 package com.movtery.zalithlauncher.terracotta
 
+import androidx.annotation.StringRes
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.JsonParseException
@@ -13,36 +14,12 @@ import com.google.gson.stream.JsonWriter
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.terracotta.TerracottaState.Exception.Type
 import com.movtery.zalithlauncher.terracotta.profile.TerracottaProfile
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * [Modified from HMCL](https://github.com/HMCL-dev/HMCL/blob/bd6a6fa/HMCL/src/main/java/org/jackhuang/hmcl/terracotta/TerracottaState.java)
  */
 sealed class TerracottaState {
-    open fun isUIFakeState(): Boolean = false
     open fun isForkOf(state: TerracottaState?): Boolean = false
-
-    object Bootstrap : TerracottaState()
-
-    class Uninitialized(val hasLegacy: Boolean) : TerracottaState()
-
-    class Preparing(initialProgress: Double = 0.0) : TerracottaState(), ITerracottaProviderContext {
-        private val _progress = MutableStateFlow(initialProgress)
-        val progress: StateFlow<Double> get() = _progress
-
-        private val installFence = AtomicBoolean(false)
-
-        fun setProgress(value: Double) {
-            _progress.value = value
-        }
-
-        override fun requestInstallFence(): Boolean = installFence.compareAndSet(false, true)
-        override fun hasInstallFence(): Boolean = !installFence.get()
-    }
-
-    class Launching : TerracottaState()
 
     sealed class PortSpecific(
         @Transient
@@ -56,20 +33,23 @@ sealed class TerracottaState {
         @SerializedName("state")
         val state: String
     ) : PortSpecific(port) {
-        override fun isUIFakeState(): Boolean = index == -1
-
-        override fun toString(): String {
-            val simple = javaClass.getSimpleName()
-            val withUnderscore = simple.replace("([a-z])([A-Z])".toRegex(), "$1_$2")
-            return withUnderscore.lowercase()
-        }
+        @StringRes
+        abstract fun localStringRes(): Int
     }
 
     class Unknown(port: Int) : PortSpecific(port)
 
-    class Waiting(port: Int, index: Int, state: String) : Ready(port, index, state)
-    class HostScanning(port: Int, index: Int, state: String) : Ready(port, index, state)
-    class HostStarting(port: Int, index: Int, state: String) : Ready(port, index, state)
+    class Waiting(port: Int, index: Int, state: String) : Ready(port, index, state) {
+        override fun localStringRes(): Int = error("No op.")
+    }
+
+    class HostScanning(port: Int, index: Int, state: String) : Ready(port, index, state) {
+        override fun localStringRes(): Int = R.string.terracotta_status_host_scanning
+    }
+
+    class HostStarting(port: Int, index: Int, state: String) : Ready(port, index, state) {
+        override fun localStringRes(): Int = R.string.terracotta_status_host_starting
+    }
 
     class HostOK(
         port: Int,
@@ -83,11 +63,15 @@ sealed class TerracottaState {
         val profiles: List<TerracottaProfile>?
     ) : Ready(port, index, state) {
 
+        override fun localStringRes(): Int = R.string.terracotta_status_host_ok
+
         override fun isForkOf(state: TerracottaState?): Boolean =
             state is HostOK && (this.index - state.index) <= profileIndex
     }
 
-    class GuestStarting(port: Int, index: Int, state: String) : Ready(port, index, state)
+    class GuestStarting(port: Int, index: Int, state: String) : Ready(port, index, state) {
+        override fun localStringRes(): Int = R.string.terracotta_status_guest_starting
+    }
 
     class GuestOK(
         port: Int,
@@ -100,6 +84,8 @@ sealed class TerracottaState {
         @SerializedName("profiles")
         val profiles: List<TerracottaProfile>?
     ) : Ready(port, index, state) {
+
+        override fun localStringRes(): Int = R.string.terracotta_status_guest_ok
 
         override fun isForkOf(state: TerracottaState?): Boolean =
             state is GuestOK && (this.index - state.index) <= profileIndex
@@ -115,19 +101,9 @@ sealed class TerracottaState {
             SCAFFOLDING_INVALID_RESPONSE(R.string.terracotta_status_exception_desc_scaffolding_invalid_response)
         }
 
+        override fun localStringRes(): Int = R.string.terracotta_status_exception
+
         fun getEnumType(): Type = Type.entries[type]
-    }
-
-    class Fatal(val type: Type) : TerracottaState() {
-        enum class Type {
-            OS,
-            NETWORK,
-            INSTALL,
-            TERRACOTTA,
-            UNKNOWN
-        }
-
-        fun isRecoverable(): Boolean = type != Type.UNKNOWN
     }
 
     companion object {
@@ -137,11 +113,6 @@ sealed class TerracottaState {
 
         val TerracottaStateGson = createGson()
     }
-}
-
-interface ITerracottaProviderContext {
-    fun requestInstallFence(): Boolean
-    fun hasInstallFence(): Boolean
 }
 
 class TerracottaStateTypeAdapterFactory : TypeAdapterFactory {

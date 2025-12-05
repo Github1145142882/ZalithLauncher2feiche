@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.content
 
+import android.widget.Toast
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -47,35 +48,43 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.notification.NotificationManager
+import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.path.URL_EASYTIER
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.terracotta.Terracotta
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedRow
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.MarqueeText
+import com.movtery.zalithlauncher.ui.components.NotificationCheck
+import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.influencedByBackgroundColor
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsBackground
+import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
-import com.movtery.zalithlauncher.viewmodel.influencedByBackground
 
 @Composable
 fun MultiplayerScreen(
     backScreenViewModel: ScreenBackStackViewModel,
     eventViewModel: EventViewModel
 ) {
+    val context = LocalContext.current
+
     BaseScreen(
         screenKey = NormalNavKey.Multiplayer,
         currentKey = backScreenViewModel.mainScreen.currentKey
@@ -100,9 +109,57 @@ fun MultiplayerScreen(
                         .weight(0.5f)
                         .offset { IntOffset(x = xOffset.roundToPx(), y = 0) }
                         .padding(end = 12.dp),
-                    eventViewModel = eventViewModel
+                    eventViewModel = eventViewModel,
+                    onShareLogs = {
+                        val logFile = PathManager.FILE_TERRACOTTA_LOG
+                        if (logFile.exists()) {
+                            shareFile(context, logFile)
+                        } else {
+                            Toast.makeText(context, context.getString(R.string.terracotta_export_log_share_null), Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 )
             }
+        }
+    }
+}
+
+private sealed interface MultiplayerOperation {
+    data object None : MultiplayerOperation
+    data object Notice : MultiplayerOperation
+    /** 没有通知权限，提醒用户 */
+    data object WarningNotification : MultiplayerOperation
+}
+
+@Composable
+private fun MultiplayerOperation(
+    operation: MultiplayerOperation,
+    onChange: (MultiplayerOperation) -> Unit,
+    onNoticeRead: () -> Unit
+) {
+    when (operation) {
+        is MultiplayerOperation.None -> {}
+        is MultiplayerOperation.Notice -> {
+            SimpleAlertDialog(
+                title = stringResource(R.string.generic_warning),
+                text = stringResource(R.string.terracotta_status_uninitialized_desc),
+                dismissByDialog = false,
+                onDismiss = onNoticeRead
+            )
+        }
+        is MultiplayerOperation.WarningNotification -> {
+            NotificationCheck(
+                text = stringResource(R.string.notification_data_terracotta_message),
+                onGranted = {
+                    onChange(MultiplayerOperation.None)
+                },
+                onIgnore = {
+                    onChange(MultiplayerOperation.None)
+                },
+                onDismiss = {
+                    onChange(MultiplayerOperation.None)
+                }
+            )
         }
     }
 }
@@ -113,8 +170,25 @@ fun MultiplayerScreen(
 @Composable
 private fun MainMenu(
     modifier: Modifier = Modifier,
-    eventViewModel: EventViewModel
+    eventViewModel: EventViewModel,
+    onShareLogs: () -> Unit
 ) {
+    val context = LocalContext.current
+    var operation by remember { mutableStateOf<MultiplayerOperation>(MultiplayerOperation.None) }
+
+    MultiplayerOperation(
+        operation = operation,
+        onChange = { operation = it },
+        onNoticeRead = {
+            AllSettings.terracottaNoticeVer.save(Terracotta.TERRACOTTA_USER_NOTICE_VERSION)
+            operation = if (!NotificationManager.checkNotificationEnabled(context)) {
+                MultiplayerOperation.WarningNotification
+            } else {
+                MultiplayerOperation.None
+            }
+        }
+    )
+
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -144,16 +218,30 @@ private fun MainMenu(
                 modifier = Modifier.fillMaxWidth(),
                 unit = AllSettings.enableTerracotta,
                 title = stringResource(R.string.terracotta_enable),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                onCheckedChange = { value ->
+                    if (value) {
+                        when {
+                            AllSettings.terracottaNoticeVer.getValue() < Terracotta.TERRACOTTA_USER_NOTICE_VERSION -> {
+                                //未阅读公告
+                                operation = MultiplayerOperation.Notice
+                            }
+                            !NotificationManager.checkNotificationEnabled(context) -> {
+                                operation = MultiplayerOperation.WarningNotification
+                            }
+                        }
+                    }
+                }
             )
 
             val terracottaEnabled = AllSettings.enableTerracotta.state
 
             //分享联机核心日志
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .clip(shape = RoundedCornerShape(22.0.dp))
-                    .clickable(onClick = {}, enabled = terracottaEnabled)//TODO 分享联机核心日志
+                    .clickable(onClick = onShareLogs, enabled = terracottaEnabled)
                     .padding(horizontal = 8.dp, vertical = 16.dp)
                     .padding(bottom = 4.dp)
                     .alpha(if (terracottaEnabled) 1f else 0.5f)

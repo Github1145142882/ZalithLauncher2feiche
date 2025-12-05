@@ -64,6 +64,8 @@ fun TerracottaOperation(
             ContextCompat.startForegroundService(context, vpnIntent)
         } else {
             TerracottaAndroidAPI.getPendingVpnServiceRequest().reject()
+            Terracotta.setWaiting(true)
+            Toast.makeText(context, context.getString(R.string.terracotta_permission_vpn), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -91,14 +93,17 @@ fun TerracottaOperation(
             MultiplayerDialog(
                 onClose = { viewModel.operation = TerracottaOperation.None },
                 dialogState = viewModel.dialogState,
+                isWaitingInteractive = viewModel.isWaitingInteractive,
                 terracottaVer = viewModel.terracottaVer,
                 easyTierVer = viewModel.easyTierVer,
                 profiles = profiles,
                 onHostRoleClick = {
                     runCatching {
                         Terracotta.setScanning(null, userName)
+                        viewModel.isWaitingInteractive = false
                     }.onFailure { e ->
                         lWarning("Error occurred at \"Terracotta.setScanning(null, userName)\", message = ${e.message}")
+                        viewModel.isWaitingInteractive = true
                     }
                 },
                 onHostCopyCode = { state ->
@@ -107,19 +112,24 @@ fun TerracottaOperation(
                 onGuestPositive = { roomCode ->
                     runCatching {
                         val success = Terracotta.setGuesting(roomCode, userName)
+                        viewModel.isWaitingInteractive = false
                         if (!success) {
                             Toast.makeText(context, context.getString(R.string.terracotta_status_waiting_guest_prompt_invalid), Toast.LENGTH_SHORT).show()
                         }
                     }.onFailure { e ->
                         lWarning("Error occurred at \"Terracotta.setGuesting(roomCode, userName)\", message = ${e.message}")
+                        viewModel.isWaitingInteractive = true
                     }
                 },
                 onGuestCopyUrl = { state ->
                     viewModel.copyServerAddress(state)
                 },
+                onCollectLogs = {
+                    viewModel.collectLogs()
+                },
                 onBack = {
                     Terracotta.setWaiting(true)
-                },
+                }
             )
         }
     }
