@@ -998,5 +998,19 @@
     <string name="control_editor_menu_no_selected_layer_title">Kontrol Katmanı Seçilmedi</string>
     <string name="control_editor_menu_no_selected_layer_message">Lütfen önce hedef olarak bir kontrol katmanı seçin.</string>
     <string name="control_editor_menu_preview_mode">Kontrol Düzeni Önizleme</string>
-    <string name="about_acknowledgements_mcmod">MCMod (mcmod.cn)</string>
+    <string name="about_acknowledgements_mcmod">MCMod(mcmod.cn)</string>
+    <string name="generic_enabled">Açık</string>
+    <string name="generic_disabled">Kapalı</string>
+    <string name="generic_no_matching_items">Eşleşen kayıt bulunamadı</string>
+    <string name="theme_dark_mode_follow_system">Sistemi takip et</string>
+    <string name="game_menu_option_menu_ball_opacity">Menü opaklıgı</string>
+    <string name="versions_update_loader">Yükleyiciyi güncelle</string>
+    <string name="versions_update_loader_waiting_for_others">Diğer öğelerin yüklenmesinin bitmesi bekleniyor</string>
+    <string name="versions_update_loader_diff_message">‘Mevcut oyunun yükleyicisini değiştirmek istediğinizden emin misiniz?</string>
+    <string name="versions_update_loader_diff_change">Değiştir:%1$s %2$s → %3$s</string>
+    <string name="versions_update_loader_diff_remove">Kaldır:%s</string>
+    <string name="versions_update_loader_diff_load">Yükle: %1$s %2$s</string>
+    <string name="versions_update_loader_error_message">Yükleyici yüklenirken bir hata oluştu:</string>
+    <string name="versions_update_loader_success_message">Oyunun yükleyici sürümü başarıyla güncellendi!</string>
+    <string name="settings_launcher_dark_mode_title">Karanlık mod</string>
 </resources>
