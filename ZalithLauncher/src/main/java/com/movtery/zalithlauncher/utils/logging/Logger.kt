@@ -189,9 +189,6 @@ object Logger : CoroutineScope {
     fun lDebug(msg: String, t: Throwable? = null) =
         log(Level.DEBUG, findCaller(), msg, t)
 
-    fun lTrace(msg: String, t: Throwable? = null) =
-        log(Level.TRACE, findCaller(), msg, t)
-
     /**
      * 输出日志
      */

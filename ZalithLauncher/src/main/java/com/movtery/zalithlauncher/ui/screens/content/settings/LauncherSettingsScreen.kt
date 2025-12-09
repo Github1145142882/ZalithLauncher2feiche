@@ -184,6 +184,17 @@ fun LauncherSettingsScreen(
                             enabled = backgroundViewModel.isValid,
                             fineTuningControl = true
                         )
+
+                        SliderSettingsLayout(
+                            modifier = Modifier.fillMaxWidth(),
+                            unit = AllSettings.videoBackgroundVolume,
+                            title = stringResource(R.string.settings_launcher_background_video_volume_title),
+                            summary = stringResource(R.string.settings_launcher_background_video_volume_summary),
+                            valueRange = AllSettings.videoBackgroundVolume.floatRange,
+                            suffix = "%",
+                            enabled = backgroundViewModel.isValid && backgroundViewModel.isVideo,
+                            fineTuningControl = true
+                        )
                     }
                 }
             }

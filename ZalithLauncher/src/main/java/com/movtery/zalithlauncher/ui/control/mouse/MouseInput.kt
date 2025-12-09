@@ -37,6 +37,7 @@ import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.changedToDown
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.isBackPressed
 import androidx.compose.ui.input.pointer.isForwardPressed
 import androidx.compose.ui.input.pointer.isPrimaryPressed
@@ -50,6 +51,7 @@ import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalViewConfiguration
 import com.movtery.zalithlauncher.setting.enums.MouseControlMode
 import com.movtery.zalithlauncher.ui.components.FocusableBox
+import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -135,17 +137,25 @@ fun TouchpadLayout(
                     /** 每个指针的拖动状态 */
                     val dragStates = mutableMapOf<PointerId, DragState>()
 
+                    /** 清除鼠标触摸层的状态 */
+                    fun resetTouchState() {
+                        activePointer = null
+                        dragStates.clear()
+                        longPressJobs.values.forEach { it.cancel() }
+                        longPressJobs.clear()
+                        occupiedPointers.forEach { onReleasePointer(it) }
+                        occupiedPointers.clear()
+                    }
+
                     awaitPointerEventScope {
                         while (true) {
                             val event = awaitPointerEvent()
 
                             event.changes
-                                .filter { it.pressed && !it.previousPressed && !it.isConsumed && it.type == PointerType.Touch }
+                                .filter { it.changedToDown() && it.type == PointerType.Touch }
                                 .forEach { change ->
-                                    if (change.changedToDown()) {
-                                        //刚触摸到屏幕时，触发触摸事件回调
-                                        currentOnTouch()
-                                    }
+                                    //刚触摸到屏幕时，触发触摸事件回调
+                                    currentOnTouch()
 
                                     val pointerId = change.id
                                     //是否被父级标记为仅处理滑动
@@ -230,7 +240,7 @@ fun TouchpadLayout(
 
                             //释放
                             event.changes
-                                .filter { !it.pressed && it.previousPressed && it.type == PointerType.Touch }
+                                .filter { it.changedToUpIgnoreConsumed() && it.type == PointerType.Touch }
                                 .forEach { change ->
                                     val pointerId = change.id
                                     //是否被父级标记为仅处理滑动
@@ -267,6 +277,11 @@ fun TouchpadLayout(
                                         onReleasePointer(pointerId)
                                     }
                                 }
+
+                            if (!event.changes.any { it.pressed && it.type == PointerType.Touch }) {
+                                lDebug("No touch is currently on the screen; clear all states.")
+                                resetTouchState()
+                            }
                         }
                     }
                 }

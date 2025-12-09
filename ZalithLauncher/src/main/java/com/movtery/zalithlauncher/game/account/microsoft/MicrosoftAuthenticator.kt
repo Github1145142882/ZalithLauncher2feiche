@@ -119,7 +119,6 @@ suspend fun getTokenResponse(
 
     while (System.currentTimeMillis() < expireTime) {
         context.ensureActive()
-        if (checkIsReallyCancelled()) throw CancellationException("Authentication cancelled")
 
         try {
             val response: JsonObject = submitForm(
@@ -147,9 +146,11 @@ suspend fun getTokenResponse(
             lDebug("Authentication cancelled")
             throw e
         }
+
+        if (checkIsReallyCancelled()) throw CancellationException("Authentication cancelled")
+
         delay(pollingInterval).also {
             context.ensureActive()
-            if (checkIsReallyCancelled()) throw CancellationException("Authentication cancelled")
         }
     }
     throw HttpRequestTimeoutException("Authentication timed out!", expireTime)

@@ -871,6 +871,8 @@
     <string name="settings_launcher_background_reset_message">您確定要重設啟動器背景嗎？</string>
     <string name="settings_launcher_background_opacity_title">背景元素不透明度</string>
     <string name="settings_launcher_background_opacity_summary">調整背景元素的不透明度，以獲得更好的視覺效果並避免與背景衝突</string>
+    <string name="settings_launcher_background_video_volume_title">影片背景音量</string>
+    <string name="settings_launcher_background_video_volume_summary">當背景內容為影片時，可以透過此選項調整音量</string>
     <string name="just_now">現在</string>
     <string name="minutes_ago">%d 分鐘前</string>
     <string name="hours_ago">%d 小時前</string>

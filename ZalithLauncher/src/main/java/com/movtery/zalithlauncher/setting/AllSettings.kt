@@ -347,6 +347,11 @@ object AllSettings : SettingsRegistry() {
     val launcherBackgroundOpacity = intSetting("launcherBackgroundOpacity", 80, 20..100)
 
     /**
+     * 启动器视频背景音量
+     */
+    val videoBackgroundVolume = intSetting("videoBackgroundVolume", 0, 0..100)
+
+    /**
      * 启动器日志保留天数
      */
     val launcherLogRetentionDays = intSetting("launcherLogRetentionDays", 7, 1..14)

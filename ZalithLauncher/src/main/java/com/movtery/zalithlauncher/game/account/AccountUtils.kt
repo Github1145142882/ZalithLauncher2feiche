@@ -123,7 +123,7 @@ fun microsoftLogin(
                         Toast.makeText(
                             context,
                             context.getString(R.string.account_microsoft_exit_by_user),
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_LONG
                         ).show()
                     }
                 }

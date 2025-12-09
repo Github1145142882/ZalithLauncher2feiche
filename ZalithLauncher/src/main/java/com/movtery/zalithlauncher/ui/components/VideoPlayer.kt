@@ -19,6 +19,7 @@
 package com.movtery.zalithlauncher.ui.components
 
 import android.net.Uri
+import androidx.annotation.FloatRange
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -28,6 +29,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
@@ -42,6 +46,7 @@ import androidx.media3.ui.PlayerView
  * @param autoPlay 准备好后，是否立即播放视频
  * @param loop 是否循环播放视频
  * @param muted 是否开启静音
+ * @param volume 音量
  */
 @OptIn(UnstableApi::class)
 @Composable
@@ -51,6 +56,7 @@ fun VideoPlayer(
     autoPlay: Boolean = true,
     loop: Boolean = true,
     muted: Boolean = true,
+    @FloatRange(from = 0.0, to = 1.0) volume: Float = if (muted) 0.0f else 1.0f,
     resizeMode: Int = AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
     refreshTrigger: Any? = null
 ) {
@@ -64,7 +70,7 @@ fun VideoPlayer(
             setAudioAttributes(audioAttr, false)
 
             repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
-            volume = if (muted) 0f else 1f
+            this@apply.volume = volume
         }
     }
 
@@ -90,8 +96,30 @@ fun VideoPlayer(
         player.repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
     }
 
-    LaunchedEffect(muted) {
-        player.volume = if (muted) 0f else 1f
+    LaunchedEffect(muted, volume) {
+        player.volume = volume
+    }
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> {
+                    player.playWhenReady = autoPlay
+                }
+                Lifecycle.Event.ON_STOP -> {
+                    player.playWhenReady = false
+                }
+                else -> {}
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
     }
 
     DisposableEffect(Unit) {

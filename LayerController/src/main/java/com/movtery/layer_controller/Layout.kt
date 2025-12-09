@@ -222,7 +222,6 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                 when {
                                     targetWidgets.isEmpty() -> {}
                                     else -> {
-                                        var consumeEvent = true
                                         for (targetWidget in targetWidgets) {
                                             if (targetWidget.canProcess()) {
                                                 return@fastForEach //拒绝处理该事件
@@ -237,7 +236,6 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                                 consumeEvent = { value ->
                                                     if (value) {
                                                         change.consume()
-                                                        consumeEvent = false
                                                     } else {
                                                         //将指针标记为仅接受滑动处理
                                                         //期望子级不对点击事件等进行处理
@@ -245,7 +243,6 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                                     }
                                                 }
                                             )
-                                            if (!consumeEvent) break
                                         }
                                     }
                                 }

@@ -41,6 +41,7 @@ import com.movtery.zalithlauncher.game.plugin.renderer.RendererPluginManager
 import com.movtery.zalithlauncher.game.renderer.RendererInterface
 import com.movtery.zalithlauncher.game.renderer.Renderers
 import com.movtery.zalithlauncher.game.version.installed.Version
+import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.VideoPlayer
 import com.movtery.zalithlauncher.utils.checkStoragePermissions
@@ -246,7 +247,8 @@ fun Background(
             VideoPlayer(
                 videoUri = Uri.fromFile(viewModel.backgroundFile),
                 modifier = modifier,
-                refreshTrigger = viewModel.refreshTrigger
+                refreshTrigger = viewModel.refreshTrigger,
+                volume = AllSettings.videoBackgroundVolume.state / 100f
             )
         } else if (isImage) {
             BackgroundImage(

@@ -875,6 +875,8 @@
     <string name="settings_launcher_background_reset_message">你确定要重置启动器的背景吗？</string>
     <string name="settings_launcher_background_opacity_title">背景元素不透明度</string>
     <string name="settings_launcher_background_opacity_summary">调整背景元素的不透明度，以获得更好的视觉效果并避免与背景冲突</string>
+    <string name="settings_launcher_background_video_volume_title">视频背景音量</string>
+    <string name="settings_launcher_background_video_volume_summary">背景内容是视频时，可以通过这个选项调整音量</string>
     <!--  控制  -->
     <string name="control_keyboard_bind_title">绑定按键</string>
     <string name="control_keyboard_bind_summary">请在您的键盘上按下想要绑定的按键</string>
