@@ -37,9 +37,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CenterFocusStrong
 import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.CenterFocusStrong
 import androidx.compose.material.icons.outlined.Visibility
 import androidx.compose.material.icons.outlined.VisibilityOff
 import androidx.compose.material3.Icon
@@ -191,6 +193,8 @@ fun EditorMenu(
     addNewButton: () -> Unit,
     addNewText: () -> Unit,
     openStyleList: () -> Unit,
+    isLayerFocus: Boolean,
+    onLayerFocusChanged: (Boolean) -> Unit,
     isPreviewMode: Boolean,
     onPreviewChanged: (Boolean) -> Unit,
     previewScenario: PreviewScenario,
@@ -391,6 +395,23 @@ fun EditorMenu(
                 text = stringResource(R.string.control_editor_layers_title),
                 style = MaterialTheme.typography.titleMedium
             )
+            //切换控件层聚焦
+            IconButton(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                onClick = {
+                    onLayerFocusChanged(isLayerFocus.not())
+                },
+                enabled = isPreviewMode.not() && selectedLayer != null
+            ) {
+                Crossfade(
+                    targetState = isLayerFocus
+                ) { isFocus ->
+                    Icon(
+                        imageVector = if (isFocus) Icons.Filled.CenterFocusStrong else Icons.Outlined.CenterFocusStrong,
+                        contentDescription = null
+                    )
+                }
+            }
         },
         rightMenuContent = {
             ControlLayerMenu(

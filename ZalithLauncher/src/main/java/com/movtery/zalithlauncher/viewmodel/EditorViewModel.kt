@@ -97,6 +97,11 @@ class EditorViewModel() : ViewModel() {
     var editorWarningOperation by mutableStateOf<EditorWarningOperation>(EditorWarningOperation.None)
 
     /**
+     * 是否开启控件层聚焦模式
+     */
+    var isLayerFocus by mutableStateOf(false)
+
+    /**
      * 是否为预览控制布局模式
      */
     var isPreviewMode by mutableStateOf(false)

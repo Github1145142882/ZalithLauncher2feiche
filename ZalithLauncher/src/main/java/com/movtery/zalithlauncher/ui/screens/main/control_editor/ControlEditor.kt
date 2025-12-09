@@ -115,7 +115,7 @@ fun BoxWithConstraintsScope.ControlEditor(
             enableSnap = AllSettings.editorEnableWidgetSnap.state,
             snapInAllLayers = AllSettings.editorSnapInAllLayers.state,
             snapMode = AllSettings.editorWidgetSnapMode.state,
-            focusedLayer = viewModel.selectedLayer,
+            focusedLayer = viewModel.selectedLayer?.takeIf { viewModel.isLayerFocus },
             isDark = isLauncherInDarkTheme()
         )
     }
@@ -180,6 +180,8 @@ fun BoxWithConstraintsScope.ControlEditor(
         openStyleList = {
             viewModel.editorOperation = EditorOperation.OpenStyleList
         },
+        isLayerFocus = viewModel.isLayerFocus,
+        onLayerFocusChanged = { viewModel.isLayerFocus = it },
         isPreviewMode = viewModel.isPreviewMode,
         onPreviewChanged = { mode ->
             viewModel.applyEditorHide()
