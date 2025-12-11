@@ -133,7 +133,7 @@
     <string name="generic_unpacking">Descompactando %s</string>
     <string name="generic_in_progress">Em progresso</string>
     <string name="generic_anyway">Usar de qualquer maneira</string>
-    <string name="generic_go_it">Entendi</string>
+    <string name="generic_got_it">Entendi</string>
     <string name="generic_file_name">Nome do arquivo: %s</string>
     <string name="generic_file_size">Tamanho do arquivo: %s</string>
     <string name="date_format">MMM d, yyyy, h:mm:ss a</string>
@@ -225,7 +225,7 @@
     <string name="download_assets_failed_to_get_result">Falha ao conseguir resultados da pesquisa: %s. Toque para tentar novamente.</string>
     <string name="download_assets_category_worldgen">Geração de mundo</string>
     <string name="download_assets_wiki_link">Ver wiki</string>
-    <string name="download_assets_filter_sort_field">Ordenar por</string>
+    <string name="sort_by">Ordenar por</string>
     <string name="download_install_success_message">Seu jogo foi instalado com sucesso!</string>
     <string name="download_assets_links">Links relacionados</string>
     <string name="download_assets_source_link">Ver código-fonte</string>

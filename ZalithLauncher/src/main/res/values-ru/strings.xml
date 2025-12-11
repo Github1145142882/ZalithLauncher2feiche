@@ -37,7 +37,7 @@
     <string name="generic_loading">Загрузка</string>
     <string name="generic_in_progress">В процессе</string>
     <string name="generic_anyway">Использовать в любом случае</string>
-    <string name="generic_go_it">Понял</string>
+    <string name="generic_got_it">Понял</string>
     <string name="generic_file_name">Имя файла: %s</string>
     <string name="generic_file_size">Размер файла: %s</string>
     <!-- Launcher Version -->
@@ -444,7 +444,7 @@
     <string name="months_ago">%d Месяцев назад</string>
     <string name="years_ago">%d Лет назад</string>
     <string name="crash_share_logs">Поделиться логом</string>
-    <string name="download_assets_filter_sort_field">Сортировать по</string>
+    <string name="sort_by">Сортировать по</string>
     <string name="download_assets_filter_category">Категория</string>
     <string name="download_assets_filter_modloader">Мод-лоудер</string>
     <string name="download_assets_filter_none">Ничего не выбрано</string>

@@ -55,6 +55,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.Download
@@ -135,6 +136,8 @@ import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.AssetsIcon
 import com.movtery.zalithlauncher.ui.screens.content.elements.ImportMultipleFileButton
+import com.movtery.zalithlauncher.ui.screens.content.elements.SortByDropdownMenu
+import com.movtery.zalithlauncher.ui.screens.content.elements.SortByEnum
 import com.movtery.zalithlauncher.ui.screens.content.elements.rememberMultipleUriImportTaskBuilder
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.ByteArrayIcon
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.DeleteAllOperation
@@ -174,7 +177,13 @@ private class ModsManageViewModel(
     val modReader = AllModReader(modsDir)
 
     var nameFilter by mutableStateOf("")
+        private set
     var stateFilter by mutableStateOf(ModStateFilter.All)
+        private set
+    var sortByEnum by mutableStateOf(SortByEnum.FileName)
+        private set
+    var isAscending by mutableStateOf(true)
+        private set
 
     var allMods by mutableStateOf<List<RemoteMod>>(emptyList())
         private set
@@ -232,8 +241,38 @@ private class ModsManageViewModel(
         filterMods(context)
     }
 
+    fun updateSortBy(sortByEnum: SortByEnum, context: Context? = null) {
+        this.sortByEnum = sortByEnum
+        filterMods(context)
+    }
+
+    fun updateSortOrder(context: Context? = null) {
+        this.isAscending = !this.isAscending
+        filterMods(context)
+    }
+
+    val supportedSortByEnums = listOf(
+        SortByEnum.FileName, SortByEnum.FileModifiedTime
+    )
+
     private fun filterMods(context: Context? = null) {
-        filteredMods = allMods.takeIf { it.isNotEmpty() }?.filterMods(nameFilter, stateFilter, context)
+        filteredMods = allMods
+            .takeIf { it.isNotEmpty() }
+            ?.filterMods(nameFilter, stateFilter, context)
+            ?.sortedWith { o1, o2 ->
+                val file1 = o1.localMod.file
+                val file2 = o2.localMod.file
+                val value = when (sortByEnum) {
+                    SortByEnum.FileName -> file1.name.compareTo(file2.name)
+                    SortByEnum.FileModifiedTime -> file2.lastModified().compareTo(file1.lastModified())
+                    else -> error("This sorting method is not supported: $sortByEnum")
+                }
+                if (isAscending) {
+                    value
+                } else {
+                    -value
+                }
+            }
     }
 
     /** 在ViewModel的生命周期协程内调用 */
@@ -528,6 +567,11 @@ fun ModsManagerScreen(
                             onNameFilterChange = { viewModel.updateFilter(it, context) },
                             stateFilter = viewModel.stateFilter,
                             onStateFilterChange = { viewModel.updateStateFilter(it, context) },
+                            supportedSortByEnums = viewModel.supportedSortByEnums,
+                            sortByEnum = viewModel.sortByEnum,
+                            onSortByChanged = { viewModel.updateSortBy(it, context) },
+                            isAscending = viewModel.isAscending,
+                            onToggleSortOrder = { viewModel.updateSortOrder(context) },
                             hasModLoader = version.getVersionInfo()?.loaderInfo?.loader?.isLoader == true,
                             onUpdateMods = {
                                 if (
@@ -610,6 +654,11 @@ private fun ModsActionsHeader(
     onNameFilterChange: (String) -> Unit,
     stateFilter: ModStateFilter,
     onStateFilterChange: (ModStateFilter) -> Unit,
+    supportedSortByEnums: List<SortByEnum>,
+    sortByEnum: SortByEnum,
+    onSortByChanged: (SortByEnum) -> Unit,
+    isAscending: Boolean,
+    onToggleSortOrder: () -> Unit,
     hasModLoader: Boolean,
     onUpdateMods: () -> Unit,
     modsDir: File,
@@ -665,6 +714,27 @@ private fun ModsActionsHeader(
                             )
                         }
                     }
+                }
+
+                Box {
+                    var expanded by remember { mutableStateOf(false) }
+                    IconButton(
+                        onClick = { expanded = !expanded }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Sort,
+                            contentDescription = stringResource(R.string.sort_by)
+                        )
+                    }
+                    SortByDropdownMenu(
+                        expanded = expanded,
+                        onClose = { expanded = false },
+                        enums = supportedSortByEnums,
+                        currentEnum = sortByEnum,
+                        onEnumChanged = onSortByChanged,
+                        isAscending = isAscending,
+                        onToggleSortOrder = onToggleSortOrder
+                    )
                 }
 
                 SimpleTextInputField(

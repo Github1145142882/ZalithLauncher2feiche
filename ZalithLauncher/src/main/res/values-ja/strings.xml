@@ -172,7 +172,7 @@
     <string name="download_assets_filter_none">未選択</string>
     <string name="download_assets_filter_search_platform">対象プラットフォーム</string>
     <string name="download_assets_filter_game_version">ゲームバージョン</string>
-    <string name="download_assets_filter_sort_field">並び替え</string>
+    <string name="sort_by">並び替え</string>
     <string name="download_assets_optional_projects">任意プロジェクト</string>
     <string name="download_assets_links">関連リンク</string>
     <string name="download_assets_project_link">プロジェクトページ</string>
@@ -303,7 +303,7 @@
     <string name="generic_unknown">不明</string>
     <string name="generic_in_progress">進行中</string>
     <string name="generic_anyway">常に使用</string>
-    <string name="generic_go_it">了解</string>
+    <string name="generic_got_it">了解</string>
     <string name="generic_ignore">無視</string>
     <string name="generic_authorization">認証</string>
     <string name="unit_day">日</string>

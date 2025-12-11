@@ -140,7 +140,7 @@ private fun DownloadDialog(
         SimpleAlertDialog(
             title = stringResource(R.string.generic_warning),
             text = stringResource(R.string.download_assets_no_installed_versions),
-            confirmText = stringResource(R.string.generic_go_it),
+            confirmText = stringResource(R.string.generic_got_it),
             onDismiss = onDismiss
         )
     } else {

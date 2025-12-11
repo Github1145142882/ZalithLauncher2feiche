@@ -218,7 +218,7 @@ fun SearchFilter(
                 getItemLabel = { item ->
                     stringResource(item.getDisplayName())
                 },
-                title = stringResource(R.string.download_assets_filter_sort_field),
+                title = stringResource(R.string.sort_by),
                 cancelable = false
             )
         }

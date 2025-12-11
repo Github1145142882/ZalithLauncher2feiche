@@ -38,7 +38,7 @@
     <string name="generic_loading">تحميل</string>
     <string name="generic_in_progress">قيد التقدم</string>
     <string name="generic_anyway">اسخدام على اي حال</string>
-    <string name="generic_go_it">فهمت</string>
+    <string name="generic_got_it">فهمت</string>
     <string name="generic_ignore">تجاهل</string>
     <string name="generic_authorization">إذن</string>
     <string name="generic_file_name">اسم الملف: %s</string>
@@ -159,7 +159,7 @@
     <string name="download_assets_filter_search_name">اسم البحث</string>
     <string name="download_assets_filter_search_platform">المنصة المستهدفة</string>
     <string name="download_assets_filter_game_version">إصدار اللعبة</string>
-    <string name="download_assets_filter_sort_field">ترتيب حسب</string>
+    <string name="sort_by">ترتيب حسب</string>
     <string name="download_assets_filter_category">النوع</string>
     <string name="download_assets_filter_modloader">مشغل المودات</string>
     <string name="download_assets_filter_none">لاشيء تم اختياره</string>

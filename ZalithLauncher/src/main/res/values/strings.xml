@@ -39,7 +39,7 @@
     <string name="generic_loading">Loading</string>
     <string name="generic_in_progress">In Progress</string>
     <string name="generic_anyway">Use Anyway</string>
-    <string name="generic_go_it">Got it</string>
+    <string name="generic_got_it">Got it</string>
     <string name="generic_ignore">Ignore</string>
     <string name="generic_authorization">Authorization</string>
     <string name="generic_file_name">File Name: %s</string>
@@ -61,6 +61,12 @@
     <string name="months_ago">%d months ago</string>
     <string name="years_ago">%d years ago</string>
     <string name="empty_holder" translatable="false">%s</string>
+    <!-- Sort By -->
+    <string name="sort_by">Sort By</string>
+    <string name="sort_by_name">Sort by Name</string>
+    <string name="sort_by_file_name">Sort by File Name</string>
+    <string name="sort_by_last_modified">Sort by Last Modified</string>
+    <string name="sort_by_last_played">Sort by Last Played</string>
     <!-- Launcher Version -->
     <string name="launcher_version_debug_warning">You are using a test version of %s! This version may be unstable and is primarily intended for feature testing and early access. It is not recommended for long-term use! If you encounter any issues during testing, please report them to us via GitHub and we will address them as soon as possible.</string>
     <string name="launcher_version_debug_warning_cant_close">This warning cannot be dismissed</string>
@@ -184,7 +190,6 @@
     <string name="download_assets_filter_search_name">Search Name</string>
     <string name="download_assets_filter_search_platform">Target Platform</string>
     <string name="download_assets_filter_game_version">Game Version</string>
-    <string name="download_assets_filter_sort_field">Sort By</string>
     <string name="download_assets_filter_category">Category</string>
     <string name="download_assets_filter_modloader">Mod Loader</string>
     <string name="download_assets_filter_none">None Selected</string>

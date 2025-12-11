@@ -95,7 +95,7 @@
     <string name="error_unknown">Error Desconocido: %s</string>
     <string name="splash_screen_unpack_desc">El lanzador necesita installar unos archivos para que Minecraft corra bien. La applicacion los incluye pero necesitan ser extraidos. Presione el boton abajo para empezar la extracion y actualizarlo.</string>
     <string name="splash_screen_installing">El lanzador esta extraiendo los archives. Por favor espera, cuando termine te llevara a la pantalla principal.</string>
-    <string name="generic_go_it">Lo Tengo</string>
+    <string name="generic_got_it">Lo Tengo</string>
     <string name="generic_input_failed_to_number">Valor no es un Numero</string>
     <string name="splash_screen_agree">Installar</string>
     <string name="notification_title">Ver Permiso de Notificacion</string>
@@ -165,7 +165,7 @@
     <string name="download_assets_filter_search_name">Nombre de Busqueda</string>
     <string name="download_assets_filter_search_platform">Objetivo de Plataforma</string>
     <string name="download_assets_filter_game_version">Version de Juego</string>
-    <string name="download_assets_filter_sort_field">Classificar Por</string>
+    <string name="sort_by">Classificar Por</string>
     <string name="download_assets_filter_category">Categoria</string>
     <string name="download_assets_filter_modloader">Cargador de Mods</string>
     <string name="download_assets_filter_none">Ninguno Selecionado</string>

@@ -403,7 +403,7 @@
     <string name="download_assets_filter_search_name">Arama adı</string>
     <string name="download_assets_filter_search_platform">Hedef Platform</string>
     <string name="download_assets_filter_game_version">Oyun versiyonu</string>
-    <string name="download_assets_filter_sort_field">Göre sırala</string>
+    <string name="sort_by">Göre sırala</string>
     <string name="download_assets_filter_category">Kategori</string>
     <string name="download_assets_filter_modloader">Mod yükleyici</string>
     <string name="download_assets_filter_none">Hiçbiri Seçilmedi</string>
@@ -456,7 +456,7 @@
     <string name="download_assets_category_equipment">Teçhizat</string>
     <string name="download_assets_category_information">HUD ve Bilgi</string>
     <string name="download_assets_category_social">Sunucu</string>
-    <string name="generic_go_it">Anlaşıldı</string>
+    <string name="generic_got_it">Anlaşıldı</string>
     <string name="generic_all">Hepsi</string>
     <string name="date_format">MMM d, yyyy, h:mm:ss a \'ÖÖ/ÖS\'</string>
     <string name="crash_type">Oyundan atılma türü:%s</string>

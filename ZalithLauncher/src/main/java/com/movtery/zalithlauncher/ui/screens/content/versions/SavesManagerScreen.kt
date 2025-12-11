@@ -42,6 +42,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Edit
@@ -111,6 +112,8 @@ import com.movtery.zalithlauncher.ui.components.itemLayoutShadowElevation
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.elements.ImportMultipleFileButton
+import com.movtery.zalithlauncher.ui.screens.content.elements.SortByDropdownMenu
+import com.movtery.zalithlauncher.ui.screens.content.elements.SortByEnum
 import com.movtery.zalithlauncher.ui.screens.content.elements.rememberMultipleUriImportTaskBuilder
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.FileNameInputDialog
 import com.movtery.zalithlauncher.ui.screens.content.versions.elements.LoadingState
@@ -148,6 +151,10 @@ private class SavesManageViewModel(
     var allSaves by mutableStateOf<List<SaveData>>(emptyList())
         private set
     var filteredSaves by mutableStateOf<List<SaveData>?>(null)
+        private set
+    var sortByEnum by mutableStateOf(SortByEnum.Name)
+        private set
+    var isAscending by mutableStateOf(true)
         private set
 
     var savesState by mutableStateOf<LoadingState>(LoadingState.Loading)
@@ -194,8 +201,41 @@ private class SavesManageViewModel(
         filterSaves()
     }
 
+    fun updateSortBy(sortByEnum: SortByEnum) {
+        this.sortByEnum = sortByEnum
+        filterSaves()
+    }
+
+    fun updateSortOrder() {
+        this.isAscending = !this.isAscending
+        filterSaves()
+    }
+
+    val supportedSortByEnums = listOf(
+        SortByEnum.Name, SortByEnum.FileName, SortByEnum.LastPlayed
+    )
+
     private fun filterSaves() {
-        filteredSaves = allSaves.takeIf { it.isNotEmpty() }?.filterSaves(minecraftVersion, savesFilter)
+        filteredSaves = allSaves
+            .takeIf { it.isNotEmpty() }
+            ?.filterSaves(minecraftVersion, savesFilter)
+            ?.sortedWith { o1, o2 ->
+                val file1 = o1.saveFile
+                val file2 = o2.saveFile
+                val lastPlayed1 = o1.lastPlayed ?: file1.lastModified()
+                val lastPlayed2 = o2.lastPlayed ?: file2.lastModified()
+                val value = when (sortByEnum) {
+                    SortByEnum.Name -> (o1.levelName ?: file1.name).compareTo(o2.levelName ?: file2.name)
+                    SortByEnum.FileName -> file1.name.compareTo(file2.name)
+                    SortByEnum.LastPlayed -> lastPlayed2.compareTo(lastPlayed1)
+                    else -> error("This sorting method is not supported: $sortByEnum")
+                }
+                if (isAscending) {
+                    value
+                } else {
+                    -value
+                }
+            }
     }
 }
 
@@ -298,6 +338,11 @@ fun SavesManagerScreen(
                             modifier = Modifier.fillMaxWidth(),
                             savesFilter = viewModel.savesFilter,
                             onSavesFilterChange = { viewModel.updateFilter(it) },
+                            supportedSortByEnums = viewModel.supportedSortByEnums,
+                            sortByEnum = viewModel.sortByEnum,
+                            onSortByChanged = { viewModel.updateSortBy(it) },
+                            isAscending = viewModel.isAscending,
+                            onToggleSortOrder = { viewModel.updateSortOrder() },
                             savesDir = savesDir,
                             swapToDownload = swapToDownload,
                             refreshSaves = { viewModel.refresh() },
@@ -330,6 +375,11 @@ private fun SavesActionsHeader(
     modifier: Modifier,
     savesFilter: SavesFilter,
     onSavesFilterChange: (SavesFilter) -> Unit,
+    supportedSortByEnums: List<SortByEnum>,
+    sortByEnum: SortByEnum,
+    onSortByChanged: (SortByEnum) -> Unit,
+    isAscending: Boolean,
+    onToggleSortOrder: () -> Unit,
     savesDir: File,
     swapToDownload: () -> Unit,
     refreshSaves: () -> Unit,
@@ -345,6 +395,27 @@ private fun SavesActionsHeader(
                 .padding(top = 4.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                Box {
+                    var expanded by remember { mutableStateOf(false) }
+                    IconButton(
+                        onClick = { expanded = !expanded }
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Default.Sort,
+                            contentDescription = stringResource(R.string.sort_by)
+                        )
+                    }
+                    SortByDropdownMenu(
+                        expanded = expanded,
+                        onClose = { expanded = false },
+                        enums = supportedSortByEnums,
+                        currentEnum = sortByEnum,
+                        onEnumChanged = onSortByChanged,
+                        isAscending = isAscending,
+                        onToggleSortOrder = onToggleSortOrder
+                    )
+                }
+
                 SimpleTextInputField(
                     modifier = Modifier
                         .weight(1f)
@@ -576,7 +647,7 @@ private fun SaveItemLayout(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         val timeString = formatDate(
-                            date = Date(saveData.lastPlayed),
+                            date = Date(saveData.lastPlayed ?: saveData.saveFile.lastModified()),
                             pattern = stringResource(R.string.date_format)
                         )
                         Text(
@@ -655,10 +726,11 @@ private fun SaveIcon(
     saveData: SaveData,
     triggerRefresh: Any? = null
 ) {
-    val context = LocalContext.current
-    val iconFile = File(saveData.saveFile, "icon.png")
+    val iconFile = remember(saveData) {
+        File(saveData.saveFile, "icon.png")
+    }
 
-    val model = remember(triggerRefresh, context) {
+    val model = remember(iconFile, triggerRefresh) {
         iconFile.takeIf { it.exists() && it.isFile } ?: R.drawable.ic_unknown_save
     }
 

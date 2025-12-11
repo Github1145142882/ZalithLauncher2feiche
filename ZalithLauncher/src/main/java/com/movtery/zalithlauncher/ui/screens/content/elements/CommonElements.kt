@@ -45,11 +45,15 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -64,6 +68,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -124,6 +129,70 @@ data class CategoryItem(
     val textRes: Int,
     val division: Boolean = false
 )
+
+/**
+ * 排序方式枚举
+ */
+enum class SortByEnum(val textRes: Int) {
+    /** 按照名称排序 */
+    Name(R.string.sort_by_name),
+    /** 按照文件名称排序 */
+    FileName(R.string.sort_by_file_name),
+    /** 按照文件上次修改时间排序 */
+    FileModifiedTime(R.string.sort_by_last_modified),
+    /** 按照上次游玩时间排序 */
+    LastPlayed(R.string.sort_by_last_played)
+}
+
+/**
+ * 通用的排序方式下来菜单
+ * @param enums 当前菜单支持的排序方式
+ * @param currentEnum 当前的排序方式
+ * @param onEnumChanged 变更当前的排序方式
+ * @param isAscending 当前是否为升序
+ * @param onToggleSortOrder 切换当前的排序顺序
+ */
+@Composable
+fun SortByDropdownMenu(
+    expanded: Boolean,
+    onClose: () -> Unit,
+    enums: List<SortByEnum>,
+    currentEnum: SortByEnum,
+    onEnumChanged: (SortByEnum) -> Unit,
+    isAscending: Boolean,
+    onToggleSortOrder: () -> Unit
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onClose,
+        shape = MaterialTheme.shapes.large
+    ) {
+        enums.forEach { item ->
+            DropdownMenuItem(
+                text = { Text(stringResource(item.textRes)) },
+                onClick = {
+                    onEnumChanged(item)
+                },
+                trailingIcon = if (item == currentEnum) {
+                    {
+                        IconButton(
+                            onClick = onToggleSortOrder
+                        ) {
+                            val rotation by animateFloatAsState(
+                                if (isAscending) 0f else 180f
+                            )
+                            Icon(
+                                modifier = Modifier.rotate(rotation),
+                                imageVector = Icons.Default.KeyboardDoubleArrowUp,
+                                contentDescription = null
+                            )
+                        }
+                    }
+                } else null
+            )
+        }
+    }
+}
 
 /**
  * 多 Uri 导入文件任务构建器

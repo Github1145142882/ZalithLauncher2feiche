@@ -38,7 +38,7 @@
     <string name="generic_search">搜尋</string>
     <string name="generic_loading">載入中</string>
     <string name="generic_anyway">仍要使用</string>
-    <string name="generic_go_it">我瞭解了</string>
+    <string name="generic_got_it">我瞭解了</string>
     <string name="generic_ignore">忽略</string>
     <string name="generic_authorization">授權</string>
     <string name="generic_all">全部</string>
@@ -174,7 +174,6 @@
     <string name="download_assets_filter_search_name">搜尋名稱</string>
     <string name="download_assets_filter_search_platform">目標平台</string>
     <string name="download_assets_filter_game_version">遊戲版本</string>
-    <string name="download_assets_filter_sort_field">排序方式</string>
     <string name="download_assets_filter_category">類別</string>
     <string name="download_assets_filter_modloader">模組載入器</string>
     <string name="download_assets_filter_none">未選擇</string>
@@ -879,6 +878,11 @@
     <string name="days_ago">%d 天前</string>
     <string name="months_ago">%d 個月前</string>
     <string name="years_ago">%d 年前</string>
+    <string name="sort_by">排序方式</string>
+    <string name="sort_by_name">按名稱排序</string>
+    <string name="sort_by_file_name">按檔案名稱排序</string>
+    <string name="sort_by_last_modified">按修改時間排序</string>
+    <string name="sort_by_last_played">按上次遊玩時間排序</string>
     <string name="download_assets_failed_to_get_project">獲取項目信息失敗：%s，點擊重試。</string>
     <string name="download_assets_failed_to_get_versions">獲取版本列表失敗：%s，點擊重試。</string>
     <string name="download_assets_show_only_mc_release">僅顯示 MC 正式版</string>

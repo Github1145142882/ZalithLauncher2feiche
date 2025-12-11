@@ -28,7 +28,7 @@
     <string name="generic_loading">Memuat</string>
     <string name="generic_in_progress">Dalam Proses</string>
     <string name="generic_anyway">Tetap Gunakan</string>
-    <string name="generic_go_it">Paham</string>
+    <string name="generic_got_it">Paham</string>
     <string name="generic_ignore">Abaikan</string>
     <string name="generic_save">Simpan</string>
     <string name="generic_share">Bagikan</string>
@@ -152,7 +152,7 @@
     <string name="download_assets_filter_search_name">Nama Pencarian</string>
     <string name="download_assets_filter_search_platform">Platform Target</string>
     <string name="download_assets_filter_game_version">Versi Game</string>
-    <string name="download_assets_filter_sort_field">Urutkan Berdasarkan</string>
+    <string name="sort_by">Urutkan Berdasarkan</string>
     <string name="download_assets_filter_category">Kategori</string>
     <string name="download_assets_filter_modloader">Mod Loader</string>
     <string name="download_assets_filter_none">Tidak Dipilih</string>

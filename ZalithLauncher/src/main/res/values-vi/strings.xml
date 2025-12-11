@@ -37,7 +37,7 @@
     <string name="generic_loading">Đang tải</string>
     <string name="generic_in_progress">Đang tiến hành</string>
     <string name="generic_anyway">Sử dụng bất chấp</string>
-    <string name="generic_go_it">Đã hiểu</string>
+    <string name="generic_got_it">Đã hiểu</string>
     <string name="generic_ignore">Bỏ qua</string>
     <string name="generic_authorization">Cho phép</string>
     <string name="generic_file_name">Tên tệp: %s</string>
@@ -142,7 +142,7 @@
     <string name="download_assets_filter_search_name">Tìm kiếm tên</string>
     <string name="download_assets_filter_search_platform">Nền tảng tìm kiếm</string>
     <string name="download_assets_filter_game_version">Phiên bản MC</string>
-    <string name="download_assets_filter_sort_field">Sắp xếp theo</string>
+    <string name="sort_by">Sắp xếp theo</string>
     <string name="download_assets_filter_category">Thể loại</string>
     <string name="download_assets_filter_modloader">Trình chạy Mod</string>
     <string name="download_assets_filter_none">Không có gì được chọn</string>

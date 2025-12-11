@@ -39,7 +39,7 @@
     <string name="generic_loading">加载中</string>
     <string name="generic_in_progress">执行中</string>
     <string name="generic_anyway">坚持使用</string>
-    <string name="generic_go_it">我明白了</string>
+    <string name="generic_got_it">我明白了</string>
     <string name="generic_ignore">忽略</string>
     <string name="generic_authorization">授权</string>
     <string name="generic_file_name">文件名：%s</string>
@@ -60,6 +60,12 @@
     <string name="days_ago">%d 天前</string>
     <string name="months_ago">%d 个月前</string>
     <string name="years_ago">%d 年前</string>
+    <!--  排序方式  -->
+    <string name="sort_by">排序方式</string>
+    <string name="sort_by_name">按名称排序</string>
+    <string name="sort_by_file_name">按文件名称排序</string>
+    <string name="sort_by_last_modified">按修改时间排序</string>
+    <string name="sort_by_last_played">按上次游玩时间排序</string>
     <!--  启动器版本  -->
     <string name="launcher_version_debug_warning">您正在使用测试版的 %s！该版本可能并不稳定，主要是用于功能测试、尝鲜，不建议长期使用这个版本！如果您在测试过程中发现任何问题，请通过 Github 反馈给我们，我们会尽快处理。</string>
     <string name="launcher_version_debug_warning_cant_close">这条警告无法被关闭</string>
@@ -183,7 +189,6 @@
     <string name="download_assets_filter_search_name">搜索名称</string>
     <string name="download_assets_filter_search_platform">目标平台</string>
     <string name="download_assets_filter_game_version">游戏版本</string>
-    <string name="download_assets_filter_sort_field">排序方式</string>
     <string name="download_assets_filter_category">类别</string>
     <string name="download_assets_filter_modloader">模组加载器</string>
     <string name="download_assets_filter_none">未选择</string>
