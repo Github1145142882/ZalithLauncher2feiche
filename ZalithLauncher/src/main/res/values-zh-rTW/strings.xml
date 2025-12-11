@@ -497,6 +497,7 @@
     <string name="versions_manage_no_versions">沒有已安裝的版本</string>
     <string name="versions_manage_category_vanilla">原版</string>
     <string name="versions_manage_category_modloader">可安裝模組</string>
+    <string name="versions_manage_pin">置頂</string>
     <string name="versions_manage_install_exists">此名稱的版本已存在！</string>
     <string name="versions_manage_install_cannot_use_mc_name">已選擇附加內容，需確保原版核心的獨立性，請勿使用原版名稱。</string>
     <string name="versions_manage_invalid">此版本無效</string>

@@ -42,8 +42,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -132,11 +130,10 @@ private fun DownloadDialog(
     onInstall: (List<Version>) -> Unit,
     onDependencyClicked: (PlatformVersion.PlatformDependency, PlatformClasses) -> Unit
 ) {
-    val versions by VersionsManager.versions.collectAsState()
-    val versions1 = remember(versions) { versions.filter { it.isValid() } }
+    val versions = remember { VersionsManager.versions.filter { it.isValid() } }
     val version = VersionsManager.currentVersion
 
-    if (version == null || versions1.isEmpty()) {
+    if (version == null || versions.isEmpty()) {
         SimpleAlertDialog(
             title = stringResource(R.string.generic_warning),
             text = stringResource(R.string.download_assets_no_installed_versions),
@@ -247,7 +244,7 @@ private fun DownloadDialog(
                                 //选择游戏版本
                                 ChoseGameVersionLayout(
                                     modifier = Modifier.fadeEdge(state = listState),
-                                    versions = versions1,
+                                    versions = versions,
                                     selectedVersions = selectedVersions,
                                     onVersionSelected = { selectedVersions.add(it) },
                                     onVersionUnSelected = { selectedVersions.remove(it) },

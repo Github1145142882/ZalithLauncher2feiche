@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.elements
 
+import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.basicMarquee
@@ -65,6 +66,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -650,6 +652,7 @@ fun CleanupOperation(
 fun VersionItemLayout(
     version: Version,
     selected: Boolean,
+    submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
     modifier: Modifier = Modifier,
     color: Color = itemLayoutColor(),
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
@@ -658,8 +661,11 @@ fun VersionItemLayout(
     onSettingsClick: () -> Unit = {},
     onRenameClick: () -> Unit = {},
     onCopyClick: () -> Unit = {},
-    onDeleteClick: () -> Unit = {}
+    onDeleteClick: () -> Unit = {},
+    onPinned: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+
     val scale = remember { Animatable(initialValue = 0.95f) }
     LaunchedEffect(Unit) {
         scale.animateTo(targetValue = 1f, animationSpec = getAnimateTween())
@@ -693,17 +699,52 @@ fun VersionItemLayout(
                 modifier = Modifier.weight(1f),
                 version = version
             )
-            if (version.isValid()) {
-                IconButton(
-                    onClick = onSettingsClick
-                ) {
+
+            IconButton(
+                onClick = {
+                    val currentValue = version.pinnedState
+                    runCatching {
+                        version.setPinnedAndSave(!currentValue)
+                    }.onFailure { e ->
+                        lError("Failed to save version config!", e)
+                        submitError(
+                            ErrorViewModel.ThrowableMessage(
+                                title = context.getString(R.string.versions_config_failed_to_save),
+                                message = e.getMessageOrToString()
+                            )
+                        )
+                    }.onSuccess {
+                        onPinned()
+                    }
+                },
+                enabled = version.isValid()
+            ) {
+                Crossfade(
+                    targetState = version.pinnedState
+                ) { pinned ->
+                    val icon = if (pinned) {
+                        painterResource(R.drawable.ic_pinned_filled)
+                    } else {
+                        painterResource(R.drawable.ic_pinned_outlined)
+                    }
                     Icon(
-                        modifier = Modifier.size(24.dp),
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = stringResource(R.string.versions_manage_settings)
+                        painter = icon,
+                        contentDescription = stringResource(R.string.versions_manage_pin)
                     )
                 }
             }
+
+            IconButton(
+                onClick = onSettingsClick,
+                enabled = version.isValid()
+            ) {
+                Icon(
+                    modifier = Modifier.size(24.dp),
+                    imageVector = Icons.Default.Settings,
+                    contentDescription = stringResource(R.string.versions_manage_settings)
+                )
+            }
+
             Row {
                 var menuExpanded by remember { mutableStateOf(false) }
 

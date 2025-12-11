@@ -43,11 +43,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
@@ -58,6 +60,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.path.GamePathManager
 import com.movtery.zalithlauncher.game.version.installed.Version
+import com.movtery.zalithlauncher.game.version.installed.VersionComparator
+import com.movtery.zalithlauncher.game.version.installed.VersionType
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.game.version.installed.cleanup.GameAssetCleaner
 import com.movtery.zalithlauncher.state.MutableStates
@@ -83,10 +87,82 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.checkStoragePermissions
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 
 private class VersionsScreenViewModel() : ViewModel() {
+    /** 是否正在刷新版本列表 */
+    var isRefreshing by mutableStateOf(true)
+        private set
+
     /** 版本类别分类 */
     var versionCategory by mutableStateOf(VersionCategory.ALL)
+        private set
+
+    private val _versions = MutableStateFlow<List<Version>>(emptyList())
+    val versions: StateFlow<List<Version>> = _versions
+
+    /** 原版版本数量 */
+    var vanillaVersionsCount by mutableIntStateOf(0)
+        private set
+    /** 模组加载器版本数量 */
+    var modloaderVersionsCount by mutableIntStateOf(0)
+        private set
+
+    fun startRefreshVersions() {
+        if (!VersionsManager.isRefreshing) {
+            _versions.update { emptyList() }
+            this.isRefreshing = true
+            VersionsManager.refresh("VersionsScreenViewModel.startRefreshVersions")
+        }
+    }
+
+    /**
+     * 刷新当前版本列表
+     */
+    fun refreshVersions(currentVersions: List<Version>) {
+        isRefreshing = true
+
+        _versions.update { emptyList() }
+
+        val vanillaVersions = currentVersions
+            .filter { ver -> ver.versionType == VersionType.VANILLA }
+            .also { vanillaVersionsCount = it.size }
+        val modloaderVersions = currentVersions
+            .filter { ver -> ver.versionType == VersionType.MODLOADERS }
+            .also { modloaderVersionsCount = it.size }
+
+        val filteredVersions = when (versionCategory) {
+            VersionCategory.ALL -> currentVersions
+            VersionCategory.VANILLA -> vanillaVersions
+            VersionCategory.MODLOADER -> modloaderVersions
+        }
+
+        _versions.update {
+            filteredVersions.sortedWith(VersionComparator)
+        }
+
+        isRefreshing = false
+    }
+
+    /**
+     * 变更当前版本列表的过滤类型
+     */
+    fun changeCategory(category: VersionCategory) {
+        this.versionCategory = category
+        refreshVersions(VersionsManager.versions)
+    }
+
+    /**
+     * 重新排序当前版本列表
+     */
+    fun resortVersions() {
+        _versions.update {
+            it.sortedWith(VersionComparator)
+        }
+    }
 
     /** 清理游戏文件操作 */
     var cleanupOperation by mutableStateOf<CleanupOperation>(CleanupOperation.None)
@@ -119,8 +195,22 @@ private class VersionsScreenViewModel() : ViewModel() {
         cleanupOperation = CleanupOperation.None
     }
 
+    private val listener: suspend (List<Version>) -> Unit = { versions ->
+        refreshVersions(versions)
+    }
+
+    init {
+        viewModelScope.launch {
+            //初始化时刷新一次版本
+            refreshVersions(VersionsManager.versions)
+        }
+
+        VersionsManager.registerListener(listener)
+    }
+
     override fun onCleared() {
         cancelCleaner()
+        VersionsManager.unregisterListener(listener)
     }
 }
 
@@ -167,10 +257,16 @@ fun VersionsManageScreen(
                     .weight(2.5f)
             )
 
+            val versions by viewModel.versions.collectAsState()
+
             VersionsLayout(
+                isRefreshing = viewModel.isRefreshing,
                 isVisible = isVisible,
+                versions = versions,
                 versionCategory = viewModel.versionCategory,
-                onCategoryChange = { viewModel.versionCategory = it },
+                onCategoryChange = { viewModel.changeCategory(it) },
+                vanillaVersionsCount = viewModel.vanillaVersionsCount,
+                modloaderVersionsCount = viewModel.modloaderVersionsCount,
                 navigateToVersions = navigateToVersions,
                 modifier = Modifier
                     .fillMaxHeight()
@@ -179,9 +275,10 @@ fun VersionsManageScreen(
                     .padding(end = 12.dp),
                 submitError = submitError,
                 onRefresh = {
-                    if (!VersionsManager.isRefreshing) {
-                        VersionsManager.refresh("VersionsManageScreen.onRefresh")
-                    }
+                    viewModel.startRefreshVersions()
+                },
+                onVersionPinned = {
+                    viewModel.resortVersions()
                 },
                 onInstall = {
                     backScreenViewModel.navigateToDownload()
@@ -246,7 +343,7 @@ private fun LeftMenu(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            items(gamePaths) { pathItem ->
+            items(gamePaths, key = { it.id }) { pathItem ->
                 GamePathItemLayout(
                     item = pathItem,
                     selected = currentPath == pathItem.path,
@@ -313,12 +410,17 @@ private fun LeftMenu(
 @Composable
 private fun VersionsLayout(
     modifier: Modifier = Modifier,
+    isRefreshing: Boolean,
     isVisible: Boolean,
+    versions: List<Version>,
     versionCategory: VersionCategory,
     onCategoryChange: (VersionCategory) -> Unit,
+    vanillaVersionsCount: Int,
+    modloaderVersionsCount: Int,
     navigateToVersions: (Version) -> Unit,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
     onRefresh: () -> Unit,
+    onVersionPinned: () -> Unit,
     onInstall: () -> Unit
 ) {
     val surfaceYOffset by swapAnimateDpAsState(
@@ -330,17 +432,11 @@ private fun VersionsLayout(
         modifier = modifier.offset { IntOffset(x = 0, y = surfaceYOffset.roundToPx()) },
         shape = MaterialTheme.shapes.extraLarge
     ) {
-        if (VersionsManager.isRefreshing) { //版本正在刷新中
+        if (VersionsManager.isRefreshing || isRefreshing) { //版本正在刷新中
             Box(modifier = Modifier.fillMaxSize()) {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
             }
         } else {
-            val versions by when (versionCategory) { //在这里使用已经提前分类好的版本列表
-                VersionCategory.ALL -> VersionsManager.versions
-                VersionCategory.VANILLA -> VersionsManager.vanillaVersions
-                VersionCategory.MODLOADER -> VersionsManager.modloaderVersions
-            }.collectAsState()
-
             var versionsOperation by remember { mutableStateOf<VersionsOperation>(VersionsOperation.None) }
             VersionsOperation(
                 versionsOperation = versionsOperation,
@@ -379,19 +475,19 @@ private fun VersionsLayout(
                         //版本分类
                         VersionCategoryItem(
                             value = VersionCategory.ALL,
-                            versionsCount = VersionsManager.allVersionsCount(),
+                            versionsCount = versions.size,
                             selected = versionCategory == VersionCategory.ALL,
                             onClick = { onCategoryChange(VersionCategory.ALL) }
                         )
                         VersionCategoryItem(
                             value = VersionCategory.VANILLA,
-                            versionsCount = VersionsManager.vanillaVersionsCount(),
+                            versionsCount = vanillaVersionsCount,
                             selected = versionCategory == VersionCategory.VANILLA,
                             onClick = { onCategoryChange(VersionCategory.VANILLA) }
                         )
                         VersionCategoryItem(
                             value = VersionCategory.MODLOADER,
-                            versionsCount = VersionsManager.modloaderVersionsCount(),
+                            versionsCount = modloaderVersionsCount,
                             selected = versionCategory == VersionCategory.MODLOADER,
                             onClick = { onCategoryChange(VersionCategory.MODLOADER) }
                         )
@@ -402,16 +498,19 @@ private fun VersionsLayout(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .weight(1f),
+                            .weight(1f)
+                            .clipToBounds(),
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                     ) {
-                        items(versions) { version ->
+                        items(versions, key = { it.toString() }) { version ->
                             VersionItemLayout(
                                 version = version,
                                 selected = version == VersionsManager.currentVersion,
+                                submitError = submitError,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 6.dp),
+                                    .padding(vertical = 6.dp)
+                                    .animateItem(),
                                 onSelected = {
                                     if (version.isValid() && version != VersionsManager.currentVersion) {
                                         VersionsManager.saveCurrentVersion(version.getVersionName())
@@ -425,7 +524,8 @@ private fun VersionsLayout(
                                 },
                                 onRenameClick = { versionsOperation = VersionsOperation.Rename(version) },
                                 onCopyClick = { versionsOperation = VersionsOperation.Copy(version) },
-                                onDeleteClick = { versionsOperation = VersionsOperation.Delete(version) }
+                                onDeleteClick = { versionsOperation = VersionsOperation.Delete(version) },
+                                onPinned = onVersionPinned
                             )
                         }
                     }

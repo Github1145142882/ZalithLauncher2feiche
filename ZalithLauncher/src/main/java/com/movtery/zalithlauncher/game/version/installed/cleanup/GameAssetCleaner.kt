@@ -148,7 +148,7 @@ class GameAssetCleaner(
                 ) { task ->
                     task.updateProgress(-1f)
 
-                    val allVersions = VersionsManager.versions.value.toList()
+                    val allVersions = VersionsManager.versions.toList()
 
                     allVersions.forEach { version ->
                         ensureActive()

@@ -20,6 +20,9 @@ package com.movtery.zalithlauncher.game.version.installed
 
 import android.content.Context
 import android.os.Parcelable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.movtery.zalithlauncher.BuildConfig
 import com.movtery.zalithlauncher.context.GlobalContext
 import com.movtery.zalithlauncher.game.path.getGameHome
@@ -28,6 +31,7 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.utils.platform.getMaxMemoryForSettings
 import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
+import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
 import java.io.File
 import kotlin.math.min
@@ -56,6 +60,22 @@ class Version(
      */
     var quickPlaySingle: String? = null
 ): Parcelable {
+    /**
+     * 当前版本是否被置顶
+     */
+    @IgnoredOnParcel
+    var pinnedState by mutableStateOf(versionConfig.pinned)
+        private set
+
+    /**
+     * 设置版本的置顶状态并保存
+     */
+    fun setPinnedAndSave(value: Boolean) {
+        this.versionConfig.setPinnedAndSave(value) { state ->
+            this.pinnedState = state
+        }
+    }
+
     /**
      * @return 获取版本所属的版本文件夹
      */

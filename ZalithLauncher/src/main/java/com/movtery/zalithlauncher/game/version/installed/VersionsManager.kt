@@ -31,31 +31,36 @@ import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
-import com.movtery.zalithlauncher.utils.string.compareChar
-import com.movtery.zalithlauncher.utils.string.compareVersion
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.apache.commons.io.FileUtils
 import java.io.File
 
 object VersionsManager {
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val listeners: MutableList<suspend (List<Version>) -> Unit> = mutableListOf()
 
-    private val _versions = MutableStateFlow<List<Version>>(emptyList())
-    private val _vanillaVersions = MutableStateFlow<List<Version>>(emptyList())
-    private val _modloaderVersions = MutableStateFlow<List<Version>>(emptyList())
-    val versions: StateFlow<List<Version>> = _versions
-    val vanillaVersions: StateFlow<List<Version>> = _vanillaVersions
-    val modloaderVersions: StateFlow<List<Version>> = _modloaderVersions
+    /**
+     * 注册版本列表刷新监听器
+     */
+    fun registerListener(listener: suspend (List<Version>) -> Unit) {
+        listeners.add(listener)
+    }
 
-    fun allVersionsCount() = _versions.value.size
-    fun vanillaVersionsCount() = _vanillaVersions.value.size
-    fun modloaderVersionsCount() = _modloaderVersions.value.size
+    /**
+     * 移除版本列表刷新监听器
+     */
+    fun unregisterListener(listener: suspend (List<Version>) -> Unit) {
+        listeners.remove(listener)
+    }
+
+    /**
+     * 当前所有的游戏版本
+     */
+    var versions: List<Version> = emptyList()
+        private set
 
     /**
      * 当前的游戏信息
@@ -93,9 +98,7 @@ object VersionsManager {
             isRefreshing = true
             lDebug("Initiated by $tag: starting to refresh the version list.")
 
-            _versions.update { emptyList() }
-            _vanillaVersions.update { emptyList() }
-            _modloaderVersions.update { emptyList() }
+            versions = emptyList()
 
             val newVersions = mutableListOf<Version>()
             File(getVersionsHome()).listFiles()?.forEach { versionFile ->
@@ -106,23 +109,13 @@ object VersionsManager {
                 }
             }
 
-            newVersions.sortWith { o1, o2 ->
-                val thisVer = o1.getVersionInfo()?.minecraftVersion ?: o1.getVersionName()
-                var sort = -thisVer.compareVersion(
-                    o2.getVersionInfo()?.minecraftVersion ?: o2.getVersionName()
-                )
-                if (sort == 0) sort =
-                    compareChar(o1.getVersionName(), o2.getVersionName())
-                sort
-            }
-
-            _versions.update { newVersions.toList() }
-            _vanillaVersions.update { newVersions.filter { ver -> ver.versionType == VersionType.VANILLA } }
-            _modloaderVersions.update { newVersions.filter { ver -> ver.versionType == VersionType.MODLOADERS } }
+            versions = newVersions.toList()
 
             currentGameInfo = refreshCurrentInfo()
             lDebug("Version list refreshed, refreshing the current version now.")
             refreshCurrentVersion()
+
+            listeners.forEach { it.invoke(versions) }
 
             isRefreshing = false
         }
@@ -167,10 +160,10 @@ object VersionsManager {
 
     private fun refreshCurrentVersion() {
         currentVersion = run {
-            if (_versions.value.isEmpty()) return@run null
+            if (versions.isEmpty()) return@run null
 
             fun getVersionByFirst(): Version? {
-                return _versions.value.find { it.isValid() }?.apply {
+                return versions.find { it.isValid() }?.apply {
                     //确保版本有效
                     saveCurrentVersion(getVersionName(), refresh = false)
                 }
@@ -194,7 +187,7 @@ object VersionsManager {
 
     private fun getVersion(name: String?): Version? {
         name?.let { versionName ->
-            return _versions.value.find { it.getVersionName() == versionName }?.takeIf { it.isValid() }
+            return versions.find { it.getVersionName() == versionName }?.takeIf { it.isValid() }
         }
         return null
     }
@@ -203,7 +196,7 @@ object VersionsManager {
      * @return 通过版本名，判断其版本是否存在
      */
     fun checkVersionExistsByName(versionName: String?) =
-        versionName?.let { name -> _versions.value.any { it.getVersionName() == name } } ?: false
+        versionName?.let { name -> versions.any { it.getVersionName() == name } } ?: false
 
     /**
      * @return 获取 Zalith 启动器版本标识文件夹

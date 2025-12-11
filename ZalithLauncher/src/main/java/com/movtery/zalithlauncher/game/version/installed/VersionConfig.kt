@@ -37,6 +37,27 @@ class VersionConfig(
     @Transient
     private var versionPath: File
 ) : Parcelable {
+    @SerializedName("pinned")
+    var pinned: Boolean = false
+        private set
+
+    fun setPinnedAndSave(
+        value: Boolean,
+        applyState: (Boolean) -> Unit
+    ) {
+        val oldValue = pinned
+        applyState(value)
+
+        try {
+            this.pinned = value
+            saveWithThrowable()
+        } catch (e: Exception) {
+            this.pinned = oldValue
+            applyState(oldValue)
+            throw e
+        }
+    }
+
     @SerializedName("isolationType")
     var isolationType: SettingState = SettingState.FOLLOW_GLOBAL
         get() = getSettingStateNotNull(field)

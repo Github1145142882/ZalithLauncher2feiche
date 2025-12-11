@@ -546,6 +546,7 @@
     <string name="versions_manage_no_versions">No installed versions</string>
     <string name="versions_manage_category_vanilla">Vanilla</string>
     <string name="versions_manage_category_modloader">Moddable</string>
+    <string name="versions_manage_pin">Pin</string>
     <string name="versions_manage_install_exists">Version name already exists!</string>
     <string name="versions_manage_install_cannot_use_mc_name">Do not use vanilla names for modded versions.</string>
     <string name="versions_manage_invalid">Invalid version</string>
