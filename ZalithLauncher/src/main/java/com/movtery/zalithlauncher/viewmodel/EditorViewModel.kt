@@ -238,9 +238,9 @@ class EditorViewModel() : ViewModel() {
             }.onFailure { e ->
                 editorOperation = EditorOperation.SaveFailed(e)
             }.onSuccess {
+                editorOperation = EditorOperation.None
                 onSaved()
             }
-            editorOperation = EditorOperation.None
         }
     }
 

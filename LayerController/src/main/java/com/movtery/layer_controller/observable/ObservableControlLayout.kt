@@ -18,6 +18,7 @@
 
 package com.movtery.layer_controller.observable
 
+import com.movtery.layer_controller.EDITOR_VERSION
 import com.movtery.layer_controller.data.ButtonStyle
 import com.movtery.layer_controller.layout.ControlLayer
 import com.movtery.layer_controller.layout.ControlLayout
@@ -143,10 +144,11 @@ class ObservableControlLayout(
     }
 
     override fun pack(): ControlLayout {
-        return layout.copy(
+        return ControlLayout(
             info = info.pack(),
             layers = _layers.value.map { it.pack() },
-            styles = _styles.value.map { it.pack() }
+            styles = _styles.value.map { it.pack() },
+            editorVersion = EDITOR_VERSION
         )
     }
 

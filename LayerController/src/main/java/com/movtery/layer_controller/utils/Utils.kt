@@ -20,6 +20,8 @@ package com.movtery.layer_controller.utils
 
 import androidx.compose.ui.graphics.Color
 import com.movtery.layer_controller.layout.ControlLayout
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.io.File
@@ -69,7 +71,9 @@ private fun longToBytes(long: Long): ByteArray {
     return buffer
 }
 
-fun ControlLayout.saveToFile(file: File) {
-    val jsonString = layoutJson.encodeToString(this)
-    file.writeText(jsonString)
+suspend fun ControlLayout.saveToFile(file: File) {
+    withContext(Dispatchers.IO) {
+        val jsonString = layoutJson.encodeToString(this@saveToFile)
+        file.writeText(jsonString)
+    }
 }
