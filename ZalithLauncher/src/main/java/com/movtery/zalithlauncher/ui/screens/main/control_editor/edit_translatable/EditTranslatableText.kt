@@ -18,7 +18,6 @@
 
 package com.movtery.zalithlauncher.ui.screens.main.control_editor.edit_translatable
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -61,7 +60,6 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import com.movtery.layer_controller.observable.ObservableLocalizedString
 import com.movtery.layer_controller.observable.ObservableTranslatableString
 import com.movtery.zalithlauncher.R
@@ -230,22 +228,17 @@ private fun LocalizedStringItem(
     take: Int? = null,
     color: Color = itemLayoutColorOnSurface(3.dp),
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
-    borderColor: Color = MaterialTheme.colorScheme.primary,
-    shape: Shape = RoundedCornerShape(26.dp)
+    shape: Shape = RoundedCornerShape(28.dp)
 ) {
     Surface(
-        modifier = modifier.border(
-            width = 2.dp,
-            color = borderColor,
-            shape = shape
-        ),
+        modifier = modifier,
         color = color,
         contentColor = contentColor,
         shape = shape
     ) {
         Column(
             modifier = Modifier
-                .padding(horizontal = 10.dp, vertical = 2.dp)
+                .padding(horizontal = 12.dp, vertical = 4.dp)
                 .fillMaxWidth(),
         ) {
             Column(
