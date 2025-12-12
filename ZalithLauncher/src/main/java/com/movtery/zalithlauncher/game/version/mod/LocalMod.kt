@@ -86,7 +86,7 @@ class LocalMod(
         val currentPath = file.absolutePath
         if (file.isEnabled()) return
 
-        val newPath = currentPath.substring(0, currentPath.length - ".disabled".length)
+        val newPath = currentPath.dropLast(".disabled".length)
         val newFile = File(newPath)
         if (!file.renameToSafely(newFile)) return
 
