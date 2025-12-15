@@ -50,7 +50,6 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -155,9 +154,9 @@ private class ModpackViewModel : ViewModel() {
             waitForVersionName = ::waitForVersionName
         ).also {
             it.startImport(
-                onFinished = {
+                onFinished = { version ->
                     importer = null
-                    VersionsManager.refresh("[Modpack] ModpackImporter.onFinished")
+                    VersionsManager.refresh("[Modpack] ModpackImporter.onFinished", version)
                     importOperation = ModpackImportOperation.Finished
                 },
                 onError = { th ->
@@ -462,7 +461,7 @@ private fun AllSupportPackDisplay(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        PackPlatform.entries.fastForEach { platform ->
+        PackPlatform.entries.forEach { platform ->
             PackIdentifier(
                 platform = platform
             )

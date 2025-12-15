@@ -32,9 +32,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.movtery.layer_controller.data.TextAlignment
 import com.movtery.layer_controller.observable.*
 import com.movtery.layer_controller.utils.buttonContentColorAsState
+import com.movtery.layer_controller.utils.buttonFontSizeAsState
 import com.movtery.layer_controller.utils.buttonSize
 import com.movtery.layer_controller.utils.buttonStyle
 import com.movtery.layer_controller.utils.editMode
@@ -111,6 +113,11 @@ internal fun TextButton(
                 isDark = isDark,
                 isPressed = isPressed
             )
+            val fontSize by buttonFontSizeAsState(
+                style = style,
+                isDark = isDark,
+                isPressed = isPressed
+            )
             val buttonTextStyle = when (data) {
                 is ObservableNormalData -> ButtonTextStyle(
                     text = data.text,
@@ -131,6 +138,7 @@ internal fun TextButton(
             RtLText(
                 text = buttonTextStyle.text.translate(locale),
                 color = color,
+                fontSize = fontSize.sp,
                 textAlign = buttonTextStyle.textAlignment.textAlign,
                 fontWeight = if (buttonTextStyle.textBold) FontWeight.Bold else null,
                 fontStyle = if (buttonTextStyle.textItalic) FontStyle.Italic else null,
@@ -161,9 +169,11 @@ fun RendererStyleBox(
         contentAlignment = Alignment.Center
     ) {
         val color by buttonContentColorAsState(style = style, isDark = isDark, isPressed = isPressed)
+        val fontSize by buttonFontSizeAsState(style = style, isDark = isDark, isPressed = isPressed)
         RtLText(
             text = text,
-            color = color
+            color = color,
+            fontSize = fontSize.sp
         )
     }
 }

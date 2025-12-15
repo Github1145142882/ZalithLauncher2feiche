@@ -62,7 +62,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -281,10 +280,10 @@ private fun TabMenu(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(12.dp))
-        settingItems.fastForEach { item ->
+        settingItems.forEach { item ->
             if (!canUpdateLoader && item.key == NormalNavKey.Versions.UpdateLoader) {
                 //无法更新模组加载器，跳过这个选项
-                return@fastForEach
+                return@forEach
             }
 
             if (item.division) {

@@ -51,7 +51,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -66,6 +65,7 @@ import com.movtery.layer_controller.observable.ObservableControlLayout
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.bridge.CURSOR_DISABLED
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates
+import com.movtery.zalithlauncher.bridge.ZLNativeInvoker
 import com.movtery.zalithlauncher.game.input.LWJGLCharSender
 import com.movtery.zalithlauncher.game.keycodes.ControlEventKeycode
 import com.movtery.zalithlauncher.game.keycodes.LwjglGlfwKeycode
@@ -78,6 +78,7 @@ import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.isLauncherInDarkTheme
 import com.movtery.zalithlauncher.setting.enums.toAction
+import com.movtery.zalithlauncher.terracotta.Terracotta
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.MenuState
 import com.movtery.zalithlauncher.ui.control.MinecraftHotbar
@@ -451,6 +452,11 @@ fun GameScreen(
     ForceCloseOperation(
         operation = viewModel.forceCloseState,
         onChange = { viewModel.forceCloseState = it },
+        onForceClose = {
+            Terracotta.setWaiting(true)
+            terracottaViewModel.forceStopVPN()
+            ZLNativeInvoker.jvmExit(0, false)
+        },
         text = stringResource(R.string.game_menu_option_force_close_text)
     )
 
@@ -493,7 +499,7 @@ fun GameScreen(
                     gamepadViewModel = gamepadViewModel,
                     isGrabbing = ZLBridgeStates.cursorMode == CURSOR_DISABLED,
                     onKeyEvent = { events, pressed ->
-                        events.fastForEach { event ->
+                        events.forEach { event ->
                             viewModel.onKeyEvent(event, pressed)
                         }
                     },

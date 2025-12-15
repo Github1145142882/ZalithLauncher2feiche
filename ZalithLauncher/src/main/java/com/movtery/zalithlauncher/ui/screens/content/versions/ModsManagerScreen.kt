@@ -621,13 +621,18 @@ fun ModsManagerScreen(
                                 viewModel.loadMod(mod, loadFromCache = false)
                             },
                             onEnable = { mod ->
-                                runProgress {
-                                    mod.localMod.enable()
+                                //启用和禁用模组应该避免刷新所有模组，否则将会极度影响体验
+                                viewModel.doInScope {
+                                    withContext(Dispatchers.IO) {
+                                        mod.localMod.enable()
+                                    }
                                 }
                             },
                             onDisable = { mod ->
-                                runProgress {
-                                    mod.localMod.disable()
+                                viewModel.doInScope {
+                                    withContext(Dispatchers.IO) {
+                                        mod.localMod.disable()
+                                    }
                                 }
                             },
                             onSwapMoreInfo = onSwapMoreInfo,

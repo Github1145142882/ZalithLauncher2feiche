@@ -20,9 +20,21 @@ package com.movtery.layer_controller
 
 import androidx.annotation.FloatRange
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -36,9 +48,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastFilter
-import androidx.compose.ui.util.fastFirstOrNull
-import androidx.compose.ui.util.fastFlatMap
 import androidx.compose.ui.util.fastForEach
 import com.movtery.layer_controller.data.HideLayerWhen
 import com.movtery.layer_controller.data.VisibilityType
@@ -153,7 +162,7 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                     while (true) {
                         val event = awaitPointerEvent(pass = PointerEventPass.Initial)
 
-                        event.changes.fastForEach { change ->
+                        event.changes.forEach { change ->
                             val position = change.position
                             val pointerId = change.id
                             val isPressed = change.pressed
@@ -165,12 +174,12 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                 //不处理被子级占用的指针
                                 currentCheckOccupiedPointers(pointerId)
                             ) {
-                                return@fastForEach
+                                return@forEach
                             }
 
                             //在可见控件层中，收集所有可见的按钮
                             val visibleWidgets: List<ObservableWidget> = layers //使用原始控件层顺序，保证触摸逻辑正常
-                                .fastFilter { layer ->
+                                .filter { layer ->
                                     checkLayerVisibility(
                                         layer = layer,
                                         hideLayerWhen = currentHideLayerWhen,
@@ -178,19 +187,19 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                         visibilityType = layer.visibilityType
                                     )
                                 }
-                                .fastFlatMap { layer ->
+                                .flatMap { layer ->
                                     //顶向下的顺序影响控件层的处理优先级
                                     layer.normalButtons.value.reversed()
                                 }
 
                             //查找当前指针在哪些按钮上
                             val targetWidgets = visibleWidgets
-                                .fastFilter { widget ->
-                                    if (!widget.canTouch()) return@fastFilter false
+                                .filter { widget ->
+                                    if (!widget.canTouch()) return@filter false
 
                                     if (!checkVisibility(currentIsCursorGrabbing, widget.onCheckVisibilityType())) {
                                         //隐藏了，不响应事件
-                                        return@fastFilter false
+                                        return@filter false
                                     }
 
                                     val size = widget.internalRenderSize
@@ -203,7 +212,7 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                 }.let { list ->
                                     if (list.isEmpty()) return@let list
 
-                                    val firstDeepWidget = list.fastFirstOrNull { it.supportsDeepTouchDetection() }
+                                    val firstDeepWidget = list.firstOrNull { it.supportsDeepTouchDetection() }
 
                                     when {
                                         firstDeepWidget == null -> list
@@ -224,7 +233,7 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                     else -> {
                                         for (targetWidget in targetWidgets) {
                                             if (targetWidget.canProcess()) {
-                                                return@fastForEach //拒绝处理该事件
+                                                return@forEach //拒绝处理该事件
                                             }
 
                                             targetWidget.onTouchEvent(
@@ -264,7 +273,7 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
                                     }
                                 }
                             } else {
-                                allActiveWidgets.remove(pointerId)?.fastForEach { widget ->
+                                allActiveWidgets.remove(pointerId)?.forEach { widget ->
                                     widget.onReleaseEvent(eventHandler, reversedLayers, change)
                                 }
                             }
@@ -301,7 +310,7 @@ private fun ControlsRendererLayer(
         modifier = Modifier.alpha(alpha = opacity),
         content = {
             //按图层顺序渲染所有可见的控件
-            layers.fastForEach { layer ->
+            layers.forEach { layer ->
                 val layerVisibility = checkLayerVisibility(
                     layer = layer,
                     hideLayerWhen = hideLayerWhen,
@@ -311,7 +320,7 @@ private fun ControlsRendererLayer(
                 val normalButtons by layer.normalButtons.collectAsState()
                 val textBoxes by layer.textBoxes.collectAsState()
 
-                textBoxes.fastForEach { data ->
+                textBoxes.forEach { data ->
                     TextButton(
                         isEditMode = false,
                         data = data,
@@ -325,7 +334,7 @@ private fun ControlsRendererLayer(
                     )
                 }
 
-                normalButtons.fastForEach { data ->
+                normalButtons.forEach { data ->
                     TextButton(
                         isEditMode = false,
                         data = data,

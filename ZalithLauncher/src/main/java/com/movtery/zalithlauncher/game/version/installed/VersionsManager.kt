@@ -92,11 +92,21 @@ object VersionsManager {
         else folder.exists()
     }
 
-    fun refresh(tag: String) {
+    /**
+     * 刷新所有版本
+     * @param tag 是由谁发起的刷新，输出到日志方便定位
+     * @param trySetVersion 在刷新完成后尝试设置当前版本
+     */
+    fun refresh(tag: String, trySetVersion: String? = null) {
         currentJob?.cancel()
         currentJob = scope.launch {
             isRefreshing = true
             lDebug("Initiated by $tag: starting to refresh the version list.")
+
+            if (trySetVersion != null) {
+                saveCurrentVersion(trySetVersion, refresh = false)
+                lDebug("Has attempted to save the current version: $trySetVersion")
+            }
 
             versions = emptyList()
 
@@ -304,7 +314,7 @@ object VersionsManager {
 
         if (saveToCurrent) {
             //设置并刷新当前版本
-            saveCurrentVersion(name)
+            saveCurrentVersion(name, refresh = false)
         }
 
         refresh("VersionsManager.renameVersion")

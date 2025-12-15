@@ -77,7 +77,8 @@ fun TextRailItem(
     shape: Shape = MaterialTheme.shapes.extraLarge,
     backgroundColor: Color = NavigationRailItemDefaults.colors().selectedIndicatorColor,
     selectedContentColor: Color = NavigationRailItemDefaults.colors().selectedIconColor,
-    unselectedContentColor: Color = NavigationRailItemDefaults.colors().unselectedIconColor
+    unselectedContentColor: Color = NavigationRailItemDefaults.colors().unselectedIconColor,
+    enabled: Boolean = true
 ) {
     val animationProgress by animateFloatAsState(
         targetValue = if (selected) 1f else 0f,
@@ -88,7 +89,8 @@ fun TextRailItem(
     Box(
         modifier = modifier
             .clip(shape)
-            .clickable(onClick = onClick)
+            .clickable(enabled = enabled, onClick = onClick)
+            .alpha(if (enabled) 1f else 0.5f)
     ) {
         //背景扩散动画
         Canvas(

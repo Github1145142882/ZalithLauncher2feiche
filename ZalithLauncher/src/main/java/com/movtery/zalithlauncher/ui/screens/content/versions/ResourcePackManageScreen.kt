@@ -88,7 +88,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -171,7 +170,7 @@ private class ResourcePackManageViewModel(
      * 全选所有文件
      */
     fun selectAllFiles() {
-        allPacks.fastForEach { pack ->
+        allPacks.forEach { pack ->
             val file = pack.file
             if (!selectedFiles.contains(file)) selectedFiles.add(file)
         }

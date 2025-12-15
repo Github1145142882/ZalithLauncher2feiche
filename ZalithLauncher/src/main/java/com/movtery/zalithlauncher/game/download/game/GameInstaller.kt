@@ -114,7 +114,7 @@ class GameInstaller(
      */
     fun installGame(
         isRunning: () -> Unit = {},
-        onInstalled: () -> Unit,
+        onInstalled: (version: String) -> Unit,
         onError: (th: Throwable) -> Unit,
         onGameAlreadyInstalled: () -> Unit
     ) {
@@ -129,7 +129,9 @@ class GameInstaller(
                 val tasks = getTaskPhase()
                 taskExecutor.addPhases(tasks)
             },
-            onComplete = onInstalled,
+            onComplete = {
+                onInstalled(info.customVersionName)
+            },
             onError = { th ->
                 if (th is GameAlreadyInstalledException) {
                     onGameAlreadyInstalled()

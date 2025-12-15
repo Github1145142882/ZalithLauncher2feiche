@@ -39,7 +39,7 @@ public class TerracottaVPNService extends VpnService {
     public static final int VPN_REQUEST_CODE         = 1000;
 
     private NotificationManager notificationManager;
-    private String currentStateText = null;
+    private int currentStateStringRes = -1;
     private volatile boolean isStopping = false;
 
     private ParcelFileDescriptor vpnInterface;
@@ -70,10 +70,7 @@ public class TerracottaVPNService extends VpnService {
         }
 
         if (ACTION_UPDATE_STATE.equals(action)) {
-            if (intent.hasExtra(EXTRA_STATE_TEXT)) {
-                int stringRes = intent.getIntExtra(EXTRA_STATE_TEXT, -1);
-                currentStateText = getString(stringRes);
-            }
+            currentStateStringRes = getStateTextRes(intent);
 
             if (!isStopping) {
                 Notification n = buildVpnNotification();
@@ -86,10 +83,7 @@ public class TerracottaVPNService extends VpnService {
 
         if (ACTION_REPOST.equals(action) && fromDelete && !isStopping) {
             Log.d(TAG, "Repost VPN notification after user cleared it.");
-            if (intent.hasExtra(EXTRA_STATE_TEXT)) {
-                int stringRes = intent.getIntExtra(EXTRA_STATE_TEXT, -1);
-                currentStateText = getString(stringRes);
-            }
+            currentStateStringRes = getStateTextRes(intent);
             Notification notification = buildVpnNotification();
             if (notification == null)
                 return Service.START_NOT_STICKY;
@@ -136,19 +130,33 @@ public class TerracottaVPNService extends VpnService {
         super.onDestroy();
     }
 
+    private int getStateTextRes(Intent intent) {
+        int res = -1;
+        if (intent.hasExtra(EXTRA_STATE_TEXT)) {
+            res = intent.getIntExtra(EXTRA_STATE_TEXT, -1);
+        }
+        return res;
+    }
+
     private Notification buildVpnNotification() {
         Terracotta.Mode mode = Terracotta.INSTANCE.getMode();
         if (mode == null) return null;
 
         String title = getString(R.string.terracotta_notification_title);
         String modeText = mode == Terracotta.Mode.Host ? getString(R.string.terracotta_player_kind_host) : getString(R.string.terracotta_player_kind_guest);
-        if (currentStateText == null) {
+        if (currentStateStringRes == -1) {
             TerracottaState.Ready state = Terracotta.INSTANCE.getState().getValue();
             if (state != null && !(state instanceof TerracottaState.Waiting)) {
-                currentStateText = getString(state.localStringRes());
+                currentStateStringRes = state.localStringRes();
             }
         }
-        String contentText = String.format(getString(R.string.terracotta_notification_desc), modeText, currentStateText);
+        String stateString;
+        if (currentStateStringRes == -1) {
+            stateString = "Unknown";
+        } else {
+            stateString = getString(currentStateStringRes);
+        }
+        String contentText = String.format(getString(R.string.terracotta_notification_desc), modeText, stateString);
 
         Notification.Builder builder;
         builder = new Notification.Builder(this, NotificationChannelData.TERRACOTTA_VPN_CHANNEL.getChannelId());
@@ -156,7 +164,7 @@ public class TerracottaVPNService extends VpnService {
         Intent deleteIntent = new Intent(this, TerracottaVPNService.class)
                 .setAction(ACTION_REPOST)
                 .putExtra(EXTRA_FROM_DELETE, true)
-                .putExtra(EXTRA_STATE_TEXT, currentStateText);
+                .putExtra(EXTRA_STATE_TEXT, currentStateStringRes);
         PendingIntent deletePendingIntent = PendingIntent.getService(
                 this,
                 VPN_REQUEST_CODE,

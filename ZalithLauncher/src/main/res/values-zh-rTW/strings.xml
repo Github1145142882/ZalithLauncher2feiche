@@ -973,6 +973,8 @@
     <string name="control_editor_edit_text_bold">啟用粗體</string>
     <string name="control_editor_edit_text_italic">啟用斜體</string>
     <string name="control_editor_edit_text_underline">啟用底線</string>
+    <string name="control_editor_edit_text_size">文字大小</string>
+    <string name="control_editor_edit_text_size_custom">自訂文字大小</string>
     <string name="control_editor_edit_position_x">X 座標</string>
     <string name="control_editor_edit_position_y">Y 座標</string>
     <string name="control_editor_edit_size_type">尺寸類型</string>

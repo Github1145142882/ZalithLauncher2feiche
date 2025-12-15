@@ -29,6 +29,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
@@ -350,6 +351,38 @@ internal fun buttonContentColorAsState(
         animateColorAsState(targetColor, label = "contentColorAnimation")
     } else {
         remember(targetColor) { mutableStateOf(targetColor) }
+    }
+}
+
+/**
+ * 自动处理按钮文本大小
+ * @param isPressed 按钮是否处于按下的状态
+ */
+@Composable
+internal fun buttonFontSizeAsState(
+    style: ObservableButtonStyle,
+    isDark: Boolean = isSystemInDarkTheme(),
+    isPressed: Boolean
+): State<Float> {
+    val themeStyle = if (isDark) style.darkStyle else style.lightStyle
+    val textStyle = LocalTextStyle.current
+
+    val fontSize: Float = remember(themeStyle, textStyle, isPressed, themeStyle.fontSize, themeStyle.pressedFontSize) {
+        val defaultFontSize = textStyle.fontSize.value
+        val size: Int? = if (isPressed) {
+            themeStyle.pressedFontSize
+        } else {
+            themeStyle.fontSize
+        }
+        size?.toFloat() ?: defaultFontSize
+    }
+
+    return if (style.animateSwap) {
+        animateFloatAsState(fontSize, label = "fontSizeAnimation")
+    } else {
+        remember(fontSize) {
+            mutableStateOf(fontSize)
+        }
     }
 }
 

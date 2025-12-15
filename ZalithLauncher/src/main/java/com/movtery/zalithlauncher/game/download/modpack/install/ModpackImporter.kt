@@ -31,6 +31,7 @@ import com.movtery.zalithlauncher.coroutine.TitledTask
 import com.movtery.zalithlauncher.coroutine.addTask
 import com.movtery.zalithlauncher.coroutine.buildPhase
 import com.movtery.zalithlauncher.game.download.modpack.platform.ALL_PACK_PARSER
+import com.movtery.zalithlauncher.game.download.modpack.platform.AbstractPack
 import com.movtery.zalithlauncher.game.version.installed.VersionFolders
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.utils.file.extractFromZip
@@ -65,6 +66,11 @@ class ModpackImporter(
     val taskFlow: StateFlow<List<TitledTask>> = taskExecutor.tasksFlow
 
     /**
+     * 当前导入的整合包的任务构建器
+     */
+    private lateinit var modpack: AbstractPack
+
+    /**
      * 开始导入整合包
      * @param isRunning 正在运行中，被拒绝导入时
      * @param onFinished 导入完成时
@@ -72,7 +78,7 @@ class ModpackImporter(
      */
     fun startImport(
         isRunning: () -> Unit = {},
-        onFinished: () -> Unit,
+        onFinished: (version: String) -> Unit,
         onError: (Throwable) -> Unit
     ) {
         if (taskExecutor.isRunning()) {
@@ -85,7 +91,9 @@ class ModpackImporter(
                 val tasks = getTaskPhases()
                 taskExecutor.addPhases(tasks)
             },
-            onComplete = onFinished,
+            onComplete = {
+                onFinished(modpack.getFinalClientName())
+            },
             onError = onError
         )
     }
@@ -158,7 +166,7 @@ class ModpackImporter(
                 ) { task ->
                     task.updateProgress(-1f)
 
-                    val modpack = run {
+                    modpack = run {
                         //尝试所有整合包格式 进行解析
                         for (parser in ALL_PACK_PARSER) {
                             ensureActive()

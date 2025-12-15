@@ -24,12 +24,18 @@ import kotlinx.coroutines.CoroutineScope
 import java.io.File
 
 /**
- * 整合包安装信息
+ * 整合包任务流构建器
  * @param platform 整合包格式（平台）
  */
 abstract class AbstractPack(
     val platform: PackPlatform
 ) {
+    /**
+     * 获取最终安装的客户端版本名称（由用户编辑的）
+     * 在安装结束后会尝试直接设定为这个版本
+     */
+    abstract fun getFinalClientName(): String
+
     /**
      * 构建安装任务阶段，在这里下载依赖文件、解压整合包内部的文件等
      * @param scope 在有生命周期管理的scope中执行安装任务

@@ -62,6 +62,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -297,10 +298,10 @@ fun VersionCategoryItem(
     versionsCount: Int,
     selected: Boolean,
     shape: Shape = MaterialTheme.shapes.large,
-    backgroundColor: Color = itemLayoutColor(influencedByBackground = false),
     selectedContentColor: Color = MaterialTheme.colorScheme.onSurface,
     unselectedContentColor: Color = MaterialTheme.colorScheme.onSurface,
     style: TextStyle = MaterialTheme.typography.labelMedium,
+    enabled: Boolean = true,
     onClick: () -> Unit = {}
 ) {
     TextRailItem(
@@ -319,9 +320,9 @@ fun VersionCategoryItem(
         onClick = onClick,
         selected = selected,
         shape = shape,
-        backgroundColor = backgroundColor,
         selectedContentColor = selectedContentColor,
-        unselectedContentColor = unselectedContentColor
+        unselectedContentColor = unselectedContentColor,
+        enabled = enabled
     )
 }
 
@@ -728,6 +729,7 @@ fun VersionItemLayout(
                         painterResource(R.drawable.ic_pinned_outlined)
                     }
                     Icon(
+                        modifier = Modifier.rotate(45.0f),
                         painter = icon,
                         contentDescription = stringResource(R.string.versions_manage_pin)
                     )

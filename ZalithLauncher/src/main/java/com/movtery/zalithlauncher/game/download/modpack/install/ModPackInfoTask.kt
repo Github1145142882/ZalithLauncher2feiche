@@ -70,6 +70,10 @@ abstract class ModPackInfoTask(
         root: File
     ): ModPackInfo
 
+    override fun getFinalClientName(): String {
+        return targetVersionName
+    }
+
     override fun buildTaskPhases(
         context: Context,
         scope: CoroutineScope,

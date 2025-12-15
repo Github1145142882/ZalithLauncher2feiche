@@ -347,7 +347,6 @@ private fun ControlOperation(
                     changeOperation(ControlOperation.None)
                 },
                 allowEmpty = operation.type.allowEmpty,
-                dismissText = stringResource(R.string.generic_close),
                 closeText = stringResource(R.string.generic_save),
                 take = operation.type.length
             )
@@ -366,7 +365,6 @@ private fun ControlOperation(
                     onSave(operation.data)
                     changeOperation(ControlOperation.None)
                 },
-                dismissText = stringResource(R.string.generic_close),
                 closeText = stringResource(R.string.generic_save)
             )
         }

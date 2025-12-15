@@ -268,11 +268,7 @@ class TerracottaViewModel(
                         }
                         is EventViewModel.Event.Terracotta.StopVPN -> {
                             withContext(Dispatchers.Main) {
-                                if (TerracottaVPNService.isRunning()) {
-                                    val vpnIntent = Intent(activity, TerracottaVPNService::class.java)
-                                        .setAction(TerracottaVPNService.ACTION_STOP)
-                                    activity.startForegroundService(vpnIntent)
-                                }
+                                forceStopVPN()
                             }
                         }
                     }
@@ -281,6 +277,15 @@ class TerracottaViewModel(
 
         allJobs.add(stateChangeJob)
         allJobs.add(eventJob)
+    }
+
+    fun forceStopVPN() {
+        val activity = gameHandler.activity
+        if (TerracottaVPNService.isRunning()) {
+            val vpnIntent = Intent(activity, TerracottaVPNService::class.java)
+                .setAction(TerracottaVPNService.ACTION_STOP)
+            activity.startForegroundService(vpnIntent)
+        }
     }
 
     override fun onCleared() {

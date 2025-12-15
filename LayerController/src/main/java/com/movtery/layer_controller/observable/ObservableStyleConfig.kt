@@ -34,12 +34,14 @@ class ObservableStyleConfig(
     var alpha by mutableFloatStateOf(config.alpha)
     var backgroundColor by mutableStateOf(config.backgroundColor)
     var contentColor by mutableStateOf(config.contentColor)
+    var fontSize by mutableStateOf(config.fontSize)
     var borderWidth by mutableIntStateOf(config.borderWidth)
     var borderColor by mutableStateOf(config.borderColor)
     var borderRadius by mutableStateOf(config.borderRadius)
     var pressedAlpha by mutableFloatStateOf(config.pressedAlpha)
     var pressedBackgroundColor by mutableStateOf(config.pressedBackgroundColor)
     var pressedContentColor by mutableStateOf(config.pressedContentColor)
+    var pressedFontSize by mutableStateOf(config.pressedFontSize)
     var pressedBorderWidth by mutableIntStateOf(config.pressedBorderWidth)
     var pressedBorderColor by mutableStateOf(config.pressedBorderColor)
     var pressedBorderRadius by mutableStateOf(config.pressedBorderRadius)
@@ -49,12 +51,14 @@ class ObservableStyleConfig(
             alpha = this.alpha,
             backgroundColor = this.backgroundColor,
             contentColor = this.contentColor,
+            fontSize = this.fontSize,
             borderWidth = this.borderWidth,
             borderColor = this.borderColor,
             borderRadius = this.borderRadius,
             pressedAlpha = this.pressedAlpha,
             pressedBackgroundColor = this.pressedBackgroundColor,
             pressedContentColor = this.pressedContentColor,
+            pressedFontSize = this.pressedFontSize,
             pressedBorderWidth = this.pressedBorderWidth,
             pressedBorderColor = this.pressedBorderColor,
             pressedBorderRadius = this.pressedBorderRadius
@@ -65,12 +69,14 @@ class ObservableStyleConfig(
         return this.alpha != config.alpha ||
                 this.backgroundColor != config.backgroundColor ||
                 this.contentColor != config.contentColor ||
+                this.fontSize != config.fontSize ||
                 this.borderWidth != config.borderWidth ||
                 this.borderColor != config.borderColor ||
                 config.borderRadius.isModified(this.borderRadius) ||
                 this.pressedAlpha != config.pressedAlpha ||
                 this.pressedBackgroundColor != config.pressedBackgroundColor ||
                 this.pressedContentColor != config.pressedContentColor ||
+                this.pressedFontSize != config.pressedFontSize ||
                 this.pressedBorderWidth != config.pressedBorderWidth ||
                 this.pressedBorderColor != config.pressedBorderColor ||
                 config.pressedBorderRadius.isModified(this.pressedBorderRadius)

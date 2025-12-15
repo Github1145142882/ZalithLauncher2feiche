@@ -59,6 +59,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -139,7 +140,8 @@ fun IconTextButton(
     painter: Painter,
     text: String,
     contentDescription: String? = text,
-    style: TextStyle = MaterialTheme.typography.labelMedium
+    style: TextStyle = MaterialTheme.typography.labelMedium,
+    enabled: Boolean = true
 ) {
     BaseIconTextButton(
         onClick = onClick,
@@ -153,7 +155,8 @@ fun IconTextButton(
             )
         },
         text = text,
-        style = style
+        style = style,
+        enabled = enabled
     )
 }
 
@@ -166,7 +169,8 @@ fun IconTextButton(
     imageVector: ImageVector,
     text: String,
     contentDescription: String? = text,
-    style: TextStyle = MaterialTheme.typography.labelMedium
+    style: TextStyle = MaterialTheme.typography.labelMedium,
+    enabled: Boolean = true,
 ) {
     BaseIconTextButton(
         onClick = onClick,
@@ -180,7 +184,8 @@ fun IconTextButton(
             )
         },
         text = text,
-        style = style
+        style = style,
+        enabled = enabled
     )
 }
 
@@ -191,13 +196,15 @@ private fun BaseIconTextButton(
     shape: Shape = MaterialTheme.shapes.large,
     icon: @Composable (Modifier) -> Unit,
     text: String,
-    style: TextStyle = MaterialTheme.typography.labelMedium
+    style: TextStyle = MaterialTheme.typography.labelMedium,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = modifier
             .clip(shape = shape)
-            .clickable(onClick = onClick)
-            .padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp)),
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(PaddingValues(horizontal = 8.dp, vertical = 4.dp))
+            .alpha(if (enabled) 1f else 0.5f),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         icon(Modifier.align(Alignment.CenterVertically))

@@ -18,8 +18,6 @@
 
 package com.movtery.zalithlauncher.ui.control.event
 
-import androidx.compose.ui.util.fastForEach
-
 /**
  * 处理启动器按键事件标识
  */
@@ -56,7 +54,7 @@ class KeyEventHandler(
 
     private fun handle(primaryKey: String? = null) {
         val entries = keyEvents.entries.toList()
-        entries.fastForEach { (key, count) ->
+        entries.forEach { (key, count) ->
             val pressed = when (count) {
                 1 -> true
                 0 -> {
@@ -68,7 +66,7 @@ class KeyEventHandler(
                         keyEvents.remove(key)
                         false
                     } else {
-                        return@fastForEach
+                        return@forEach
                     }
                 }
             }

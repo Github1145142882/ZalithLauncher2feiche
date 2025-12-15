@@ -321,16 +321,31 @@ private fun EditWidgetNavigation(
             onBack = { /* 忽略 */ },
             entryProvider = entryProvider {
                 entry<EditWidgetCategory.Info> {
-                    EditWidgetInfo(data, onPreviewRequested, onDismissRequested)
+                    EditWidgetInfo(
+                        data = data,
+                        onPreviewRequested = onPreviewRequested,
+                        onDismissRequested = onDismissRequested
+                    )
                 }
                 entry<EditWidgetCategory.TextStyle> {
-                    EditTextStyle(data, onEditWidgetText)
+                    EditTextStyle(
+                        data = data,
+                        onEditWidgetText = onEditWidgetText
+                    )
                 }
                 entry<EditWidgetCategory.ClickEvent> {
-                    EditWidgetClickEvent(data as ObservableNormalData, switchControlLayers, sendText)
+                    EditWidgetClickEvent(
+                        data = data as ObservableNormalData,
+                        switchControlLayers = switchControlLayers,
+                        sendText = sendText
+                    )
                 }
                 entry<EditWidgetCategory.Style> {
-                    EditWidgetStyle(data, styles, openStyleList)
+                    EditWidgetStyle(
+                        data = data,
+                        styles = styles,
+                        openStyleList = openStyleList
+                    )
                 }
             }
         )

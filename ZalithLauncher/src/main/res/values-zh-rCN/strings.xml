@@ -951,6 +951,8 @@
     <string name="control_editor_edit_text_bold">启用粗体</string>
     <string name="control_editor_edit_text_italic">启用斜体</string>
     <string name="control_editor_edit_text_underline">启用下划线</string>
+    <string name="control_editor_edit_text_size">文本大小</string>
+    <string name="control_editor_edit_text_size_custom">自定义文本大小</string>
     <string name="control_editor_edit_position_x">X 坐标</string>
     <string name="control_editor_edit_position_y">Y 坐标</string>
     <string name="control_editor_edit_size_type">尺寸类型</string>

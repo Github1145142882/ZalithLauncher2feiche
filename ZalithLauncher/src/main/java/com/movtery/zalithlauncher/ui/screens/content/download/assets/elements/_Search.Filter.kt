@@ -66,7 +66,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.download.assets.platform.Platform
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformDisplayLabel
@@ -353,7 +352,7 @@ private fun <E> FilterListLayout(
                             shape = MaterialTheme.shapes.small
                         )
                     } else {
-                        selectedItems.fastForEach { item ->
+                        selectedItems.forEach { item ->
                             selectedLabel(item)
                         }
                     }

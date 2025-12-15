@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.bridge.ZLBridge
+import com.movtery.zalithlauncher.bridge.ZLNativeInvoker
 import com.movtery.zalithlauncher.game.input.AWTCharSender
 import com.movtery.zalithlauncher.game.input.AWTInputEvent
 import com.movtery.zalithlauncher.ui.components.TouchableButton
@@ -68,6 +69,9 @@ fun JVMScreen(
     ForceCloseOperation(
         operation = forceCloseState,
         onChange = { forceCloseState = it },
+        onForceClose = {
+            ZLNativeInvoker.jvmExit(0, false)
+        },
         text = stringResource(R.string.game_dialog_force_close_message)
     )
 

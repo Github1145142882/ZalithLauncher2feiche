@@ -22,7 +22,6 @@ import android.content.Context
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.ui.util.fastForEach
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskFlowExecutor
@@ -61,6 +60,10 @@ open class MultiMCPack(
      * 即将下载的游戏版本的信息
      */
     private lateinit var gameDownloadInfo: GameDownloadInfo
+
+    override fun getFinalClientName(): String {
+        return targetVersionName
+    }
 
     override fun buildTaskPhases(
         context: Context,
@@ -136,7 +139,7 @@ open class MultiMCPack(
                     )
 
                     //构建模组加载器安装信息
-                    manifest.components.fastForEach { component ->
+                    manifest.components.forEach { component ->
                         with(manifest) { component.retrieveLoader() }?.let { pair ->
                             pair.retrieveLoader(
                                 gameVersion = gameVersion,

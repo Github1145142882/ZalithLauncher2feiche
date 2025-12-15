@@ -62,6 +62,8 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.movtery.colorpicker.rememberColorPickerController
 import com.movtery.layer_controller.data.ButtonShape
+import com.movtery.layer_controller.data.DEFAULT_FONT_SIZE
+import com.movtery.layer_controller.data.FONT_SIZE_RANGE
 import com.movtery.layer_controller.data.buttonShapeRange
 import com.movtery.layer_controller.layout.RendererStyleBox
 import com.movtery.layer_controller.observable.ObservableButtonStyle
@@ -240,8 +242,7 @@ private fun RendererBox(
         ),
         color = color,
         contentColor = contentColor,
-        shape = shape,
-        shadowElevation = 1.dp
+        shape = shape
     ) {
         ConstraintLayout(
             modifier = Modifier.fillMaxSize().padding(all = 16.dp)
@@ -321,7 +322,7 @@ private fun StyleConfigEditor(
         val itemModifier = Modifier.fillMaxWidth().padding(start = 4.dp, end = 12.dp)
 
         //普通
-        item {
+        item(key = "normal_title") {
             Text(
                 modifier = itemModifier,
                 text = stringResource(R.string.control_editor_edit_style_config_normal)
@@ -329,6 +330,7 @@ private fun StyleConfigEditor(
         }
 
         commonStyleConfig(
+            tag = "normal",
             itemModifier = itemModifier,
             alpha = styleConfig.alpha,
             onAlphaChange = { styleConfig.alpha = it },
@@ -336,6 +338,8 @@ private fun StyleConfigEditor(
             onBackgroundColorChange = { styleConfig.backgroundColor = it },
             contentColor = styleConfig.contentColor,
             onContentColorChange = { styleConfig.contentColor = it },
+            textSize = styleConfig.fontSize,
+            onTextSizeChanged = { styleConfig.fontSize = it },
             borderWidth = styleConfig.borderWidth,
             onBorderWidthChange = { styleConfig.borderWidth = it },
             borderColor = styleConfig.borderColor,
@@ -344,7 +348,7 @@ private fun StyleConfigEditor(
             onBorderRadiusChange = { styleConfig.borderRadius = it }
         )
 
-        item {
+        item(key = "divider") {
             HorizontalDivider(
                 modifier = Modifier
                     .padding(end = 12.dp)
@@ -354,13 +358,14 @@ private fun StyleConfigEditor(
         }
 
         //按下
-        item {
+        item(key = "pressed_title") {
             Text(
                 text = stringResource(R.string.control_editor_edit_style_config_pressed)
             )
         }
 
         commonStyleConfig(
+            tag = "pressed",
             itemModifier = itemModifier,
             alpha = styleConfig.pressedAlpha,
             onAlphaChange = { styleConfig.pressedAlpha = it },
@@ -368,6 +373,8 @@ private fun StyleConfigEditor(
             onBackgroundColorChange = { styleConfig.pressedBackgroundColor = it },
             contentColor = styleConfig.pressedContentColor,
             onContentColorChange = { styleConfig.pressedContentColor = it },
+            textSize = styleConfig.pressedFontSize,
+            onTextSizeChanged = { styleConfig.pressedFontSize = it },
             borderWidth = styleConfig.pressedBorderWidth,
             onBorderWidthChange = { styleConfig.pressedBorderWidth = it },
             borderColor = styleConfig.pressedBorderColor,
@@ -379,6 +386,7 @@ private fun StyleConfigEditor(
 }
 
 private fun LazyListScope.commonStyleConfig(
+    tag: String,
     itemModifier: Modifier,
     alpha: Float,
     onAlphaChange: (Float) -> Unit,
@@ -386,6 +394,8 @@ private fun LazyListScope.commonStyleConfig(
     onBackgroundColorChange: (Color) -> Unit,
     contentColor: Color,
     onContentColorChange: (Color) -> Unit,
+    textSize: Int?,
+    onTextSizeChanged: (Int?) -> Unit,
     borderWidth: Int,
     onBorderWidthChange: (Int) -> Unit,
     borderColor: Color,
@@ -394,9 +404,9 @@ private fun LazyListScope.commonStyleConfig(
     onBorderRadiusChange: (ButtonShape) -> Unit
 ) {
     //整体不透明度
-    item {
+    item(key = "opacity_$tag") {
         InfoLayoutSliderItem(
-            modifier = itemModifier,
+            modifier = itemModifier.animateItem(),
             title = stringResource(R.string.control_editor_edit_style_config_alpha),
             value = alpha,
             onValueChange = { onAlphaChange(it) },
@@ -407,9 +417,9 @@ private fun LazyListScope.commonStyleConfig(
     }
 
     //背景颜色
-    item {
+    item(key = "background_color_$tag") {
         InfoLayoutColorItem(
-            modifier = itemModifier,
+            modifier = itemModifier.animateItem(),
             title = stringResource(R.string.control_editor_edit_style_config_background_color),
             color = backgroundColor,
             onColorChanged = onBackgroundColorChange
@@ -417,49 +427,84 @@ private fun LazyListScope.commonStyleConfig(
     }
 
     //内容颜色
-    item {
+    item(key = "content_color_$tag") {
         InfoLayoutColorItem(
-            modifier = itemModifier,
+            modifier = itemModifier.animateItem(),
             title = stringResource(R.string.control_editor_edit_style_config_content_color),
             color = contentColor,
             onColorChanged = onContentColorChange
         )
     }
 
+    //自定义文本大小
+    item(key = "custom_text_size_$tag") {
+        InfoLayoutSwitchItem(
+            modifier = itemModifier.animateItem(),
+            title = stringResource(R.string.control_editor_edit_text_size_custom),
+            value = textSize != null,
+            onValueChange = { value ->
+                if (value) {
+                    onTextSizeChanged(DEFAULT_FONT_SIZE)
+                } else {
+                    onTextSizeChanged(null)
+                }
+            }
+        )
+    }
+
+    if (textSize != null) {
+        //文本大小
+        item(key = "text_size_$tag") {
+            InfoLayoutSliderItem(
+                modifier = itemModifier.animateItem(),
+                title = stringResource(R.string.control_editor_edit_text_size),
+                value = textSize.toFloat(),
+                onValueChange = { value ->
+                    onTextSizeChanged(value.toInt())
+                },
+                valueRange = FONT_SIZE_RANGE,
+                decimalFormat = "#0",
+                suffix = "sp",
+                fineTuningStep = 1f,
+            )
+        }
+    }
+
     //边框粗细
-    item {
+    item(key = "border_width_$tag") {
         InfoLayoutSliderItem(
-            modifier = itemModifier,
+            modifier = itemModifier.animateItem(),
             title = stringResource(R.string.control_editor_edit_style_config_border_width),
             value = borderWidth.toFloat(),
             onValueChange = { onBorderWidthChange(it.toInt()) },
             valueRange = 0f..50f,
             decimalFormat = "#0",
-            suffix = "Dp",
+            suffix = "dp",
             fineTuningStep = 1f,
         )
     }
 
     //边框颜色
-    item {
+    item(key = "border_color_$tag") {
         InfoLayoutColorItem(
-            modifier = itemModifier,
+            modifier = itemModifier.animateItem(),
             title = stringResource(R.string.control_editor_edit_style_config_border_color),
             color = borderColor,
             onColorChanged = onBorderColorChange
         )
     }
 
-    item {
+    item(key = "corner_radius_text_$tag") {
         Text(
+            modifier = Modifier.animateItem(),
             text = stringResource(R.string.control_editor_edit_style_config_widget_radius)
         )
     }
 
     //控件圆角
-    item {
+    item(key = "corner_radius_$tag") {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().animateItem(),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             //左上角
@@ -469,7 +514,7 @@ private fun LazyListScope.commonStyleConfig(
                 value = borderRadius.topStart,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(topStart = it)) },
                 valueRange = buttonShapeRange,
-                suffix = "Dp"
+                suffix = "dp"
             )
             //右上角
             InfoLayoutSliderItem(
@@ -478,7 +523,7 @@ private fun LazyListScope.commonStyleConfig(
                 value = borderRadius.topEnd,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(topEnd = it)) },
                 valueRange = buttonShapeRange,
-                suffix = "Dp"
+                suffix = "dp"
             )
             //左下角
             InfoLayoutSliderItem(
@@ -487,7 +532,7 @@ private fun LazyListScope.commonStyleConfig(
                 value = borderRadius.bottomStart,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(bottomStart = it)) },
                 valueRange = buttonShapeRange,
-                suffix = "Dp"
+                suffix = "dp"
             )
             //右下角
             InfoLayoutSliderItem(
@@ -496,7 +541,7 @@ private fun LazyListScope.commonStyleConfig(
                 value = borderRadius.bottomEnd,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(bottomEnd = it)) },
                 valueRange = buttonShapeRange,
-                suffix = "Dp"
+                suffix = "dp"
             )
         }
     }

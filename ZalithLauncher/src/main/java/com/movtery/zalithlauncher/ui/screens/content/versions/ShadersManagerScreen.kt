@@ -84,7 +84,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -160,7 +159,7 @@ private class ShadersManageViewModel(
      * 全选所有文件
      */
     fun selectAllFiles() {
-        allShaders.fastForEach { info ->
+        allShaders.forEach { info ->
             val file = info.file
             if (!selectedFiles.contains(file)) selectedFiles.add(file)
         }

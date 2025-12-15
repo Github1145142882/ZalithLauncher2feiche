@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.PointerInputChange
-import androidx.compose.ui.util.fastAll
 import com.movtery.layer_controller.data.ButtonPosition
 import com.movtery.layer_controller.data.ButtonSize
 import com.movtery.layer_controller.data.NormalData
@@ -147,7 +146,7 @@ class ObservableNormalData(data: NormalData) : ObservableWidget() {
         } else if (this !in activeWidgets && isSwipple) {
             //滑动到其他按钮时的处理
             if (
-                activeWidgets.fastAll {
+                activeWidgets.all {
                     it is ObservableNormalData && it.isSwipple
                 } && isSwipple
             ) {

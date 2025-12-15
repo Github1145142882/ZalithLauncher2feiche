@@ -20,6 +20,7 @@ package com.movtery.zalithlauncher.game.launch
 
 import android.content.Context
 import android.os.Build
+import android.os.LocaleList
 import android.system.Os
 import android.util.ArrayMap
 import androidx.annotation.CallSuper
@@ -45,6 +46,7 @@ import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.oracle.dalvik.VMLauncher
+import org.apache.commons.io.FileUtils
 import org.lwjgl.glfw.CallbackBridge
 import java.io.File
 import java.io.IOException
@@ -144,7 +146,7 @@ abstract class Launcher(
         windowSize: IntSize
     ): List<String> {
         val userArguments = parseJavaArguments(userArgumentsString).toMutableList()
-        val resolvFile = File(PathManager.DIR_FILES_PRIVATE.parent, "resolv.conf").absolutePath
+        val resolvFile = ensureDNSConfig()
 
         val overridableArguments = mutableMapOf<String, String>().apply {
             put("java.home", getJavaHome())
@@ -163,7 +165,7 @@ abstract class Launcher(
             put("glfwstub.windowWidth", getDisplayFriendlyRes(windowSize.width, scaleFactor).toString())
             put("glfwstub.windowHeight", getDisplayFriendlyRes(windowSize.height, scaleFactor).toString())
             put("glfwstub.initEgl", "false")
-            put("ext.net.resolvPath", resolvFile)
+            put("ext.net.resolvPath", resolvFile.absolutePath)
 
             put("log4j2.formatMsgNoLookups", "true")
             // Fix RCE vulnerability of log4j2
@@ -199,6 +201,33 @@ abstract class Launcher(
 
         userArguments += additionalArguments
         return userArguments
+    }
+
+    /**
+     * 确保 DNS 配置文件存在
+     */
+    private fun ensureDNSConfig(): File {
+        val resolvFile = File(PathManager.DIR_GAME, "resolv.conf")
+        if (!resolvFile.exists()) {
+            val configText = if (LocaleList.getDefault().get(0).displayName != Locale.CHINA.displayName) {
+                """
+                    nameserver 1.1.1.1
+                    nameserver 1.0.0.1
+                """.trimIndent()
+            } else {
+                """
+                    nameserver 8.8.8.8
+                    nameserver 8.8.4.4
+                """.trimIndent()
+            }
+            runCatching {
+                resolvFile.writeText(configText)
+            }.onFailure {
+                lWarning("Failed to create resolv.conf", it)
+                FileUtils.deleteQuietly(resolvFile)
+            }
+        }
+        return resolvFile
     }
 
     /**

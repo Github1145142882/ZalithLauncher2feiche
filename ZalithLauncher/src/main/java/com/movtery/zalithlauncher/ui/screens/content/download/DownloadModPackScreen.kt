@@ -150,9 +150,9 @@ private class ModPackViewModel: ViewModel() {
             waitForVersionName = ::waitForVersionName
         ).also {
             it.installModPack(
-                onInstalled = {
+                onInstalled = { version ->
                     installer = null
-                    VersionsManager.refresh("[Modpack] ModPackInstaller.onInstalled")
+                    VersionsManager.refresh("[Modpack] ModPackInstaller.onInstalled", version)
                     installOperation = ModPackInstallOperation.Success
                 },
                 onError = { th ->

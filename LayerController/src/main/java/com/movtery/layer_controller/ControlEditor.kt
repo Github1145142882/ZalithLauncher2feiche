@@ -23,7 +23,13 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateMapOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -35,7 +41,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastFilter
 import androidx.compose.ui.util.fastForEach
 import com.movtery.layer_controller.layout.TextButton
 import com.movtery.layer_controller.observable.ObservableButtonStyle
@@ -77,7 +82,7 @@ fun ControlEditorLayer(
         val renderingLayers = when (focusedLayer) {
             null -> layers
                 //仅渲染编辑器可见层
-                .fastFilter { !it.editorHide }
+                .filter { !it.editorHide }
                 //反转：将最后一层视为底层，逐步向上渲染
                 .reversed()
             //开启聚焦模式
@@ -107,7 +112,7 @@ fun ControlEditorLayer(
             //绘制参考线
             Canvas(modifier = Modifier.fillMaxSize()) {
                 guideLines.values.forEach { guidelines ->
-                    guidelines.fastForEach { guideline ->
+                    guidelines.forEach { guideline ->
                         drawLine(
                             guideline = guideline
                         )
@@ -202,14 +207,14 @@ private fun BoxWithConstraintsScope.ControlWidgetRenderer(
                     .filter { (layer1, _) ->
                         snapInAllLayers1 || layer1 == layer
                     }
-                    .values.flatten().fastFilter { it != data }
+                    .values.flatten().filter { it != data }
             },
             snapThresholdValue = snapThresholdValue,
             drawLine = drawLine,
             onLineCancel = onLineCancel,
             isPressed = isPressed,
-            onTapInEditMode = remember(data, layer) {
-                { onButtonTap(data, layer) }
+            onTapInEditMode = {
+                onButtonTap(data, layer)
             }
         )
     }
@@ -217,18 +222,18 @@ private fun BoxWithConstraintsScope.ControlWidgetRenderer(
     Layout(
         content = {
             //按图层顺序渲染所有可见的控件
-            renderingLayers.fastForEach { layer ->
+            renderingLayers.forEach { layer ->
                 val normalButtons by layer.normalButtons.collectAsState()
                 val textBoxes by layer.textBoxes.collectAsState()
 
                 val widgetsInLayer = normalButtons + textBoxes
                 allWidgetsMap[layer] = widgetsInLayer
 
-                textBoxes.fastForEach { data ->
+                textBoxes.forEach { data ->
                     RenderWidget(data, layer, isPressed = false)
                 }
 
-                normalButtons.fastForEach { data ->
+                normalButtons.forEach { data ->
                     RenderWidget(data, layer, data.isPressed)
                 }
             }

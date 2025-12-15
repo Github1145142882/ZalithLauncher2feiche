@@ -87,7 +87,7 @@ class ModPackInstaller(
      */
     fun installModPack(
         isRunning: () -> Unit = {},
-        onInstalled: () -> Unit,
+        onInstalled: (version: String) -> Unit,
         onError: (Throwable) -> Unit
     ) {
         if (taskExecutor.isRunning()) {
@@ -101,7 +101,9 @@ class ModPackInstaller(
                 val tasks = getTaskPhase()
                 taskExecutor.addPhases(tasks)
             },
-            onComplete = onInstalled,
+            onComplete = {
+                onInstalled(targetVersionName)
+            },
             onError = onError
         )
     }

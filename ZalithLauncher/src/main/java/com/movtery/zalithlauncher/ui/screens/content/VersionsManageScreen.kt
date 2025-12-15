@@ -87,16 +87,17 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.checkStoragePermissions
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 
 private class VersionsScreenViewModel() : ViewModel() {
-    /** 是否正在刷新版本列表 */
-    var isRefreshing by mutableStateOf(true)
-        private set
-
     /** 版本类别分类 */
     var versionCategory by mutableStateOf(VersionCategory.ALL)
         private set
@@ -104,6 +105,9 @@ private class VersionsScreenViewModel() : ViewModel() {
     private val _versions = MutableStateFlow<List<Version>>(emptyList())
     val versions: StateFlow<List<Version>> = _versions
 
+    /** 全部版本的数量 */
+    var allVersionsCount by mutableIntStateOf(0)
+        private set
     /** 原版版本数量 */
     var vanillaVersionsCount by mutableIntStateOf(0)
         private set
@@ -114,7 +118,6 @@ private class VersionsScreenViewModel() : ViewModel() {
     fun startRefreshVersions() {
         if (!VersionsManager.isRefreshing) {
             _versions.update { emptyList() }
-            this.isRefreshing = true
             VersionsManager.refresh("VersionsScreenViewModel.startRefreshVersions")
         }
     }
@@ -122,37 +125,52 @@ private class VersionsScreenViewModel() : ViewModel() {
     /**
      * 刷新当前版本列表
      */
-    fun refreshVersions(currentVersions: List<Version>) {
-        isRefreshing = true
+    suspend fun refreshVersions(
+        currentVersions: List<Version>,
+        clearCurrent: Boolean = true
+    ) {
+        withContext(Dispatchers.Main) {
+            if (clearCurrent) {
+                _versions.update { emptyList() }
+            }
 
-        _versions.update { emptyList() }
+            val filteredVersions = withContext(Dispatchers.Default) {
+                allVersionsCount = currentVersions.size
 
-        val vanillaVersions = currentVersions
-            .filter { ver -> ver.versionType == VersionType.VANILLA }
-            .also { vanillaVersionsCount = it.size }
-        val modloaderVersions = currentVersions
-            .filter { ver -> ver.versionType == VersionType.MODLOADERS }
-            .also { modloaderVersionsCount = it.size }
+                val vanillaVersions = currentVersions
+                    .filter { ver -> ver.versionType == VersionType.VANILLA }
+                    .also { vanillaVersionsCount = it.size }
+                val modloaderVersions = currentVersions
+                    .filter { ver -> ver.versionType == VersionType.MODLOADERS }
+                    .also { modloaderVersionsCount = it.size }
 
-        val filteredVersions = when (versionCategory) {
-            VersionCategory.ALL -> currentVersions
-            VersionCategory.VANILLA -> vanillaVersions
-            VersionCategory.MODLOADER -> modloaderVersions
+                when (versionCategory) {
+                    VersionCategory.ALL -> currentVersions
+                    VersionCategory.VANILLA -> vanillaVersions
+                    VersionCategory.MODLOADER -> modloaderVersions
+                }
+            }
+
+            _versions.update {
+                filteredVersions.sortedWith(VersionComparator)
+            }
         }
-
-        _versions.update {
-            filteredVersions.sortedWith(VersionComparator)
-        }
-
-        isRefreshing = false
     }
+
+    private var currentJob: Job? = null
+    private var mutex: Mutex = Mutex()
 
     /**
      * 变更当前版本列表的过滤类型
      */
     fun changeCategory(category: VersionCategory) {
-        this.versionCategory = category
-        refreshVersions(VersionsManager.versions)
+        currentJob?.cancel()
+        currentJob = viewModelScope.launch {
+            mutex.withLock {
+                this@VersionsScreenViewModel.versionCategory = category
+                refreshVersions(VersionsManager.versions, false)
+            }
+        }
     }
 
     /**
@@ -211,6 +229,7 @@ private class VersionsScreenViewModel() : ViewModel() {
     override fun onCleared() {
         cancelCleaner()
         VersionsManager.unregisterListener(listener)
+        currentJob?.cancel()
     }
 }
 
@@ -260,11 +279,11 @@ fun VersionsManageScreen(
             val versions by viewModel.versions.collectAsState()
 
             VersionsLayout(
-                isRefreshing = viewModel.isRefreshing,
                 isVisible = isVisible,
                 versions = versions,
                 versionCategory = viewModel.versionCategory,
                 onCategoryChange = { viewModel.changeCategory(it) },
+                allVersionsCount = viewModel.allVersionsCount,
                 vanillaVersionsCount = viewModel.vanillaVersionsCount,
                 modloaderVersionsCount = viewModel.modloaderVersionsCount,
                 navigateToVersions = navigateToVersions,
@@ -410,11 +429,11 @@ private fun LeftMenu(
 @Composable
 private fun VersionsLayout(
     modifier: Modifier = Modifier,
-    isRefreshing: Boolean,
     isVisible: Boolean,
     versions: List<Version>,
     versionCategory: VersionCategory,
     onCategoryChange: (VersionCategory) -> Unit,
+    allVersionsCount: Int,
     vanillaVersionsCount: Int,
     modloaderVersionsCount: Int,
     navigateToVersions: (Version) -> Unit,
@@ -432,9 +451,12 @@ private fun VersionsLayout(
         modifier = modifier.offset { IntOffset(x = 0, y = surfaceYOffset.roundToPx()) },
         shape = MaterialTheme.shapes.extraLarge
     ) {
-        if (VersionsManager.isRefreshing || isRefreshing) { //版本正在刷新中
-            Box(modifier = Modifier.fillMaxSize()) {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        if (VersionsManager.isRefreshing) { //版本正在刷新中
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
             }
         } else {
             var versionsOperation by remember { mutableStateOf<VersionsOperation>(VersionsOperation.None) }
@@ -464,7 +486,7 @@ private fun VersionsLayout(
                             onClick = onRefresh,
                             imageVector = Icons.Filled.Refresh,
                             contentDescription = stringResource(R.string.generic_refresh),
-                            text = stringResource(R.string.generic_refresh),
+                            text = stringResource(R.string.generic_refresh)
                         )
                         IconTextButton(
                             onClick = onInstall,
@@ -475,7 +497,7 @@ private fun VersionsLayout(
                         //版本分类
                         VersionCategoryItem(
                             value = VersionCategory.ALL,
-                            versionsCount = versions.size,
+                            versionsCount = allVersionsCount,
                             selected = versionCategory == VersionCategory.ALL,
                             onClick = { onCategoryChange(VersionCategory.ALL) }
                         )

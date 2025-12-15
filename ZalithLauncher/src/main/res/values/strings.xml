@@ -952,6 +952,8 @@
     <string name="control_editor_edit_text_bold">Enable Bold</string>
     <string name="control_editor_edit_text_italic">Enable Italic</string>
     <string name="control_editor_edit_text_underline">Enable Underline</string>
+    <string name="control_editor_edit_text_size">Text Size</string>
+    <string name="control_editor_edit_text_size_custom">Custom Text Size</string>
     <string name="control_editor_edit_position_x">X Coordinate</string>
     <string name="control_editor_edit_position_y">Y Coordinate</string>
     <string name="control_editor_edit_size_type">Size Type</string>

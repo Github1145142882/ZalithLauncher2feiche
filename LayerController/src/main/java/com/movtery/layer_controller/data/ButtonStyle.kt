@@ -27,6 +27,16 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
+ * 文本大小取值范围
+ */
+val FONT_SIZE_RANGE: ClosedFloatingPointRange<Float> = 2.0f..30.0f
+
+/**
+ * 默认文本大小（自定义时）
+ */
+const val DEFAULT_FONT_SIZE = 14
+
+/**
  * @param name 样式显示名称
  * @param animateSwap 在切换状态时，是否启用动画过渡
  * @param lightStyle 亮色模式样式
@@ -49,12 +59,14 @@ data class ButtonStyle(
      * @param alpha 整体不透明度
      * @param backgroundColor 背景颜色
      * @param contentColor 内容颜色
+     * @param fontSize 文字大小，为null时则默认视为TextUnit.Unspecified
      * @param borderWidth 边框粗细
      * @param borderColor 边框颜色
      * @param borderRadius 圆角尺寸
      * @param pressedAlpha 按下时，整体不透明度
      * @param pressedBackgroundColor 按下时，背景颜色
      * @param pressedContentColor 按下时，内容颜色
+     * @param pressedFontSize 按下时，文字大小，为null时则默认视为TextUnit.Unspecified
      * @param pressedBorderWidth 按下时，边框粗细
      * @param pressedBorderColor 按下时，边框颜色
      * @param pressedBorderRadius 按下时，圆角尺寸
@@ -73,6 +85,10 @@ data class ButtonStyle(
         @Contextual val contentColor: Color,
         @SerialName("pressedContentColor")
         @Contextual val pressedContentColor: Color,
+        @SerialName("fontSize")
+        val fontSize: Int? = null,
+        @SerialName("pressedFontSize")
+        val pressedFontSize: Int? = null,
         @SerialName("borderWidth")
         val borderWidth: Int,
         @SerialName("pressedBorderWidth")
@@ -86,6 +102,12 @@ data class ButtonStyle(
         @SerialName("pressedBorderRadius")
         val pressedBorderRadius: ButtonShape
     ): Modifiable<StyleConfig> {
+        init {
+            if (fontSize != null && fontSize.toFloat() !in FONT_SIZE_RANGE) {
+                error("{fontSize} exceeds the valid range of values: $FONT_SIZE_RANGE")
+            }
+        }
+
         override fun isModified(other: StyleConfig): Boolean {
             return this.alpha != other.alpha ||
                     this.pressedAlpha != other.pressedAlpha ||
@@ -115,12 +137,14 @@ val DefaultStyleConfig = StyleConfig(
     alpha = 1f,
     backgroundColor = Color.Black.copy(alpha = 0.5f),
     contentColor = Color.White,
+    fontSize = null,
     borderWidth = 0,
     borderColor = Color.White,
     borderRadius = ButtonShape(0f),
     pressedAlpha = 1f,
     pressedBackgroundColor = Color.Gray.copy(alpha = 0.7f),
     pressedContentColor = Color.White,
+    pressedFontSize = null,
     pressedBorderWidth = 0,
     pressedBorderColor = Color.White,
     pressedBorderRadius = ButtonShape(0f)

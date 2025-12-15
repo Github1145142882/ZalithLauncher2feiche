@@ -51,7 +51,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavKey
 import com.movtery.zalithlauncher.R
@@ -239,7 +238,7 @@ fun GamepadSettingsScreen(
                 lazyListScope = scope,
                 items = GamepadMap.entries,
                 key = { it.identifier }
-            ) { index, item, yOffset ->
+            ) { _, item, yOffset ->
                 SettingsBackground(
                     modifier = Modifier.offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
                     onClick = {
@@ -286,7 +285,7 @@ fun GamepadSettingsScreen(
                                     .basicMarquee(Int.MAX_VALUE),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
-                                codes.fastForEach { code ->
+                                codes.forEach { code ->
                                     LittleTextLabel(
                                         text = getNameByGamepadEvent(code)
                                     )

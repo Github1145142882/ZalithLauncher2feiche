@@ -70,7 +70,7 @@ class MediaPickerContract(
     )
 
     override fun createIntent(context: Context, input: Unit): Intent {
-        return Intent(Intent.ACTION_GET_CONTENT).apply {
+        val intent = Intent(Intent.ACTION_GET_CONTENT).apply {
             type = determinePrimaryType()
             
             if (allowTypes.isNotEmpty()) {
@@ -80,6 +80,7 @@ class MediaPickerContract(
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, allowMultiple)
             addCategory(Intent.CATEGORY_OPENABLE)
         }
+        return Intent.createChooser(intent, null)
     }
 
     override fun parseResult(resultCode: Int, intent: Intent?): List<Uri>? {

@@ -22,7 +22,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.util.fastForEach
 import androidx.lifecycle.ViewModel
 import com.movtery.zalithlauncher.ui.control.gamepad.DpadDirection
 import com.movtery.zalithlauncher.ui.control.gamepad.GamepadMap
@@ -101,7 +100,7 @@ class GamepadViewModel() : ViewModel() {
         allDpadMappings.clear()
 
         val mmkv = keyMappingMMKV()
-        GamepadMap.entries.fastForEach { entry ->
+        GamepadMap.entries.forEach { entry ->
             val mapping = mmkv.decodeParcelable(entry.identifier, GamepadMapping::class.java)
                 ?: GamepadMapping(
                     key = entry.gamepad,
@@ -248,7 +247,7 @@ class GamepadViewModel() : ViewModel() {
     }
 
     private fun sendEvent(event: Event) {
-        listeners.fastForEach { listener ->
+        listeners.forEach { listener ->
             listener(event)
         }
     }
