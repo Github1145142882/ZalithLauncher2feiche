@@ -32,7 +32,7 @@
     <string name="generic_unpacking">Распаковка %s</string>
     <string name="generic_unknown">Неизвестно</string>
     <string name="generic_follow_global">По умолчанию</string>
-    <string name="generic_custom">Своя</string>
+    <string name="generic_custom">Пользовательский</string>
     <string name="generic_search">Поиск</string>
     <string name="generic_loading">Загрузка</string>
     <string name="generic_in_progress">В процессе</string>
@@ -275,7 +275,7 @@
     <string name="versions_settings_overview_management">Управление</string>
     <string name="versions_settings_overview_quick_actions">Быстрые действия</string>
     <string name="versions_settings_config">Конфигурация</string>
-    <string name="versions_overview_custom_version_icon">Своя иконка</string>
+    <string name="versions_overview_custom_version_icon">Пользовательская иконка</string>
     <string name="versions_overview_reset_version_icon">Сбросить иконку</string>
     <string name="versions_overview_reset_version_icon_message">Вы уверены, что хотите сбросить значок для текущей версии?</string>
     <string name="versions_overview_edit_version_summary">Редактировать описание</string>
@@ -382,8 +382,8 @@
     <string name="settings_game_version_isolation_summary">Изолировать все версии, чтобы их данные не пересекались друг с другом</string>
     <string name="settings_game_skip_game_integrity_check_title">Пропустить проверку целостности</string>
     <string name="settings_game_skip_game_integrity_check_summary">Пропускает проверку целостности необходимых файлов при запуске версии</string>
-    <string name="settings_game_version_custom_info_title">Своя информация о версии</string>
-    <string name="settings_game_version_custom_info_summary">Своя информация отображается в левом нижнем углу главного меню и в левом верхнем углу экрана отладки F3. Может не работать для специальных версий или внешних логинов. Вы можете добавить тег [zl_version], который будет автоматически заменён текущим номером версии</string>
+    <string name="settings_game_version_custom_info_title">Пользовательская информация о версии</string>
+    <string name="settings_game_version_custom_info_summary">Пользовательская информация отображается внизу слева в главном меню и сверху слева на экране отладки (F3). Функция может не работать в некоторых специфических версиях или при использовании нестандартного способа входа в игру. Вы можете добавить тег [zl_version] — он будет автоматически заменён на номер текущей версии.</string>
     <string name="settings_game_auto_pick_java_runtime_title">Автовыбор Java</string>
     <string name="settings_game_auto_pick_java_runtime_summary">Когда требуется Java, лаунчер автоматически выберет подходящую среду. Если определить не удаётся, будет использована среда Java по умолчанию</string>
     <string name="settings_game_java_runtime_title">Среда Java</string>
@@ -420,7 +420,7 @@
     <string name="settings_launcher_color_theme_title">Цветовая тема</string>
     <string name="settings_launcher_color_theme_summary">Настройте цветовую тему лаунчера</string>
     <string name="settings_launcher_full_screen_title">Полноэкранный режим</string>
-    <string name="settings_launcher_full_screen_summary">Сделать страницы лаунчера полноэкранными, игнорируя безопасные области, такие как вырезы и отверстия</string>
+    <string name="settings_launcher_full_screen_summary">Сделать страницы лаунчера полноэкранными, игнорируя безопасные области, такие как вырезы под камеру</string>
     <string name="settings_launcher_animate_speed_title">Скорость анимации</string>
     <string name="settings_launcher_animate_speed_summary">Настройте скорость анимаций в лаунчере</string>
     <string name="settings_launcher_animate_extent_title">Интенсивность анимации</string>
@@ -604,7 +604,7 @@
     <string name="game_menu_option_replacement_control">Заменить раскладку</string>
     <string name="game_menu_option_hotbar_rule">Правило позиционирования хотбара</string>
     <string name="game_menu_option_hotbar_rule_auto">Адаптивная (может быть неточной)</string>
-    <string name="game_menu_option_hotbar_rule_custom">Своя</string>
+    <string name="game_menu_option_hotbar_rule_custom">Пользовательский</string>
     <string name="game_menu_option_hotbar_width">Ширина хотбара</string>
     <string name="game_menu_option_hotbar_height">Высота хотбара</string>
     <string name="renderer_version_storage_permissions">Текущий визуализатор %s можно настроить через файл конфигурации. Пожалуйста, сначала предоставьте лаунчеру разрешение на доступ к внешнему хранилищу, иначе он не сможет прочитать и загрузить настройки визуализатора!</string>
@@ -1024,4 +1024,6 @@
     <string name="sort_by_last_modified">Сортировать по дате редактирования</string>
     <string name="sort_by_last_played">Сортировать по дате последней игры</string>
     <string name="versions_manage_pin">Закрепить</string>
+    <string name="control_editor_edit_text_size">Размер текста</string>
+    <string name="control_editor_edit_text_size_custom">Пользовательский размер текста</string>
 </resources>
