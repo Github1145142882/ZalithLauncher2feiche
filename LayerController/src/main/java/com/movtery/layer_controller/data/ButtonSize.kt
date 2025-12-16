@@ -34,7 +34,12 @@ const val MIN_SIZE_DP = 5.0f
 /**
  * 按钮大小百分比取值范围
  */
-val SIZE_PERCENTAGE: ClosedFloatingPointRange<Float> = MIN_SIZE_DP..10000.0f
+val SIZE_PERCENTAGE: ClosedFloatingPointRange<Float> = 500.0f..10000.0f
+
+/**
+ * 给编辑器使用的百分比取值范围
+ */
+val SIZE_PERCENTAGE_EDITOR: ClosedFloatingPointRange<Float> = 5.0f..100.0f
 
 /**
  * 按钮的大小

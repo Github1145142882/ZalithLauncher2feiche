@@ -37,7 +37,7 @@ import androidx.compose.ui.unit.dp
 import com.movtery.layer_controller.data.ButtonPosition
 import com.movtery.layer_controller.data.ButtonSize
 import com.movtery.layer_controller.data.MIN_SIZE_DP
-import com.movtery.layer_controller.data.SIZE_PERCENTAGE
+import com.movtery.layer_controller.data.SIZE_PERCENTAGE_EDITOR
 import com.movtery.layer_controller.data.VisibilityType
 import com.movtery.layer_controller.observable.ObservableNormalData
 import com.movtery.layer_controller.observable.ObservableTextData
@@ -243,7 +243,7 @@ private fun LazyListScope.commonInfos(
                         onButtonSizeChanged(buttonSize.copy(widthPercentage = (it * 100).toInt()))
                         onPreviewRequested()
                     },
-                    valueRange = SIZE_PERCENTAGE,
+                    valueRange = SIZE_PERCENTAGE_EDITOR,
                     onValueChangeFinished = onDismissRequested,
                     decimalFormat = "#0.00",
                     suffix = "%"
@@ -274,7 +274,7 @@ private fun LazyListScope.commonInfos(
                         onButtonSizeChanged(buttonSize.copy(heightPercentage = (it * 100).toInt()))
                         onPreviewRequested()
                     },
-                    valueRange = SIZE_PERCENTAGE,
+                    valueRange = SIZE_PERCENTAGE_EDITOR,
                     onValueChangeFinished = onDismissRequested,
                     decimalFormat = "#0.00",
                     suffix = "%"
