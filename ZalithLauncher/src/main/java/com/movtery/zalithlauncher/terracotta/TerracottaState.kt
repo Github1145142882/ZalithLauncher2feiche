@@ -69,7 +69,26 @@ sealed class TerracottaState {
             state is HostOK && (this.index - state.index) <= profileIndex
     }
 
-    class GuestStarting(port: Int, index: Int, state: String) : Ready(port, index, state) {
+    class GuestConnecting(port: Int, index: Int, state: String) : Ready(port, index, state) {
+        override fun localStringRes(): Int = R.string.terracotta_status_guest_starting
+    }
+
+    class GuestStarting(
+        port: Int,
+        index: Int,
+        state: String,
+        @SerializedName("difficulty")
+        val difficulty: Difficulty
+    ) : Ready(port, index, state) {
+        enum class Difficulty(val textRes: Int) {
+            /** 不应该使用这个枚举的[textRes] */
+            UNKNOWN(-1),
+            EASIEST(R.string.terracotta_difficulty_easiest),
+            SIMPLE(R.string.terracotta_difficulty_simple),
+            MEDIUM(R.string.terracotta_difficulty_medium),
+            TOUGH(R.string.terracotta_difficulty_tough)
+        }
+
         override fun localStringRes(): Int = R.string.terracotta_status_guest_starting
     }
 
@@ -124,6 +143,7 @@ class TerracottaStateTypeAdapterFactory : TypeAdapterFactory {
         val hostScanningAdapter = gson.getDelegateAdapter(this, TypeToken.get(TerracottaState.HostScanning::class.java))
         val hostStartingAdapter = gson.getDelegateAdapter(this, TypeToken.get(TerracottaState.HostStarting::class.java))
         val hostOKAdapter = gson.getDelegateAdapter(this, TypeToken.get(TerracottaState.HostOK::class.java))
+        val guestConnectingAdapter = gson.getDelegateAdapter(this, TypeToken.get(TerracottaState.GuestConnecting::class.java))
         val guestStartingAdapter = gson.getDelegateAdapter(this, TypeToken.get(TerracottaState.GuestStarting::class.java))
         val guestOKAdapter = gson.getDelegateAdapter(this, TypeToken.get(TerracottaState.GuestOK::class.java))
         val exceptionAdapter = gson.getDelegateAdapter(this, TypeToken.get(TerracottaState.Exception::class.java))
@@ -136,6 +156,7 @@ class TerracottaStateTypeAdapterFactory : TypeAdapterFactory {
                     is TerracottaState.HostScanning -> hostScanningAdapter.write(out, value)
                     is TerracottaState.HostStarting -> hostStartingAdapter.write(out, value)
                     is TerracottaState.HostOK -> hostOKAdapter.write(out, value)
+                    is TerracottaState.GuestConnecting -> guestConnectingAdapter.write(out, value)
                     is TerracottaState.GuestStarting -> guestStartingAdapter.write(out, value)
                     is TerracottaState.GuestOK -> guestOKAdapter.write(out, value)
                     is TerracottaState.Exception -> exceptionAdapter.write(out, value)
@@ -151,7 +172,8 @@ class TerracottaStateTypeAdapterFactory : TypeAdapterFactory {
                     "host-scanning" -> hostScanningAdapter.fromJsonTree(jsonElement)
                     "host-starting" -> hostStartingAdapter.fromJsonTree(jsonElement)
                     "host-ok" -> hostOKAdapter.fromJsonTree(jsonElement)
-                    "guest-connecting", "guest-starting" -> guestStartingAdapter.fromJsonTree(jsonElement)
+                    "guest-connecting" -> guestConnectingAdapter.fromJsonTree(jsonElement)
+                    "guest-starting" -> guestStartingAdapter.fromJsonTree(jsonElement)
                     "guest-ok" -> guestOKAdapter.fromJsonTree(jsonElement)
                     "exception" -> exceptionAdapter.fromJsonTree(jsonElement)
                     else -> throw JsonParseException("Unknown state type: $stateName")

@@ -117,15 +117,13 @@ fun VersionOverViewScreen(
                 refreshVersionIcon++
                 iconFileExists = iconFile.exists()
             },
-            onVersionRefreshed = backToMainScreen,
             setVersionSummary = { value ->
                 version.getVersionConfig().apply {
                     this.versionSummary = value
                     save()
                 }
                 versionSummary = version.getVersionSummary()
-            },
-            onVersionDeleted = backToMainScreen
+            }
         )
 
         AnimatedColumn(
@@ -427,9 +425,7 @@ private fun VersionsOperation(
     updateOperation: (VersionsOperation) -> Unit,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
     resetIcon: () -> Unit = {},
-    onVersionRefreshed: () -> Unit = {},
-    setVersionSummary: (String) -> Unit = {},
-    onVersionDeleted: () -> Unit = {}
+    setVersionSummary: (String) -> Unit = {}
 ) {
     when(versionsOperation) {
         is VersionsOperation.None -> {}
@@ -454,7 +450,6 @@ private fun VersionsOperation(
                             title = R.string.versions_manage_rename_version,
                             task = {
                                 VersionsManager.renameVersion(versionsOperation.version, it)
-                                onVersionRefreshed()
                             }
                         )
                     )
@@ -474,8 +469,7 @@ private fun VersionsOperation(
                             task = task
                         )
                     )
-                },
-                onVersionDeleted = onVersionDeleted
+                }
             )
         }
         is VersionsOperation.EditSummary -> {

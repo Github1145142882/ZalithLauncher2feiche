@@ -21,10 +21,16 @@ package com.movtery.layer_controller.data
 import androidx.compose.ui.graphics.Color
 import com.movtery.layer_controller.data.ButtonStyle.StyleConfig
 import com.movtery.layer_controller.observable.Modifiable
+import com.movtery.layer_controller.utils.checkInRange
 import com.movtery.layer_controller.utils.randomUUID
 import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+/**
+ * 不透明度取值范围
+ */
+val ALPHA_RANGE: ClosedFloatingPointRange<Float> = 0.0f..1.0f
 
 /**
  * 文本大小取值范围
@@ -35,6 +41,11 @@ val FONT_SIZE_RANGE: ClosedFloatingPointRange<Float> = 2.0f..30.0f
  * 默认文本大小（自定义时）
  */
 const val DEFAULT_FONT_SIZE = 14
+
+/**
+ * 边框宽度取值范围
+ */
+val BORDER_WIDTH: ClosedFloatingPointRange<Float> = 0.0f..50.0f
 
 /**
  * @param name 样式显示名称
@@ -103,9 +114,16 @@ data class ButtonStyle(
         val pressedBorderRadius: ButtonShape
     ): Modifiable<StyleConfig> {
         init {
-            if (fontSize != null && fontSize.toFloat() !in FONT_SIZE_RANGE) {
-                error("{fontSize} exceeds the valid range of values: $FONT_SIZE_RANGE")
+            checkInRange("alpha", alpha, ALPHA_RANGE)
+            checkInRange("pressedAlpha", pressedAlpha, ALPHA_RANGE)
+            if (fontSize != null) {
+                checkInRange("fontSize", fontSize.toFloat(), FONT_SIZE_RANGE)
             }
+            if (pressedFontSize != null) {
+                checkInRange("pressedFontSize", pressedFontSize.toFloat(), FONT_SIZE_RANGE)
+            }
+            checkInRange("borderWidth", borderWidth.toFloat(), BORDER_WIDTH)
+            checkInRange("pressedBorderWidth", pressedBorderWidth.toFloat(), BORDER_WIDTH)
         }
 
         override fun isModified(other: StyleConfig): Boolean {

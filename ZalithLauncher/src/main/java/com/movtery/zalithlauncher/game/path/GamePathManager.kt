@@ -35,6 +35,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.io.File
 import java.util.UUID
 
@@ -43,6 +45,7 @@ import java.util.UUID
  */
 object GamePathManager {
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val mutex = Mutex()
     private val defaultGamePath = File(PathManager.DIR_FILES_EXTERNAL, ".minecraft").absolutePath
     /**
      * 默认游戏目录的ID
@@ -72,30 +75,39 @@ object GamePathManager {
 
     fun reloadPath() {
         scope.launch {
-            _gamePathData.update { emptyList() }
+            mutex.withLock {
+                _gamePathData.update { emptyList() }
 
-            val newValue = mutableListOf<GamePath>()
-            //添加默认游戏目录
-            newValue.add(0, GamePath(DEFAULT_ID, "", defaultGamePath))
+                val newValue = mutableListOf<GamePath>()
+                //添加默认游戏目录
+                newValue.add(0, GamePath(DEFAULT_ID, "", defaultGamePath))
 
-            run parseConfig@{
-                //从数据库中加载游戏目录
-                val paths = gamePathDao.getAllPaths()
-                newValue.addAll(paths.sortedBy { it.title })
+                run parseConfig@{
+                    //从数据库中加载游戏目录
+                    val paths = gamePathDao.getAllPaths()
+                    newValue.addAll(paths.sortedBy { it.title })
+                }
+
+                _gamePathData.update { newValue }
+
+                if (!checkStoragePermissions()) {
+                    currentPath = defaultGamePath
+                    saveDefaultPath(false)
+                } else {
+                    refreshCurrentPath(false)
+                }
+
+                VersionsManager.refresh("GamePathManager.reloadPath")
+                lInfo("Loaded ${_gamePathData.value.size} game paths")
             }
-
-            _gamePathData.update { newValue }
-
-            if (!checkStoragePermissions()) {
-                currentPath = defaultGamePath
-                saveDefaultPath(false)
-            } else {
-                refreshCurrentPath(false)
-            }
-
-            VersionsManager.refresh("GamePathManager.reloadPath")
-            lInfo("Loaded ${_gamePathData.value.size} game paths")
         }
+    }
+
+    /**
+     * 执行在路径列表刷新完成后可执行的任务
+     */
+    suspend fun waitForRefresh() {
+        mutex.withLock {}
     }
 
     private fun String.createNoMediaFile() {

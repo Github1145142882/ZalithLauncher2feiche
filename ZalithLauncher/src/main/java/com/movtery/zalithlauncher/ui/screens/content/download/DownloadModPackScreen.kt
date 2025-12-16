@@ -76,6 +76,7 @@ import com.movtery.zalithlauncher.ui.screens.onBack
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
+import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.SerializationException
@@ -192,6 +193,7 @@ fun DownloadModPackScreen(
     downloadScreenKey: NavKey?,
     downloadModPackScreenKey: NavKey?,
     onCurrentKeyChange: (NavKey?) -> Unit,
+    importerViewModel: ModpackImportViewModel,
     eventViewModel: EventViewModel
 ) {
     val viewModel: ModPackViewModel = rememberModPackViewModel(key)
@@ -242,7 +244,8 @@ fun DownloadModPackScreen(
                         mainScreenKey = mainScreenKey,
                         downloadScreenKey = downloadScreenKey,
                         downloadModPackScreenKey = key,
-                        downloadModPackScreenCurrentKey = downloadModPackScreenKey
+                        downloadModPackScreenCurrentKey = downloadModPackScreenKey,
+                        viewModel = importerViewModel
                     ) { platform, projectId, iconUrl ->
                         backStack.navigateTo(
                             NormalNavKey.DownloadAssets(platform, projectId, PlatformClasses.MOD_PACK, iconUrl)

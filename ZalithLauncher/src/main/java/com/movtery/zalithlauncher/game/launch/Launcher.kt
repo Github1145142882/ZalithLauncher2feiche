@@ -38,6 +38,7 @@ import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.path.LibPath
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.unit.getOrMin
 import com.movtery.zalithlauncher.utils.device.Architecture
 import com.movtery.zalithlauncher.utils.device.Architecture.ARCH_X86
 import com.movtery.zalithlauncher.utils.device.Architecture.is64BitsDevice
@@ -236,7 +237,7 @@ abstract class Launcher(
      */
     protected open fun progressFinalUserArgs(
         args: MutableList<String>,
-        ramAllocation: Int = AllSettings.ramAllocation.getValue()
+        ramAllocation: Int = AllSettings.ramAllocation.getOrMin()
     ) {
         args.purgeArg("-Xms")
         args.purgeArg("-Xmx")

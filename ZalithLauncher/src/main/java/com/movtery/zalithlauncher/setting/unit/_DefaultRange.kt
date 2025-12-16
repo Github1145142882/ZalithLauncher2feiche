@@ -28,3 +28,6 @@ fun IntRange.toFloatRange(): ClosedFloatingPointRange<Float> = start.toFloat()..
 
 val IntSettingUnit.floatRange: ClosedFloatingPointRange<Float>
     get() = valueRange.toFloatRange()
+
+val NullableIntSettingUnit.floatRange: ClosedFloatingPointRange<Float>
+    get() = valueRange.toFloatRange()

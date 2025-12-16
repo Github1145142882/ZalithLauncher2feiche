@@ -29,6 +29,7 @@ import com.movtery.zalithlauncher.game.path.getGameHome
 import com.movtery.zalithlauncher.game.path.getVersionsHome
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.unit.getOrMin
 import com.movtery.zalithlauncher.utils.platform.getMaxMemoryForSettings
 import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
 import kotlinx.parcelize.IgnoredOnParcel
@@ -169,7 +170,7 @@ class Version(
 
     fun getRamAllocation(context: Context = GlobalContext): Int = versionConfig.ramAllocation.takeIf { it >= 256 }?.let {
         min(it, getMaxMemoryForSettings(context))
-    } ?: AllSettings.ramAllocation.getValue()
+    } ?: AllSettings.ramAllocation.getOrMin()
 
     fun isTouchProxyEnabled(): Boolean = versionConfig.enableTouchProxy
 

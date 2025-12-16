@@ -49,7 +49,10 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.setting.unit.BooleanSettingUnit
 import com.movtery.zalithlauncher.setting.unit.EnumSettingUnit
 import com.movtery.zalithlauncher.setting.unit.IntSettingUnit
+import com.movtery.zalithlauncher.setting.unit.NullableIntSettingUnit
 import com.movtery.zalithlauncher.setting.unit.StringSettingUnit
+import com.movtery.zalithlauncher.setting.unit.getOrMin
+import com.movtery.zalithlauncher.setting.unit.min
 import com.movtery.zalithlauncher.ui.components.SimpleIntSliderLayout
 import com.movtery.zalithlauncher.ui.components.SimpleListLayout
 import com.movtery.zalithlauncher.ui.components.SwitchLayout
@@ -113,6 +116,44 @@ class SettingsLayoutScope {
         SimpleIntSliderLayout(
             modifier = modifier,
             value = unit.state,
+            title = title,
+            summary = summary,
+            valueRange = valueRange,
+            steps = steps,
+            suffix = suffix,
+            onValueChange = {
+                value = it
+                unit.updateState(it)
+                onValueChange(it)
+            },
+            onValueChangeFinished = { unit.save(value) },
+            enabled = enabled,
+            fineTuningControl = fineTuningControl,
+            titleStyle = titleStyle,
+            summaryStyle = summaryStyle
+        )
+    }
+
+    @Composable
+    fun SliderSettingsLayout(
+        modifier: Modifier = Modifier,
+        unit: NullableIntSettingUnit,
+        title: String,
+        summary: String? = null,
+        valueRange: ClosedFloatingPointRange<Float>,
+        steps: Int = 0,
+        suffix: String? = null,
+        onValueChange: (Int) -> Unit = {},
+        enabled: Boolean = true,
+        fineTuningControl: Boolean = false,
+        titleStyle: TextStyle = MaterialTheme.typography.titleSmall,
+        summaryStyle: TextStyle = MaterialTheme.typography.labelSmall
+    ) {
+        var value by rememberSaveable { mutableIntStateOf(unit.getOrMin()) }
+
+        SimpleIntSliderLayout(
+            modifier = modifier,
+            value = unit.state ?: unit.min,
             title = title,
             summary = summary,
             valueRange = valueRange,

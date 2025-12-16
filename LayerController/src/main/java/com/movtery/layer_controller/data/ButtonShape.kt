@@ -20,8 +20,14 @@ package com.movtery.layer_controller.data
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import com.movtery.layer_controller.observable.Modifiable
+import com.movtery.layer_controller.utils.checkInRange
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+/**
+ * 形状有效值范围
+ */
+val SHAPE_RANGE: ClosedFloatingPointRange<Float> = 0.0f..100.0f
 
 /**
  * 简易的描述按钮的各角的数据类，单位：Dp
@@ -39,6 +45,13 @@ data class ButtonShape(
 ): Modifiable<ButtonShape> {
     constructor(size: Float) : this(size, size, size, size)
 
+    init {
+        checkInRange("topStart", topStart, SHAPE_RANGE)
+        checkInRange("topEnd", topEnd, SHAPE_RANGE)
+        checkInRange("bottomEnd", bottomEnd, SHAPE_RANGE)
+        checkInRange("bottomStart", bottomStart, SHAPE_RANGE)
+    }
+
     override fun isModified(other: ButtonShape): Boolean {
         return this.topStart != other.topStart ||
                 this.topEnd != other.topEnd ||
@@ -46,11 +59,6 @@ data class ButtonShape(
                 this.bottomStart != other.bottomStart
     }
 }
-
-/**
- * 形状有效值范围
- */
-val buttonShapeRange = 0f..100f
 
 /**
  * 转换为 RoundedCornerShape

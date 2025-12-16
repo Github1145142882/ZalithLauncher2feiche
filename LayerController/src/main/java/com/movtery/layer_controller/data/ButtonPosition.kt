@@ -19,8 +19,14 @@
 package com.movtery.layer_controller.data
 
 import com.movtery.layer_controller.observable.Modifiable
+import com.movtery.layer_controller.utils.checkInRange
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+/**
+ * 按钮位置存储取值范围
+ */
+val POSITION_RANGE: IntRange = 0..10000
 
 /**
  * 按钮的位置
@@ -34,6 +40,11 @@ data class ButtonPosition(
     @SerialName("y")
     val y: Int
 ): Modifiable<ButtonPosition> {
+    init {
+        checkInRange("x", x, POSITION_RANGE)
+        checkInRange("y", y, POSITION_RANGE)
+    }
+
     /**
      * 计算x坐标百分比
      */

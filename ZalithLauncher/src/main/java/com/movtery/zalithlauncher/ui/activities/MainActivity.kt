@@ -19,6 +19,8 @@
 package com.movtery.zalithlauncher.ui.activities
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.compose.setContent
@@ -46,6 +48,9 @@ import com.movtery.zalithlauncher.viewmodel.BackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
+import com.movtery.zalithlauncher.viewmodel.ModpackImportOperation
+import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
+import com.movtery.zalithlauncher.viewmodel.ModpackVersionNameOperation
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -78,6 +83,11 @@ class MainActivity : BaseComponentActivity() {
     val backgroundViewModel: BackgroundViewModel by viewModels()
 
     /**
+     * 整合包导入 ViewModel
+     */
+    val modpackImportViewModel: ModpackImportViewModel by viewModels()
+
+    /**
      * 是否开启捕获按键模式
      */
     private var isCaptureKey = false
@@ -87,6 +97,9 @@ class MainActivity : BaseComponentActivity() {
 
         //初始化通知管理（创建渠道）
         NotificationManager.initManager(this)
+
+        //处理外部导入
+        handleImportIfNeeded(intent)
 
         //错误信息展示
         lifecycleScope.launch {
@@ -150,6 +163,7 @@ class MainActivity : BaseComponentActivity() {
                         screenBackStackModel = screenBackStackModel,
                         launchGameViewModel = launchGameViewModel,
                         eventViewModel = eventViewModel,
+                        modpackImportViewModel = modpackImportViewModel,
                         submitError = {
                             errorViewModel.showError(it)
                         }
@@ -176,8 +190,51 @@ class MainActivity : BaseComponentActivity() {
                             )
                         }
                     )
+
+                    ModpackImportOperation(
+                        operation = modpackImportViewModel.importOperation,
+                        changeOperation = { modpackImportViewModel.importOperation = it },
+                        importer = modpackImportViewModel.importer,
+                        onCancel = {
+                            modpackImportViewModel.cancel()
+                        }
+                    )
+
+                    //用户确认版本名称 操作流程
+                    ModpackVersionNameOperation(
+                        operation = modpackImportViewModel.versionNameOperation,
+                        onConfirmVersionName = { name ->
+                            modpackImportViewModel.confirmVersionName(name)
+                        }
+                    )
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleImportIfNeeded(intent)
+    }
+
+    /**
+     * 处理外部导入
+     */
+    private fun handleImportIfNeeded(intent: Intent?) {
+        if (intent == null) return
+
+        val type = intent.getStringExtra(EXTRA_IMPORT_TYPE) ?: return
+        if (type == IMPORT_TYPE_MODPACK) {
+            handleModpackImport(intent)
+        }
+
+        intent.removeExtra(EXTRA_IMPORT_TYPE)
+    }
+
+    private fun handleModpackImport(intent: Intent) {
+        val uri: Uri? = intent.getParcelableExtra(EXTRA_IMPORT_URI)
+        if (uri != null) {
+            modpackImportViewModel.import(this@MainActivity, uri)
         }
     }
 

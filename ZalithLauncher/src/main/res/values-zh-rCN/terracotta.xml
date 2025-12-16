@@ -8,6 +8,11 @@
     <string name="terracotta_back">退出</string>
     <string name="terracotta_enable">启用多人联机</string>
     <string name="terracotta_feedback_title">填写反馈表</string>
+    <string name="terracotta_difficulty_easiest">当前网络状态极好：稍等一下就成功！</string>
+    <string name="terracotta_difficulty_simple">当前网络状态较好：建立连接需要一段时间……</string>
+    <string name="terracotta_difficulty_medium">当前网络状态中等：已启用抗干扰备用线路，连接可能失败</string>
+    <string name="terracotta_difficulty_tough">当前网络状态极差：已启用抗干扰备用线路，连接可能失败</string>
+    <string name="terracotta_difficulty_estimate_only">连接成功率由房主和房客的 NAT 类型推算得到，仅供参考。</string>
     <string name="terracotta_log">查看日志</string>
     <string name="terracotta_log_exit">关闭日志，并回到功能页。</string>
     <string name="terracotta_export_log">可在启动器多人联机页面中分享日志，为分析错误提供更多信息</string>

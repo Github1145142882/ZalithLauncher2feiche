@@ -35,11 +35,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import org.apache.commons.io.FileUtils
 import java.io.File
 
 object VersionsManager {
     private val scope = CoroutineScope(Dispatchers.IO)
+    private val mutex = Mutex()
     private val listeners: MutableList<suspend (List<Version>) -> Unit> = mutableListOf()
 
     /**
@@ -100,35 +103,44 @@ object VersionsManager {
     fun refresh(tag: String, trySetVersion: String? = null) {
         currentJob?.cancel()
         currentJob = scope.launch {
-            isRefreshing = true
-            lDebug("Initiated by $tag: starting to refresh the version list.")
+            mutex.withLock {
+                isRefreshing = true
+                lDebug("Initiated by $tag: starting to refresh the version list.")
 
-            if (trySetVersion != null) {
-                saveCurrentVersion(trySetVersion, refresh = false)
-                lDebug("Has attempted to save the current version: $trySetVersion")
-            }
-
-            versions = emptyList()
-
-            val newVersions = mutableListOf<Version>()
-            File(getVersionsHome()).listFiles()?.forEach { versionFile ->
-                runCatching {
-                    processVersionFile(versionFile)
-                }.getOrNull()?.let {
-                    newVersions.add(it)
+                if (trySetVersion != null) {
+                    saveCurrentVersion(trySetVersion, refresh = false)
+                    lDebug("Has attempted to save the current version: $trySetVersion")
                 }
+
+                versions = emptyList()
+
+                val newVersions = mutableListOf<Version>()
+                File(getVersionsHome()).listFiles()?.forEach { versionFile ->
+                    runCatching {
+                        processVersionFile(versionFile)
+                    }.getOrNull()?.let {
+                        newVersions.add(it)
+                    }
+                }
+
+                versions = newVersions.toList()
+
+                currentGameInfo = refreshCurrentInfo()
+                lDebug("Version list refreshed, refreshing the current version now.")
+                refreshCurrentVersion()
+
+                listeners.forEach { it.invoke(versions) }
+
+                isRefreshing = false
             }
-
-            versions = newVersions.toList()
-
-            currentGameInfo = refreshCurrentInfo()
-            lDebug("Version list refreshed, refreshing the current version now.")
-            refreshCurrentVersion()
-
-            listeners.forEach { it.invoke(versions) }
-
-            isRefreshing = false
         }
+    }
+
+    /**
+     * 执行在版本列表刷新完成后可执行的任务
+     */
+    suspend fun waitForRefresh() {
+        mutex.withLock {}
     }
 
     private fun processVersionFile(versionFile: File): Version? {

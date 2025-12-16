@@ -21,8 +21,25 @@ package com.movtery.layer_controller.data
 import com.movtery.layer_controller.data.ButtonSize.Reference
 import com.movtery.layer_controller.data.ButtonSize.Type
 import com.movtery.layer_controller.observable.Modifiable
+import com.movtery.layer_controller.utils.checkInRange
+import com.movtery.layer_controller.utils.checkMin
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+
+/**
+ * 按钮大小最小值
+ */
+const val MIN_SIZE_DP = 5.0f
+
+/**
+ * 按钮大小百分比取值范围
+ */
+val SIZE_PERCENTAGE: ClosedFloatingPointRange<Float> = 500.0f..10000.0f
+
+/**
+ * 给编辑器使用的百分比取值范围
+ */
+val SIZE_PERCENTAGE_EDITOR: ClosedFloatingPointRange<Float> = 5.0f..100.0f
 
 /**
  * 按钮的大小
@@ -48,6 +65,13 @@ data class ButtonSize(
     @SerialName("heightReference")
     val heightReference: Reference
 ): Modifiable<ButtonSize> {
+    init {
+        checkMin("widthDp", widthDp, MIN_SIZE_DP)
+        checkMin("heightDp", heightDp, MIN_SIZE_DP)
+        checkInRange("widthPercentage", widthPercentage.toFloat(), SIZE_PERCENTAGE)
+        checkInRange("heightPercentage", heightPercentage.toFloat(), SIZE_PERCENTAGE)
+    }
+
     /**
      * 大小计算类型
      */

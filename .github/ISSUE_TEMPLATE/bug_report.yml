@@ -85,6 +85,17 @@ body:
       required: true
 
   - type: input
+    id: launcher-info
+    attributes:
+      label: Launcher Version / 启动器版本
+      description: |
+        Provide the version number of the launcher. This can be found on the launcher’s About page. If you are using a test build from Actions, please indicate this.  
+        提供启动器的版本号，可以在启动器的关于页面找到，如果使用的是来自 Actions 的测试构建版本，请说明。
+      placeholder: 2.0.0_beta-20251206a (actions)
+    validations:
+      required: true
+
+  - type: input
     id: device-info
     attributes:
       label: Device Information / 设备信息

@@ -74,6 +74,7 @@ import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
+import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 
 /**
@@ -92,6 +93,7 @@ fun ScreenBackStackViewModel.navigateToDownload(targetScreen: NavKey? = null) {
 fun DownloadScreen(
     key: NestedNavKey.Download,
     backScreenViewModel: ScreenBackStackViewModel,
+    modpackImportViewModel: ModpackImportViewModel,
     eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
@@ -112,6 +114,7 @@ fun DownloadScreen(
                 key = key,
                 backScreenViewModel = backScreenViewModel,
                 eventViewModel = eventViewModel,
+                modpackImportViewModel = modpackImportViewModel,
                 submitError = submitError,
                 modifier = Modifier.fillMaxHeight()
             )
@@ -191,6 +194,7 @@ private fun NavigationUI(
     key: NestedNavKey.Download,
     backScreenViewModel: ScreenBackStackViewModel,
     eventViewModel: EventViewModel,
+    modpackImportViewModel: ModpackImportViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -231,7 +235,8 @@ private fun NavigationUI(
                         onCurrentKeyChange = { newKey ->
                             backScreenViewModel.downloadModPackScreen.currentKey = newKey
                         },
-                        eventViewModel = eventViewModel
+                        eventViewModel = eventViewModel,
+                        importerViewModel = modpackImportViewModel
                     )
                 }
                 entry<NestedNavKey.DownloadMod> { key ->

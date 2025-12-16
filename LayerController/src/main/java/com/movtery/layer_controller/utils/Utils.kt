@@ -77,3 +77,23 @@ suspend fun ControlLayout.saveToFile(file: File) {
         file.writeText(jsonString)
     }
 }
+
+fun <E> checkMin(
+    tag: String,
+    value: E,
+    min: E
+) where E : Number, E : Comparable<E> {
+    if (value < min) {
+        error("$tag is below its minimum value: $min, current: $value")
+    }
+}
+
+fun <E : Comparable<E>> checkInRange(
+    tag: String,
+    value: E,
+    range: ClosedRange<E>
+) {
+    if (value !in range) {
+        error("{$tag} exceeds the valid range of values: $range, current: $value")
+    }
+}

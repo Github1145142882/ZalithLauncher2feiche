@@ -254,23 +254,34 @@ class GameLauncher(
         append("Info: Account: ${account.username} (${account.accountType})")
     }
 
+    /**
+     * 获取Java运行环境名称，
+     * 如果版本独立设置了运行环境，则直接选定它；
+     * 如果版本未设置，则根据全局设置或自动选择
+     */
     private fun getRuntime(): String {
         val versionRuntime = version.getJavaRuntime().takeIf { it.isNotEmpty() } ?: ""
-
         if (versionRuntime.isNotEmpty()) return versionRuntime
 
-        val targetJavaVersion = gameManifest.javaVersion?.majorVersion ?: 8
-
-        var runtime = AllSettings.javaRuntime.getValue()
+        val runtime = AllSettings.javaRuntime.getValue()
         val pickedRuntime = RuntimesManager.loadRuntime(runtime)
 
-        if (AllSettings.autoPickJavaRuntime.getValue() &&
-            (pickedRuntime.javaVersion == 0 || pickedRuntime.javaVersion < targetJavaVersion)) {
-            runtime = RuntimesManager.getNearestJreName(targetJavaVersion) ?: run {
-                activity.runOnUiThread {
-                    Toast.makeText(activity, activity.getString(R.string.game_auto_pick_runtime_failed), Toast.LENGTH_SHORT).show()
+        if (AllSettings.autoPickJavaRuntime.getValue()) {
+            //开启了自动选择，根据游戏需求的版本做选择
+            val targetJavaVersion = if (version.getVersionInfo()?.loaderInfo?.loader == ModLoader.CLEANROOM) {
+                21 //Cleanroom 要求使用 21
+            } else {
+                gameManifest.javaVersion?.majorVersion ?: 8
+            }
+            if (pickedRuntime.javaVersion == 0 || pickedRuntime.javaVersion < targetJavaVersion) {
+                val runtime0 = RuntimesManager.getNearestJreName(targetJavaVersion)
+                if (runtime0 != null) {
+                    return runtime0
+                } else {
+                    activity.runOnUiThread {
+                        Toast.makeText(activity, activity.getString(R.string.game_auto_pick_runtime_failed), Toast.LENGTH_SHORT).show()
+                    }
                 }
-                return runtime
             }
         }
         return runtime

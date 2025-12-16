@@ -32,7 +32,9 @@ import com.movtery.zalithlauncher.coroutine.addTask
 import com.movtery.zalithlauncher.coroutine.buildPhase
 import com.movtery.zalithlauncher.game.download.modpack.platform.ALL_PACK_PARSER
 import com.movtery.zalithlauncher.game.download.modpack.platform.AbstractPack
+import com.movtery.zalithlauncher.game.path.GamePathManager
 import com.movtery.zalithlauncher.game.version.installed.VersionFolders
+import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.utils.file.extractFromZip
 import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
@@ -116,6 +118,8 @@ class ModpackImporter(
                     title = context.getString(R.string.download_install_clear_temp),
                     icon = Icons.Outlined.CleaningServices
                 ) { _ ->
+                    GamePathManager.waitForRefresh()
+                    VersionsManager.waitForRefresh()
                     clearTempModPackDir()
                     //清理完成缓存目录后，创建新的缓存目录
                     tempModPackDir.createDirAndLog()

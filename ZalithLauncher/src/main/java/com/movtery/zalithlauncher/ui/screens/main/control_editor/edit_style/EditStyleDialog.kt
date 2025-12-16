@@ -61,10 +61,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.movtery.colorpicker.rememberColorPickerController
+import com.movtery.layer_controller.data.ALPHA_RANGE
+import com.movtery.layer_controller.data.BORDER_WIDTH
 import com.movtery.layer_controller.data.ButtonShape
 import com.movtery.layer_controller.data.DEFAULT_FONT_SIZE
 import com.movtery.layer_controller.data.FONT_SIZE_RANGE
-import com.movtery.layer_controller.data.buttonShapeRange
+import com.movtery.layer_controller.data.SHAPE_RANGE
 import com.movtery.layer_controller.layout.RendererStyleBox
 import com.movtery.layer_controller.observable.ObservableButtonStyle
 import com.movtery.layer_controller.observable.ObservableStyleConfig
@@ -410,7 +412,7 @@ private fun LazyListScope.commonStyleConfig(
             title = stringResource(R.string.control_editor_edit_style_config_alpha),
             value = alpha,
             onValueChange = { onAlphaChange(it) },
-            valueRange = 0f..1f,
+            valueRange = ALPHA_RANGE,
             suffix = "%",
             fineTuningStep = 0.1f
         )
@@ -477,7 +479,7 @@ private fun LazyListScope.commonStyleConfig(
             title = stringResource(R.string.control_editor_edit_style_config_border_width),
             value = borderWidth.toFloat(),
             onValueChange = { onBorderWidthChange(it.toInt()) },
-            valueRange = 0f..50f,
+            valueRange = BORDER_WIDTH,
             decimalFormat = "#0",
             suffix = "dp",
             fineTuningStep = 1f,
@@ -513,7 +515,7 @@ private fun LazyListScope.commonStyleConfig(
                 title = stringResource(R.string.control_editor_edit_style_config_widget_radius_left_top),
                 value = borderRadius.topStart,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(topStart = it)) },
-                valueRange = buttonShapeRange,
+                valueRange = SHAPE_RANGE,
                 suffix = "dp"
             )
             //右上角
@@ -522,7 +524,7 @@ private fun LazyListScope.commonStyleConfig(
                 title = stringResource(R.string.control_editor_edit_style_config_widget_radius_right_top),
                 value = borderRadius.topEnd,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(topEnd = it)) },
-                valueRange = buttonShapeRange,
+                valueRange = SHAPE_RANGE,
                 suffix = "dp"
             )
             //左下角
@@ -531,7 +533,7 @@ private fun LazyListScope.commonStyleConfig(
                 title = stringResource(R.string.control_editor_edit_style_config_widget_radius_left_bottom),
                 value = borderRadius.bottomStart,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(bottomStart = it)) },
-                valueRange = buttonShapeRange,
+                valueRange = SHAPE_RANGE,
                 suffix = "dp"
             )
             //右下角
@@ -540,7 +542,7 @@ private fun LazyListScope.commonStyleConfig(
                 title = stringResource(R.string.control_editor_edit_style_config_widget_radius_right_bottom),
                 value = borderRadius.bottomEnd,
                 onValueChange = { onBorderRadiusChange(borderRadius.copy(bottomEnd = it)) },
-                valueRange = buttonShapeRange,
+                valueRange = SHAPE_RANGE,
                 suffix = "dp"
             )
         }

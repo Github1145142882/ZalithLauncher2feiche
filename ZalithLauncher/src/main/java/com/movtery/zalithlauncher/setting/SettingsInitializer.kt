@@ -32,7 +32,7 @@ private const val LWJGL_LIB_NAME_ARG = "-Dorg.lwjgl.opengl.libname="
  */
 fun loadAllSettings(context: Context, reloadAll: Boolean = false) {
     if (reloadAll) AllSettings.reloadAll()
-    if (AllSettings.ramAllocation.getValue() == -1) {
+    if (AllSettings.ramAllocation.getValue() == null) {
         val ram = findBestRAMAllocation(context)
         AllSettings.ramAllocation.save(ram)
     }

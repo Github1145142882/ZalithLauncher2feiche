@@ -112,7 +112,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 游戏内存分配大小
      */
-    val ramAllocation = intSetting("ramAllocation", -1, min = 256)
+    val ramAllocation = intSetting("ramAllocation", null, min = 256)
 
     /**
      * 自定义Jvm启动参数

@@ -50,19 +50,49 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity-alias
+            android:label="@string/import_modpack"
+            android:name="com.movtery.activity.ImportModpackActivity"
+            android:exported="true"
+            android:targetActivity=".ui.activities.SplashActivity">
+
+            <meta-data
+                android:name="import_type"
+                android:value="modpack" />
+
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.VIEW"/>
+                <data android:scheme="file"/>
+                <data android:scheme="content"/>
+                <data android:mimeType="application/*"/>
+            </intent-filter>
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <action android:name="android.intent.action.SEND"/>
+                <data android:mimeType="application/*"/>
+            </intent-filter>
+        </activity-alias>
+
         <activity
+            android:label="${launcher_name}"
             android:name=".ui.activities.MainActivity"
+            android:launchMode="singleTask"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
             android:screenOrientation="sensorLandscape" />
         <activity
+            android:label="${launcher_name}"
             android:name=".ui.activities.ControlEditorActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
             android:screenOrientation="sensorLandscape" />
         <activity
+            android:label="${launcher_name}"
             android:name=".ui.activities.VMActivity"
             android:alwaysRetainTaskState="true"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"
             android:process=":game"
+            android:launchMode="singleTask"
             android:screenOrientation="sensorLandscape" />
         <activity android:name=".ui.activities.ErrorActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize|screenLayout|keyboard|navigation"

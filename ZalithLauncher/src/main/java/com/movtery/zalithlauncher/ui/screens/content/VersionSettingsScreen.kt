@@ -50,10 +50,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -138,8 +140,7 @@ private class UpdateLoaderViewModel: ViewModel() {
 
     fun install(
         context: Context,
-        info: GameDownloadInfo,
-        backToMainScreen: () -> Unit
+        info: GameDownloadInfo
     ) {
         installOperation = UpdateLoaderOperation.Install
         installer = GameInstaller(context, info, viewModelScope).also {
@@ -149,7 +150,6 @@ private class UpdateLoaderViewModel: ViewModel() {
                     installOperation = UpdateLoaderOperation.None
 
                     viewModelScope.launch(Dispatchers.Main) {
-                        backToMainScreen()
                         VersionsManager.refresh("[UpdateLoader] GameInstaller.onInstalled")
 
                         MaterialAlertDialogBuilder(context)
@@ -202,12 +202,25 @@ fun VersionSettingsScreen(
     val context = LocalContext.current
     val viewModel = rememberUpdateLoaderViewModel(key = key)
 
+    val cBackToMainScreen by rememberUpdatedState(backToMainScreen)
+    DisposableEffect(key) {
+        val listener = object : suspend (List<Version>) -> Unit {
+            override suspend fun invoke(versions: List<Version>) {
+                cBackToMainScreen()
+            }
+        }
+        VersionsManager.registerListener(listener)
+        onDispose {
+            VersionsManager.unregisterListener(listener)
+        }
+    }
+
     UpdateLoaderOperation(
         operation = viewModel.installOperation,
         changeOperation = { viewModel.installOperation = it },
         installer = viewModel.installer,
         onInstall = { info ->
-            viewModel.install(context, info, backToMainScreen)
+            viewModel.install(context, info)
         },
         onCancel = {
             viewModel.cancel()

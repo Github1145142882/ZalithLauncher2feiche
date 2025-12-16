@@ -34,6 +34,7 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.multirt.RuntimesManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.unit.floatRange
+import com.movtery.zalithlauncher.setting.unit.min
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedColumn
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
@@ -122,7 +123,7 @@ fun GameSettingsScreen(
                             .fillMaxWidth()
                             .padding(horizontal = 8.dp)
                             .padding(start = 2.dp, bottom = 12.dp),
-                        preview = AllSettings.ramAllocation.state.toDouble(),
+                        preview = (AllSettings.ramAllocation.state ?: AllSettings.ramAllocation.min).toDouble(),
                         usedText = { usedMemory, totalMemory ->
                             stringResource(R.string.settings_game_java_memory_used_text, usedMemory.toInt(), totalMemory.toInt())
                         },

@@ -110,6 +110,7 @@ import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
+import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 
 @Composable
@@ -117,6 +118,7 @@ fun MainScreen(
     screenBackStackModel: ScreenBackStackViewModel,
     launchGameViewModel: LaunchGameViewModel,
     eventViewModel: EventViewModel,
+    modpackImportViewModel: ModpackImportViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val tasks by TaskSystem.tasksFlow.collectAsState()
@@ -196,6 +198,7 @@ fun MainScreen(
                     toMainScreen = toMainScreen,
                     launchGameViewModel = launchGameViewModel,
                     eventViewModel = eventViewModel,
+                    modpackImportViewModel = modpackImportViewModel,
                     submitError = submitError
                 )
 
@@ -425,6 +428,7 @@ private fun NavigationUI(
     toMainScreen: () -> Unit,
     launchGameViewModel: LaunchGameViewModel,
     eventViewModel: EventViewModel,
+    modpackImportViewModel: ModpackImportViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val backStack = screenBackStackModel.mainScreen.backStack
@@ -523,6 +527,7 @@ private fun NavigationUI(
                         key = key,
                         backScreenViewModel = screenBackStackModel,
                         eventViewModel = eventViewModel,
+                        modpackImportViewModel = modpackImportViewModel,
                         submitError = submitError
                     )
                 }

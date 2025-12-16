@@ -39,6 +39,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowLeft
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -57,6 +59,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -196,11 +199,18 @@ fun MultiplayerDialog(
                                         backDesc = stringResource(R.string.terracotta_status_host_ok_back)
                                     )
                                 }
-                                is TerracottaState.GuestStarting -> {
+                                is TerracottaState.GuestConnecting -> {
                                     CommonProgressLayout(
                                         modifier = commonModifier,
                                         progress = stringResource(R.string.terracotta_status_guest_starting),
                                         backDescription = stringResource(R.string.terracotta_status_guest_starting_back),
+                                        onBack = onBack
+                                    )
+                                }
+                                is TerracottaState.GuestStarting -> {
+                                    GuestStartingUI(
+                                        modifier = commonModifier,
+                                        difficulty = dialogState.difficulty,
                                         onBack = onBack
                                     )
                                 }
@@ -326,6 +336,78 @@ private fun WaitingUI(
         operation = guestOperation,
         onChange = { guestOperation = it },
         onPositive = onGuestPositive
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun WaitingUIPreview() {
+    WaitingUI(
+        isInteractive = true,
+        onHostClick = {},
+        onGuestPositive = {}
+    )
+}
+
+/**
+ * 房客开始中
+ */
+@Composable
+private fun GuestStartingUI(
+    modifier: Modifier = Modifier,
+    difficulty: TerracottaState.GuestStarting.Difficulty,
+    onBack: () -> Unit
+) {
+    CommonProgressLayout(
+        modifier = modifier,
+        progress = stringResource(R.string.terracotta_status_guest_starting),
+        text = if (difficulty != TerracottaState.GuestStarting.Difficulty.UNKNOWN) (@Composable {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Icon(
+                    imageVector = when (difficulty) {
+                        TerracottaState.GuestStarting.Difficulty.EASIEST,
+                        TerracottaState.GuestStarting.Difficulty.SIMPLE ->
+                            Icons.Default.Info
+                        else ->
+                            Icons.Default.Warning
+                    },
+                    contentDescription = null
+                )
+                if (difficulty != TerracottaState.GuestStarting.Difficulty.UNKNOWN) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text = stringResource(difficulty.textRes)
+                        )
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .alpha(0.7f),
+                            text = stringResource(R.string.terracotta_difficulty_estimate_only),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
+            }
+        }) else null,
+        backDescription = stringResource(R.string.terracotta_status_guest_starting_back),
+        onBack = onBack
+    )
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun GuestStartingUIPreview() {
+    GuestStartingUI(
+        difficulty = TerracottaState.GuestStarting.Difficulty.UNKNOWN,
+        onBack = {}
     )
 }
 

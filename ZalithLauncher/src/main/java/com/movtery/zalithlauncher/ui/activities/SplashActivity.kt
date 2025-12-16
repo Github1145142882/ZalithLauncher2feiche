@@ -20,6 +20,8 @@ package com.movtery.zalithlauncher.ui.activities
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -38,16 +40,24 @@ import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
 import com.movtery.zalithlauncher.ui.screens.splash.SplashScreen
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
+import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.viewmodel.SplashBackStackViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import java.util.concurrent.atomic.AtomicInteger
 
+const val EXTRA_IMPORT_ACTION = "EXTRA_IMPORT_ACTION"
+const val EXTRA_IMPORT_URI    = "EXTRA_IMPORT_URI"
+const val EXTRA_IMPORT_TYPE   = "EXTRA_IMPORT_TYPE"
+
+const val IMPORT_TYPE_MODPACK = "modpack"
+const val IMPORT_TYPE_UNKNOWN = "unknown"
+
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : BaseComponentActivity(refreshData = false) {
     private val unpackItems: MutableList<InstallableItem> = ArrayList()
-    private var finishedTaskCount = AtomicInteger(0)
+    private val finishedTaskCount = AtomicInteger(0)
 
     private val backStackViewModel: SplashBackStackViewModel by viewModels()
 
@@ -72,6 +82,22 @@ class SplashActivity : BaseComponentActivity(refreshData = false) {
                     )
                 }
             }
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+
+        //若依赖未完成，忽略所有外部导入
+        if (!areAllTasksFinished()) {
+            lInfo("Import intent received but dependencies are not ready, ignoring.")
+            return
+        }
+
+        if (isImportIntent(intent) && !isLauncherIntent(intent)) {
+            handleImportIntent(intent)
+            finish()
         }
     }
 
@@ -150,16 +176,88 @@ class SplashActivity : BaseComponentActivity(refreshData = false) {
     }
 
     private fun checkTasksToMain(): Boolean {
-        val toMain = finishedTaskCount.get() >= unpackItems.size
-        if (toMain) {
-            lInfo("All content that needs to be extracted is already the latest version!")
-            swapToMain()
+        if (!areAllTasksFinished()) return false
+
+        lInfo("All content that needs to be extracted is already the latest version!")
+
+        if (isImportIntent(intent) && !isLauncherIntent(intent)) {
+            val success = handleImportIntent(intent)
+            if (success) {
+                finish()
+                return true
+            }
         }
-        return toMain
+
+        swapToMain()
+        return true
     }
 
     private fun swapToMain() {
         startActivity(Intent(this, MainActivity::class.java))
         finish()
+    }
+
+
+
+    private fun handleImportIntent(source: Intent): Boolean {
+        if (!isImportIntent(source)) return false
+
+        val uri: Uri? = when (source.action) {
+            Intent.ACTION_SEND -> {
+                source.clipData?.getItemAt(0)?.uri
+                    ?: source.getParcelableExtra(Intent.EXTRA_STREAM)
+            }
+            Intent.ACTION_VIEW -> source.data
+            else -> null
+        }
+
+        if (uri == null) {
+            lWarning("No valid import Uri found")
+            return false
+        } else {
+            try {
+                //可持久化访问授权
+                contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            } catch (_: Exception) {
+                lWarning("No persistable permission granted for $uri")
+            }
+        }
+
+        val forward = Intent(this, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                    Intent.FLAG_ACTIVITY_SINGLE_TOP
+
+            putExtra(EXTRA_IMPORT_ACTION, source.action)
+            putExtra(EXTRA_IMPORT_URI, uri)
+            putExtra(EXTRA_IMPORT_TYPE, resolveImportType(source))
+        }
+
+        startActivity(forward)
+        return true
+    }
+
+    /**
+     * 根据 AndroidManifest 内为 activity-alias 配置的 meta-data 来判断导入类型
+     */
+    private fun resolveImportType(intent: Intent): String {
+        val comp = intent.component ?: return IMPORT_TYPE_UNKNOWN
+        val info = packageManager.getActivityInfo(comp, PackageManager.GET_META_DATA)
+        return info.metaData?.getString("import_type") ?: IMPORT_TYPE_UNKNOWN
+    }
+
+    private fun isLauncherIntent(intent: Intent?): Boolean {
+        if (intent == null) return false
+        return intent.action == Intent.ACTION_MAIN &&
+                intent.categories?.contains(Intent.CATEGORY_LAUNCHER) == true
+    }
+
+    private fun isImportIntent(intent: Intent?): Boolean {
+        val comp = intent?.component ?: return false
+        val info = packageManager.getActivityInfo(comp, PackageManager.GET_META_DATA)
+        return info.metaData?.getString("import_type") != null
+    }
+
+    private fun areAllTasksFinished(): Boolean {
+        return finishedTaskCount.get() >= unpackItems.size
     }
 }
