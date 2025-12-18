@@ -955,7 +955,7 @@
     <string name="settings_launcher_background_opacity_summary">Atur tingkat transparansi elemen latar belakang agar tampilan lebih baik dan tidak bertabrakan dengan latar belakang</string>
     <string name="control_editor_menu_preview_is_mouse">Menggunakan mouse fisik</string>
     <string name="control_editor_menu_preview_is_gamepad">Menggunakan gamepad</string>
-    <string name="control_editor_layers_attribute_hide_when_mouse">Tetap terlihat saat menggunakan mouse.</string>
+    <string name="control_editor_layers_attribute_hide_when_mouse">Tetap terlihat saat menggunakan mouse</string>
     <string name="control_editor_layers_attribute_hide_when_gamepad">Selalu terlihat saat menggunakan gamepad</string>
     <string name="control_editor_edit_text_alignment">Posisi Teks</string>
     <string name="control_editor_edit_hide_layers">Paksa Sembunyikan Lapisan Kontrol</string>
@@ -980,4 +980,20 @@
     <string name="import_modpack_failed_title">Impor Gagal</string>
     <string name="import_modpack_failed_text">Terjadi kesalahan saat memasang modpack:</string>
     <string name="control_editor_edit_event_launcher_send_text">Kirim Teks</string>
+    <string name="generic_enabled">Aktifkan</string>
+    <string name="generic_disabled">Matikan</string>
+    <string name="generic_no_matching_items">Tidak ada item yang cocok</string>
+    <string name="theme_dark_mode_follow_system">Ikuti sistem</string>
+    <string name="notification_data_terracotta_message">Saat mode multiplayer, launcher akan memakai layanan foreground untuk menampilkan status koneksi saat ini, jadi membutuh izin notifikasi.</string>
+    <string name="versions_update_loader">Perbarui Loader</string>
+    <string name="versions_update_loader_waiting_for_others">Menunggu item lain selesai dimuat</string>
+    <string name="versions_update_loader_diff_message">Apakah kamu yakin ingin mengubah loader game yang sedang dipakai?</string>
+    <string name="versions_update_loader_diff_change">Ubah: %1$s %2$s → %3$s</string>
+    <string name="versions_update_loader_diff_remove">Hapus: %s</string>
+    <string name="versions_update_loader_diff_load">Muat: %1$s %2$s</string>
+    <string name="versions_update_loader_error_message">Terjadi kesalahan saat menginstal loader:</string>
+    <string name="versions_update_loader_success_message">Versi loader game berhasil diperbarui!</string>
+    <string name="settings_control_mouse_enable_click_title">Mode Touchpad</string>
+    <string name="settings_control_mouse_enable_click_summary">Mengetuk layar dianggap sebagai klik kiri, tekan lama dianggap sebagai tahan klik kiri; pengaturan ini tidak memengaruhi kontrol dengan mouse fisik atau kontrol ketuk</string>
+    <string name="settings_launcher_dark_mode_title">Mode Gelap</string>
 </resources>

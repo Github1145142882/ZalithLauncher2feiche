@@ -997,4 +997,13 @@
     <string name="notification_data_terracotta_message">マルチプレイセッション中、ランチャーはフォアグラウンドサービスを利用して現在の通信状態を表示するため、通知の許可が必要です。</string>
     <string name="settings_control_mouse_enable_click_title">タッチパッド操作</string>
     <string name="settings_control_mouse_enable_click_summary">画面をタップするとマウスの左クリック、長押しすると左クリックのホールドとして扱われます; この設定は物理マウスコントロールやタップコントロールには影響しません</string>
+    <string name="settings_launcher_background_video_volume_title">背景動画の音量</string>
+    <string name="settings_launcher_background_video_volume_summary">背景が動画の場合、このオプションで音量を調整できます。</string>
+    <string name="sort_by_name">名前順に並び替え</string>
+    <string name="sort_by_file_name">ファイル名順に並び替え</string>
+    <string name="sort_by_last_modified">最終更新日順に並び替え</string>
+    <string name="sort_by_last_played">最終プレイ日順に並び替え</string>
+    <string name="versions_manage_pin">ピン留め</string>
+    <string name="control_editor_edit_text_size">テキストサイズ</string>
+    <string name="control_editor_edit_text_size_custom">カスタムテキストサイズ</string>
 </resources>

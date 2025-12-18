@@ -159,7 +159,7 @@
     <string name="download_assets_filter_search_name">اسم البحث</string>
     <string name="download_assets_filter_search_platform">المنصة المستهدفة</string>
     <string name="download_assets_filter_game_version">إصدار اللعبة</string>
-    <string name="sort_by">ترتيب حسب</string>
+    <string name="sort_by">الترتيب حسب</string>
     <string name="download_assets_filter_category">النوع</string>
     <string name="download_assets_filter_modloader">مشغل المودات</string>
     <string name="download_assets_filter_none">لاشيء تم اختياره</string>
@@ -310,4 +310,11 @@
     <string name="import_modpack_failed_title">فشل الاستيراد</string>
     <string name="import_modpack_failed_text">حدث خطأ أثناء تثبيت المودباك:</string>
     <string name="unit_day">يوم</string>
+    <string name="generic_enabled">مفعل</string>
+    <string name="generic_disabled">معطل</string>
+    <string name="generic_no_matching_items">لا توجد عناصر مطابقة</string>
+    <string name="sort_by_name">الترتيب حسب الاسم</string>
+    <string name="sort_by_file_name">الترتيب حسب اسم الملف</string>
+    <string name="sort_by_last_modified">الترتيب حسب تاريخ آخر تعديل</string>
+    <string name="sort_by_last_played">الترتيب حسب آخر تشغيل</string>
 </resources>
