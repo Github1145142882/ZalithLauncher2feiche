@@ -50,4 +50,7 @@
     <string name="terracotta_permission_vpn">Bitte erteilen Sie der Anwendung zuerst die VPN-Berechtigung.</string>
     <string name="terracotta_player_list">Spieler Liste</string>
     <string name="terracotta_player_anonymous">Anonyme Spieler</string>
+    <string name="terracotta_difficulty_easiest">Hervorragendes Netzwerk: Fast Verbunden!</string>
+    <string name="terracotta_difficulty_simple">Hervorragendes Netzwerk: Die Verbindung kann einige Zeit in Anspruch nehmen</string>
+    <string name="terracotta_difficulty_medium">Mittelmäßiges Netzwerk: Aktivieren von Ausweichrouten, da die Verbindung möglicherweise abbrechen könnte</string>
 </resources>
