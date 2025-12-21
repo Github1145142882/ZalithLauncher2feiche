@@ -1014,7 +1014,6 @@
     <string name="settings_launcher_background_video_volume_title">Volume Video Latar Belakang</string>
     <string name="settings_launcher_background_video_volume_summary">Jika latarnya berupa video, kamu bisa mengatur volumenya lewat opsi ini.</string>
     <string name="control_editor_edit_text_size">Ukuran teks</string>
-    <string name="control_editor_special_joystick_style"></string>
     <string name="control_editor_special_joystick_style_joystick_color">Warna Joystick</string>
     <string name="control_editor_special_joystick_style_joystick_can_lock_color">Warna Joystick (Bisa dikunci)</string>
     <string name="control_editor_special_joystick_style_joystick_locked_color">Warna Joystick (Terkunci)</string>
