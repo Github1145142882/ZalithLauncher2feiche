@@ -39,10 +39,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Outline
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
@@ -417,17 +420,29 @@ private fun DrawScope.drawBackgroundLayer(
         density = this
     )
 
-    drawOutline(
-        outline = outline,
-        color = backgroundColor
-    )
+    val clipPath = when (outline) {
+        is Outline.Generic -> outline.path
+        is Outline.Rounded -> Path().apply {
+            addRoundRect(outline.roundRect)
+        }
+        is Outline.Rectangle -> Path().apply {
+            addRect(outline.rect)
+        }
+    }
 
-    if (borderWidthPx > 0f) {
+    clipPath(clipPath) {
         drawOutline(
             outline = outline,
-            color = borderColor,
-            style = Stroke(width = borderWidthPx)
+            color = backgroundColor
         )
+
+        if (borderWidthPx > 0f) {
+            drawOutline(
+                outline = outline,
+                color = borderColor,
+                style = Stroke(width = borderWidthPx)
+            )
+        }
     }
 }
 
