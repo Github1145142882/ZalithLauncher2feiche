@@ -1032,4 +1032,15 @@
     <string name="control_editor_special_joystick_style_background_rounded_corner">背景の角の半径</string>
     <string name="control_editor_special_joystick_style_joystick_rounded_corner">ジョイスティックの角の半径</string>
     <string name="control_editor_special_joystick_style_joystick_size">ジョイスティックの大きさ</string>
+    <string name="game_styles_joystick_edit_use_control_layout">コントロールレイアウトが提供するスタイルを使用する</string>
+    <string name="upgrade_title">アップデートを確認</string>
+    <string name="upgrade_new">新しいバージョンが見つかりました</string>
+    <string name="upgrade_more">表示</string>
+    <string name="upgrade_files">利用可能なAPK</string>
+    <string name="upgrade_files_arch">アーキテクチャ: %s</string>
+    <string name="upgrade_version_change">バージョン: %s</string>
+    <string name="upgrade_version_size">サイズ: %s</string>
+    <string name="upgrade_version_create_at">更新日時: %s</string>
+    <string name="upgrade_get_remote_failed">アップデートの確認に失敗しました。後ほどもう一度お試しください。</string>
+    <string name="upgrade_is_latest">すでに最新バージョンです</string>
 </resources>
