@@ -158,7 +158,7 @@ class BaseMinecraftDownloader(
                 if (library.name.startsWith("org.lwjgl")) return@forEach
 
                 val artifactPath: String = artifactToPath(library) ?: return@forEach
-                val (sha1, url, size, isDownloadable) = library.downloads?.let { downloads ->
+                val (sha1: String?, url, size, isDownloadable) = library.downloads?.let { downloads ->
                     downloads.artifact?.let { artifact ->
                         Quadruple(artifact.sha1, artifact.url, artifact.size, true)
                     } ?: return@forEach
