@@ -19,68 +19,77 @@
 package com.movtery.zalithlauncher.ui.base
 
 import android.os.Build
-import android.os.Build.VERSION_CODES
 import android.os.Bundle
-import android.view.View
-import android.view.View.OnSystemUiVisibilityChangeListener
 import android.view.WindowManager
 import androidx.annotation.CallSuper
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
+
+enum class WindowMode {
+    DEFAULT,
+    EDGE_TO_EDGE
+}
 
 abstract class FullScreenComponentActivity : AbstractComponentActivity() {
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setFullscreen()
+        setWindowMode(getWindowMode())
     }
 
     @CallSuper
     override fun onPostResume() {
         super.onPostResume()
-        setFullscreen()
-        ignoreNotch()
+        setWindowMode(getWindowMode())
     }
 
-    /**
-     * 是否忽略刘海屏
-     */
-    abstract fun shouldIgnoreNotch(): Boolean
+    abstract fun getWindowMode(): WindowMode
 
-    private fun setFullscreen() {
-        val decorView = window.decorView
-        val visibilityChangeListener =
-            OnSystemUiVisibilityChangeListener { visibility: Int ->
-                val multiWindowMode = isInMultiWindowMode
-                // When in multi-window mode, asking for fullscreen makes no sense (cause the launcher runs in a window)
-                // So, ignore the fullscreen setting when activity is in multi window mode
-                if (!multiWindowMode) {
-                    if ((visibility and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0) {
-                        decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                                or View.SYSTEM_UI_FLAG_FULLSCREEN
-                                or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                                or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-                                or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-                                or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN)
-                    }
-                } else {
-                    decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_VISIBLE
-                }
-            }
-        decorView.setOnSystemUiVisibilityChangeListener(visibilityChangeListener)
-        visibilityChangeListener.onSystemUiVisibilityChange(decorView.systemUiVisibility)
-    }
-
-    protected fun ignoreNotch() {
-        if (Build.VERSION.SDK_INT >= VERSION_CODES.P) {
-            window.attributes.layoutInDisplayCutoutMode =
-                if (shouldIgnoreNotch()) {
-                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
-                } else {
-                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
-                }
-            window.setFlags(
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN,
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN
-            )
+    fun setWindowMode(mode: WindowMode) {
+        when (mode) {
+            WindowMode.DEFAULT -> applyDefaultWindowMode()
+            WindowMode.EDGE_TO_EDGE -> applyEdgeToEdgeWindowMode()
         }
+
+        window.decorView.requestApplyInsets()
+    }
+
+    private fun applyEdgeToEdgeWindowMode() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            WindowCompat.setDecorFitsSystemWindows(window, false)
+
+            window.attributes = window.attributes.apply {
+                layoutInDisplayCutoutMode =
+                    WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+            }
+
+            WindowInsetsControllerCompat(window, window.decorView).apply {
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+            }
+        } else {
+            WindowCompat.setDecorFitsSystemWindows(window, true)
+
+            WindowInsetsControllerCompat(window, window.decorView).apply {
+                systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+            }
+        }
+    }
+
+    private fun applyDefaultWindowMode() {
+        WindowCompat.setDecorFitsSystemWindows(window, true)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes = window.attributes.apply {
+                layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_NEVER
+            }
+        }
+
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_DEFAULT
+        }
+    }
+
+    protected fun refreshWindow() {
+        setWindowMode(getWindowMode())
     }
 }

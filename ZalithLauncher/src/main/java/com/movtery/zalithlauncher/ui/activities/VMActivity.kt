@@ -74,6 +74,7 @@ import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
+import com.movtery.zalithlauncher.ui.base.WindowMode
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.device.PhysicalMouseChecker
 import com.movtery.zalithlauncher.utils.getDisplayFriendlyRes
@@ -271,6 +272,7 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
     override fun onPostResume() {
         super.onPostResume()
+        refreshDisplayMetrics()
         lifecycleScope.launch {
             delay(500)
             refreshSize()
@@ -340,7 +342,13 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
         runIfHandlerInitialized { it.onGraphicOutput() }
     }
 
-    override fun shouldIgnoreNotch(): Boolean = AllSettings.gameFullScreen.getValue()
+    override fun getWindowMode(): WindowMode {
+        return if (AllSettings.gameFullScreen.getValue()) {
+            WindowMode.EDGE_TO_EDGE
+        } else {
+            WindowMode.DEFAULT
+        }
+    }
 
     /**
      * @param surfaceOffset Surface整体偏移
@@ -390,6 +398,12 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
                 }
             }
         }
+    }
+
+    private fun refreshDisplayMetrics() {
+        val displayMetrics = getDisplayMetrics()
+        CallbackBridge.physicalWidth = displayMetrics.widthPixels
+        CallbackBridge.physicalHeight = displayMetrics.heightPixels
     }
 
     private fun refreshWindowSize() {

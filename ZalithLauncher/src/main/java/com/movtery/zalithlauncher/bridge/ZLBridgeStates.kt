@@ -45,7 +45,7 @@ object ZLBridgeStates {
     var currentFPS by mutableIntStateOf(0)
 
     /**
-     * 莊濤：窗口变更刷新key
+     * 状态：窗口变更刷新key
      */
     @JvmStatic
     var windowChangeKey by mutableStateOf(false)

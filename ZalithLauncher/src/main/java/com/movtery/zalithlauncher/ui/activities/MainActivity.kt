@@ -148,7 +148,7 @@ class MainActivity : BaseComponentActivity() {
                     }
                     is EventViewModel.Event.RefreshFullScreen -> {
                         lifecycleScope.launch(Dispatchers.Main) {
-                            ignoreNotch()
+                            refreshWindow()
                         }
                     }
                     is EventViewModel.Event.CheckUpdate -> {

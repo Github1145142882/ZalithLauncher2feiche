@@ -33,7 +33,6 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.loadAllSettings
 import com.movtery.zalithlauncher.utils.checkStoragePermissionsForInit
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
-import org.lwjgl.glfw.CallbackBridge
 import kotlin.math.min
 
 open class BaseComponentActivity(
@@ -47,7 +46,6 @@ open class BaseComponentActivity(
         super.onCreate(savedInstanceState)
 
         refreshContext(this)
-        refreshDisplayMetrics()
         checkStoragePermissions()
 
         if (refreshData) {
@@ -68,24 +66,22 @@ open class BaseComponentActivity(
         }
     }
 
-    @CallSuper
-    override fun onPostResume() {
-        super.onPostResume()
-        refreshDisplayMetrics()
-    }
-
     override fun onAttachedToWindow() {
         computeNotchSize()
     }
 
-    override fun shouldIgnoreNotch(): Boolean {
+    override fun getWindowMode(): WindowMode {
         runCatching {
-            return AllSettings.launcherFullScreen.getValue()
+            return if (AllSettings.launcherFullScreen.getValue()) {
+                WindowMode.EDGE_TO_EDGE
+            } else {
+                WindowMode.DEFAULT
+            }
         }
         //AllSettings初始化出现异常（MMKV在Application未正常初始化）
         //不出意外应该正在展示FatalErrorActivity，忽略并关闭当前Activity
         finish()
-        return false
+        return WindowMode.DEFAULT
     }
 
     private fun refreshData() {
@@ -97,12 +93,6 @@ open class BaseComponentActivity(
     private fun checkStoragePermissions() {
         //检查所有文件管理权限
         checkStoragePermissionsForInit(this)
-    }
-
-    protected fun refreshDisplayMetrics() {
-        val displayMetrics = getDisplayMetrics()
-        CallbackBridge.physicalWidth = displayMetrics.widthPixels
-        CallbackBridge.physicalHeight = displayMetrics.heightPixels
     }
 
     /**
@@ -121,7 +111,7 @@ open class BaseComponentActivity(
             } else { // Removed the clause for devices with unofficial notch support, since it also ruins all devices with virtual nav bars before P
                 windowManager.defaultDisplay.getRealMetrics(displayMetrics)
             }
-            if (!shouldIgnoreNotch()) {
+            if (getWindowMode() == WindowMode.DEFAULT) {
                 //Remove notch width when it isn't ignored.
                 if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) displayMetrics.heightPixels -= notchSize
                 else displayMetrics.widthPixels -= notchSize
