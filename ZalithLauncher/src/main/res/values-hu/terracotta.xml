@@ -1,3 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="terracotta">Többjátékos</string>
+    <string name="terracotta_easytier">Az EasyTier-ről</string>
+    <string name="terracotta_terracotta">Terracotta | Többjátékos</string>
+    <string name="terracotta_back">Kilépés</string>
+    <string name="terracotta_enable">Többjátékos Bekapcsolása</string>
+    <string name="terracotta_feedback_title">Visszajelző Űrlap Kitöltése</string>
+    <string name="terracotta_difficulty_easiest">Kiváló hálózat: mindjárt csatlakozva!</string>
+    <string name="terracotta_difficulty_simple">Jó hálózat: a csatlakozás eltarthat egy kis ideig</string>
+    <string name="terracotta_log">Logok megtekintése</string>
+    <string name="terracotta_log_exit">Zárd be a Log-ot és térj vissza a funkciók oldalra.</string>
+    <string name="terracotta_export_log">Megoszthatod a logjaidat a Launcher multiplayer fülén hogy több információt nyerjünk ki hiba ellenőrzésre.</string>
+    <string name="terracotta_export_log_share">Többjátékos Core Log Megosztása</string>
+    <string name="terracotta_export_log_share_null">Nincs található log</string>
 </resources>
