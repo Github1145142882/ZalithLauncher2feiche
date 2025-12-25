@@ -344,7 +344,7 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
     override fun getWindowMode(): WindowMode {
         return if (AllSettings.gameFullScreen.getValue()) {
-            WindowMode.EDGE_TO_EDGE
+            WindowMode.FULL_IMMERSIVE
         } else {
             WindowMode.DEFAULT
         }

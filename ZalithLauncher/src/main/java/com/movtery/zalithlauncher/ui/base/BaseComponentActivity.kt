@@ -33,6 +33,7 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.loadAllSettings
 import com.movtery.zalithlauncher.utils.checkStoragePermissionsForInit
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
+import kotlin.math.max
 import kotlin.math.min
 
 open class BaseComponentActivity(
@@ -73,7 +74,7 @@ open class BaseComponentActivity(
     override fun getWindowMode(): WindowMode {
         runCatching {
             return if (AllSettings.launcherFullScreen.getValue()) {
-                WindowMode.EDGE_TO_EDGE
+                WindowMode.FULL_IMMERSIVE
             } else {
                 WindowMode.DEFAULT
             }
@@ -100,21 +101,30 @@ open class BaseComponentActivity(
      */
     @Suppress("DEPRECATION")
     fun getDisplayMetrics(): DisplayMetrics {
-        var displayMetrics = DisplayMetrics()
+        val displayMetrics = DisplayMetrics()
 
         if (isInMultiWindowMode || isInPictureInPictureMode) {
             //For devices with free form/split screen, we need window size, not screen size.
-            displayMetrics = resources.displayMetrics
+            displayMetrics.setTo(resources.displayMetrics)
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 display.getRealMetrics(displayMetrics)
             } else { // Removed the clause for devices with unofficial notch support, since it also ruins all devices with virtual nav bars before P
                 windowManager.defaultDisplay.getRealMetrics(displayMetrics)
             }
-            if (getWindowMode() == WindowMode.DEFAULT) {
-                //Remove notch width when it isn't ignored.
-                if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) displayMetrics.heightPixels -= notchSize
-                else displayMetrics.widthPixels -= notchSize
+
+            if (getWindowMode() == WindowMode.DEFAULT && notchSize > 0) {
+                val orientation = resources.configuration.orientation
+
+                when (orientation) {
+                    Configuration.ORIENTATION_PORTRAIT -> {
+                        displayMetrics.heightPixels = max(1, displayMetrics.heightPixels - notchSize)
+                    }
+                    Configuration.ORIENTATION_LANDSCAPE -> {
+                        displayMetrics.widthPixels = max(1, displayMetrics.widthPixels - notchSize)
+                    }
+                    else -> {}
+                }
             }
         }
         return displayMetrics
@@ -125,12 +135,28 @@ open class BaseComponentActivity(
      * [Modified from PojavLauncher](https://github.com/PojavLauncherTeam/PojavLauncher/blob/5de6822/app_pojavlauncher/src/main/java/net/kdt/pojavlaunch/prefs/LauncherPreferences.java#L196-L219)
      */
     private fun computeNotchSize() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
+            notchSize = -1
+            return
+        }
+
         runCatching {
-            val cutout: Rect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                windowManager.currentWindowMetrics.windowInsets.displayCutout!!.boundingRects[0]
+            val displayCutout = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                windowManager.currentWindowMetrics.windowInsets.displayCutout
             } else {
-                window.decorView.rootWindowInsets.displayCutout!!.boundingRects[0]
+                window.decorView.rootWindowInsets.displayCutout
+            }
+
+            if (displayCutout == null || displayCutout.boundingRects.isEmpty()) {
+                notchSize = -1
+                return@runCatching
+            }
+
+            var cutout = Rect()
+            for (rect in displayCutout.boundingRects) {
+                if (rect.width() * rect.height() > cutout.width() * cutout.height()) {
+                    cutout = rect
+                }
             }
 
             // Notch values are rotation sensitive, handle all cases
