@@ -51,8 +51,9 @@ class DownloadTask(
 
     suspend fun download() {
         //若目标文件存在，验证通过或关闭完整性验证时，跳过此次下载
-        if (verifySha1()) {
-            downloadedSize(FileUtils.sizeOf(targetFile))
+        val file = targetFile
+        if (file.exists() && verifySha1(file)) {
+            downloadedSize(FileUtils.sizeOf(file))
             downloadedFile()
             return
         }
@@ -62,7 +63,7 @@ class DownloadTask(
                 downloadFromMirrorList(
                     urls = urls,
                     sha1 = sha1,
-                    outputFile = targetFile,
+                    outputFile = file,
                     bufferSize = bufferSize
                 ) { size ->
                     downloadedSize(size)
@@ -73,7 +74,7 @@ class DownloadTask(
             if (e is CancellationException) throw e
             //fix: 下载中途断开网络，导致过多文本刷入日志
             //此处不再详细记录堆栈信息
-            lError("Download failed: ${targetFile.absolutePath}\nurls: ${urls.joinToString("\n")}, string = ${e.getMessageOrToString()}")
+            lError("Download failed: ${file.absolutePath}\nurls: ${urls.joinToString("\n")}, string = ${e.getMessageOrToString()}")
             if (!isDownloadable && e is FileNotFoundException) throw e
             onDownloadFailed(this)
         }
@@ -94,28 +95,28 @@ class DownloadTask(
      * 若目标文件存在，验证完整性
      * @return 是否跳过此次下载
      */
-    private fun verifySha1(): Boolean {
-        if (!targetFile.exists()) return false
+    private fun verifySha1(file: File): Boolean {
+        if (!file.exists()) return false
         if (!verifyIntegrity) return true
 
         if (sha1.isNullOrBlank()) {
             //排除目标无法被下载的情况，比如Forge的client
             if (!isDownloadable) return true
-            return verifyFileWithoutSha1()
+            return verifyFileWithoutSha1(file)
         }
 
-        return if (compareSHA1(targetFile, sha1)) {
+        return if (compareSHA1(file, sha1)) {
             true
         } else {
-            FileUtils.deleteQuietly(targetFile)
+            FileUtils.deleteQuietly(file)
             false
         }
     }
 
-    private fun verifyFileWithoutSha1(): Boolean {
-        val isAvailable = when (targetFile.extension.lowercase()) {
-            "zip", "jar" -> checkZip(targetFile)
-            "7z" -> check7z(targetFile)
+    private fun verifyFileWithoutSha1(file: File): Boolean {
+        val isAvailable = when (file.extension.lowercase()) {
+            "zip", "jar" -> checkZip(file)
+            "7z" -> check7z(file)
             else -> {
                 //普通文件或是暂不受支持的压缩包
                 return true
@@ -126,7 +127,7 @@ class DownloadTask(
             return true
         }
 
-        FileUtils.deleteQuietly(targetFile)
+        FileUtils.deleteQuietly(file)
         return false
     }
 }
