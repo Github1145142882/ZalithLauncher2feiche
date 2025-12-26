@@ -27,7 +27,7 @@
     <string name="generic_open_link">Tarayıcıda Aç</string>
     <string name="generic_cannot_empty">İçerik boş olamaz!</string>
     <string name="generic_input_invalid_character">Geçersiz karakterler: \"%s\"</string>
-    <string name="generic_input_failed_to_number">Sayısal değer gir</string>
+    <string name="generic_input_failed_to_number">Girilen değer bir sayı olarak işlenemedi</string>
     <string name="generic_input_too_small">Değer minimum %s olmalı</string>
     <string name="generic_input_too_large">Değer maksimum %s olmalı</string>
     <string name="generic_input_length">Yazı uzunluğu: %1$d/%2$d</string>
@@ -205,7 +205,7 @@
     <string name="download_modpack_install_title">Mod pakedi yükleniyor</string>
     <string name="download_modpack_install_parse">Mod pakedini ayrıştır</string>
     <string name="download_modpack_install_get_mod_url">Mod indirme bağlantısını al (%1$d/%2$d)</string>
-    <string name="download_modpack_install_overrides">Mod dosyalarını çıkart(testo taylan)</string>
+    <string name="download_modpack_install_overrides">Mod paketi dosyaları çıkarılıyor</string>
     <string name="download_modpack_download">Mod paketi için gerekli içeriği indirin</string>
     <string name="download_modpack_download_mods">Tüm modları indir (%1$d/%2$d, %3$s)</string>
     <string name="download_modpack_download_mods_retry">Tüm modları yüklemeyi tekrar dene (%1$d/%2$d, %3$s)</string>
@@ -320,12 +320,12 @@
     <string name="game_button_mouse_right">Sağ Tık</string>
     <string name="game_dialog_force_close_message">Zorla kapatmak ve ana ekrana dönmek istediğinize emin misiniz?</string>
     <string name="renderer_version_support">MC Sürüm Desteği:</string>
-    <string name="renderer_version_unsupported_warning">Mevcut render cihazı %s bu oyun sürümünü desteklemiyor. Kullanılmaya devam edilmesi render hatalarına veya oyunun çökmesine yol açabilir! Kullanmayı sürdürmek istediğinize emin misiniz?</string>
+    <string name="renderer_version_unsupported_warning">Mevcut render cihazı %s bu oyun sürümünü desteklemiyor. Kullanılmaya devam edilmesi render hatalarına veya oyunun çökmesine yol açabilir! Risk alarak kullanmaya devam etmek istiyor musunuz?</string>
     <string name="account_no_account">Hesap yok</string>
     <string name="account_login">Giriş Yap</string>
     <string name="account_logging_in">%s ile giriş yapılıyor</string>
     <string name="account_logging_in_failed">Giriş başarısız</string>
-    <string name="account_logging_in_saving">Skin alınıyor, hesap kaydediliyor</string>
+    <string name="account_logging_in_saving">Oyuncu skin’i alınıyor, hesap bilgileri kaydediliyor</string>
     <string name="account_logging_time_out">Ağ zaman aşımı. Bağlantıyı kontrol et.</string>
     <string name="account_logging_not_purchased_minecraft">Minecraft yapılandırma bilgisi bulunamadı, lütfen Minecraft’ın resmi web sitesinden satın alın.</string>
     <string name="account_type_microsoft">Microsoft</string>
@@ -362,7 +362,7 @@
     <string name="account_supporting_microsoft_tip_link_make_gameid">Profil Oluştur / Ad Düzenle</string>
     <string name="account_supporting_microsoft_tip_hint_t1">Hesap ekleme adımlarını takip et:</string>
     <string name="account_supporting_microsoft_tip_hint_t2">1. “Giriş Yap” düğmesine tıklayın, başlatıcı doğrulama kodunu almaya çalışacaktır;\n</string>
-    <string name="account_supporting_microsoft_tip_hint_t3">2. %s tarafından verilen kodu açılan sayfaya gir, Erişime İzin Ver de;\n</string>
+    <string name="account_supporting_microsoft_tip_hint_t3">2. Açılan sayfaya %s tarafından verilen kodu gir ve “Erişime İzin Ver”e tıkla;\n</string>
     <string name="account_supporting_microsoft_tip_hint_t4">3. Web sayfasındaki talimatları izleyerek giriş işlemini tamamlayın;\n</string>
     <string name="account_supporting_microsoft_tip_hint_t5">4. Bu uygulama bilgilerine erişsin mi? sorusuna Kabul Et de;\n</string>
     <string name="account_supporting_microsoft_tip_hint_t6">5. Web sayfasında “Hepsi tamam!” mesajı göründüğünde, hesap otomatik olarak eklenecektir. Lütfen bir süre bekleyin.</string>
@@ -580,7 +580,7 @@
     <string name="control_editor_menu_widget_snap_mode">Kontrol yaslama modu</string>
     <string name="control_editor_menu_widget_snap_mode_fullscreen">Tamekran kenetle</string>
     <string name="control_editor_menu_widget_snap_mode_local">Yerel kenetleme</string>
-    <string name="control_editor_menu_save_and_exit">Kaydet ve çıkk</string>
+    <string name="control_editor_menu_save_and_exit">Kaydet ve çık</string>
     <string name="control_editor_layers_title">Kontrol katmanları</string>
     <string name="control_editor_layers_create">Yeni oluştur</string>
     <string name="control_editor_layers_attribute">Kontrol katmanı nitelikleri</string>
@@ -589,8 +589,8 @@
     <string name="control_editor_layers_attribute_hide_when_mouse">Fare kullanırken açık kalsın</string>
     <string name="control_editor_layers_attribute_hide_when_gamepad">Kontrolcü kullanırken görünür kalsın</string>
     <string name="control_editor_layers_merge_downward">Kontrolü aşagı dogru birleştir</string>
-    <string name="control_editor_edit_dialog_open_preview">Ön izlemeyi açlaaa gardaşş</string>
-    <string name="control_editor_edit_dialog_close_preview">Önizlemeyi kaptla gardaş</string>
+    <string name="control_editor_edit_dialog_open_preview">Ön izlemeyi aç</string>
+    <string name="control_editor_edit_dialog_close_preview">Ön izlemeyi kapat</string>
     <string name="control_editor_edit_dialog_clone_widget">Controlü klonla</string>
     <string name="control_editor_edit_dialog_clone_widget_title">Kontrol katmanını klonla</string>
     <string name="control_editor_edit_category_info">Açıklama/Bilgi</string>
@@ -821,7 +821,7 @@
     <string name="versions_manage_cleanup_success">%1$d dosya başarıyla temizlendi, toplam boyut: %2$s</string>
     <string name="versions_overview_mod_folder">Mod Klasörü</string>
     <string name="versions_config_control">Kontrol Düzeni</string>
-    <string name="versions_config_microphone_check_title">Sesim gelioomu</string>
+    <string name="versions_config_microphone_check_title">Mikrofonu Kontrol Et</string>
     <string name="versions_config_microphone_check_summary">Sistem mikrofonunun kullanılabilir olup olmadığını kontrol edin veya başlatıcıya mikrofon izni verildiğinden emin olun. Bu kontrol, Simple Voice Chat gibi mikrofon gerektiren modları kullanabilmenizi sağlar.</string>
     <string name="versions_update_loader">Yükleyiciyi Güncelle</string>
     <string name="versions_update_loader_waiting_for_others">Diğer öğelerin yüklenmesinin bitmesini bekliyor</string>
@@ -845,8 +845,8 @@
     <string name="mods_manage_no_mods">Hiç mod bulunamadı</string>
     <string name="mods_manage_no_loader">Mod yükleyici bulunamadı</string>
     <string name="mods_update">Modları Güncelle</string>
-    <string name="mods_update_warning_1">Güncelleme sırasında mod dosyaları değiştirilebilir.</string>
-    <string name="mods_update_warning_2">Lütfen işlemden önce yedek alın.</string>
+    <string name="mods_update_warning_1">Çok sayıda modu aynı anda güncellemek uyumluluk sorunlarına yol açabilir ve düzgün çalışan oyununuzun bozulmasına neden olabilir.</string>
+    <string name="mods_update_warning_2">Başlatıcı mod güncelleme günlükleri sağlamaz. Güncellemelerin neler getirdiğini kendiniz kontrol etmeli ve güncelleme sonrası oynanışın düzgün olacağından emin olmalısınız.</string>
     <string name="mods_update_warning_3">Başlatıcı yalnızca modları toplu olarak en son sürüme günceller ve bu işlem geri alınamaz. Lütfen hangi modları güncelleyeceğinizi dikkatlice seçin.</string>
     <string name="mods_update_task_filter">Filtreleniyor</string>
     <string name="mods_update_task_check_update">Güncellemeler denetleniyor</string>
@@ -855,8 +855,8 @@
     <string name="mods_update_task_download">İndiriliyor</string>
     <string name="mods_update_task_replace">Değiştiriliyor</string>
     <string name="mods_update_no_mods_update">Güncellenecek mod yok</string>
-    <string name="mods_update_updating">Güncelleniyor...(%1$d/%2$d, %3$s)</string>
-    <string name="mods_update_updating_retry">Yeniden deneniyor...(%1$d/%2$d, %3$s)</string>
+    <string name="mods_update_updating">Güncelleniyor…(%1$d/%2$d, %3$s)</string>
+    <string name="mods_update_updating_retry">Yeniden deneniyor…(%1$d/%2$d, %3$s)</string>
     <string name="mods_update_success">Güncelleme başarılı</string>
     <string name="mods_update_success_text">Tüm modlar başarıyla güncellendi!</string>
     <string name="mods_update_failed">Güncelleme başarısız</string>
@@ -886,7 +886,7 @@
     <string name="saves_manage_quick_play">Hızlı Oyna</string>
     <string name="saves_manage_quick_play_disabled">Hızlı oyna devre dışı</string>
     <string name="saves_manage_no_saves">Kayıtlı dünya bulunamadı</string>
-    <string name="saves_manage_import_unpacking">Paket açılıyor...%s</string>
+    <string name="saves_manage_import_unpacking">Paket açılıyor…%s</string>
     <string name="saves_manage_import_failed">İçe aktarma başarısız oldu</string>
     <string name="resource_pack_manage">Kaynak Paketleri</string>
     <string name="resource_pack_manage_info">Paket Bilgisi</string>
@@ -968,7 +968,7 @@
     <string name="settings_gamepad_remapping_dpad_right">D-Pad Sağ</string>
     <string name="settings_gamepad_remapping_dpad_down">D-Pad Aşağı</string>
     <string name="settings_gamepad_remapping_finished_title">Tamamlandı</string>
-    <string name="settings_gamepad_remapping_finished_saving">Kaydediliyor...</string>
+    <string name="settings_gamepad_remapping_finished_saving">Kaydediliyor…</string>
     <string name="settings_gamepad_remapping_finished_saved">Oyun kumandası eşleştirmesi başarıyla kaydedildi. Artık bu iletişim kutusunu kapatabilirsiniz!</string>
     <string name="settings_launcher_dark_mode_title">Karanlık Mod</string>
     <string name="settings_launcher_animate_extent_title">Genişletilmiş Animasyonlar</string>
