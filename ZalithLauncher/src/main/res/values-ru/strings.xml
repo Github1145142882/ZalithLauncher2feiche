@@ -1052,4 +1052,16 @@
     <string name="control_editor_special_joystick_style_background_rounded_corner">Радиус скругления фона</string>
     <string name="control_editor_special_joystick_style_joystick_rounded_corner">Радиус скругления джойстика</string>
     <string name="control_editor_special_joystick_style_joystick_size">Размер джойстика</string>
+    <string name="game_styles_joystick_edit_use_control_layout">Использовать стиль из раскладки управления</string>
+    <string name="upgrade_title">Проверить обновления</string>
+    <string name="upgrade_new">Найдена новая версия</string>
+    <string name="upgrade_more">Подробнее</string>
+    <string name="upgrade_files">Доступный APK-файл</string>
+    <string name="upgrade_files_arch">Архитектура: %s</string>
+    <string name="upgrade_version_change">Версия: %s</string>
+    <string name="upgrade_version_size">Размер: %s</string>
+    <string name="upgrade_version_create_at">Обновлено: %s</string>
+    <string name="upgrade_get_remote_failed">Не удалось проверить обновления. Пожалуйста, попробуйте позже.</string>
+    <string name="upgrade_is_latest">У вас уже установлена последняя версия</string>
+    <string name="upgrade_cloud_drive">Облачное хранилище</string>
 </resources>
