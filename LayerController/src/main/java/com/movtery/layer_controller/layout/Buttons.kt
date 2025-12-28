@@ -21,6 +21,7 @@ package com.movtery.layer_controller.layout
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -142,7 +143,10 @@ internal fun TextButton(
                 textAlign = buttonTextStyle.textAlignment.textAlign,
                 fontWeight = if (buttonTextStyle.textBold) FontWeight.Bold else null,
                 fontStyle = if (buttonTextStyle.textItalic) FontStyle.Italic else null,
-                textDecoration = if (buttonTextStyle.textUnderline) TextDecoration.Underline else null
+                textDecoration = if (buttonTextStyle.textUnderline) TextDecoration.Underline else null,
+                style = LocalTextStyle.current.copy(
+                    lineHeight = (fontSize * 1.1).sp
+                )
             )
         }
     } else {
