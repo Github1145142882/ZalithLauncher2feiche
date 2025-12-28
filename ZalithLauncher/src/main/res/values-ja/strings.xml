@@ -1044,4 +1044,7 @@
     <string name="upgrade_get_remote_failed">アップデートの確認に失敗しました。後ほどもう一度お試しください。</string>
     <string name="upgrade_is_latest">すでに最新バージョンです</string>
     <string name="upgrade_cloud_drive">クラウドドライブ</string>
+    <string name="game_styles_joystick_deadzone">ジョイスティックのデッドゾーン範囲</string>
+    <string name="control_editor_special_joystick_style_tip_title">ジョイスティックが作れませんか？</string>
+    <string name="control_editor_special_joystick_style_tip_summary">実装がとても複雑なため、コントロールレイアウトシステムはジョイスティックコンポーネントを直接統合できません。ジョイスティックコンポーネントを使用するには、ゲーム内メニューでジョイスティックコンポーネントを有効にすることしかできません。ただし、コントロールレイアウトを通してジョイスティックコンポーネントの見た目をカスタマイズし、一貫したスタイルにすることは可能です。</string>
 </resources>
