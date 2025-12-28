@@ -4,14 +4,16 @@ plugins {
 
 android {
     namespace = "com.bzlzhh.ng_gl4es"
-    compileSdk = libs.versions.compileSdk.get().toInt()
+    compileSdk {
+        version = release(36)
+    }
 
     defaultConfig {
-        minSdk = libs.versions.minSdk.get().toInt()
+        minSdk = 26
     }
 
     lint {
-        targetSdk = libs.versions.targetSdk.get().toInt()
+        targetSdk = 35
     }
 
     buildTypes {
