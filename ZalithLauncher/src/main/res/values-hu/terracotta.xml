@@ -13,4 +13,11 @@
     <string name="terracotta_export_log">Megoszthatod a logjaidat a Launcher multiplayer fülén hogy több információt nyerjünk ki hiba ellenőrzésre.</string>
     <string name="terracotta_export_log_share">Többjátékos Core Log Megosztása</string>
     <string name="terracotta_export_log_share_null">Nincs található log</string>
+    <string name="terracotta_metadata_easytier_ver">EasyTier Verzió:%s</string>
+    <string name="terracotta_menu">Többjátékos Menü</string>
+    <string name="terracotta_status_waiting_guest_prompt_invalid">Érvénytelen meghívó</string>
+    <string name="terracotta_status_host_scanning">LAN világok beolvasása</string>
+    <string name="terracotta_status_host_scanning_desc">Lépjen be egy világba, nyomjon ESC gombot, válassza az Open to LAN-t, majd nyomja meg a Start LAN World gombot.</string>
+    <string name="terracotta_status_host_starting">Szoba Létrehozása</string>
+    <string name="terracotta_status_host_ok">Szoba létrehozva</string>
 </resources>
