@@ -35,6 +35,7 @@ enum class WindowMode {
 abstract class FullScreenComponentActivity : AbstractComponentActivity() {
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         super.onCreate(savedInstanceState)
         setWindowMode(getWindowMode())
         setupSystemUiVisibilityListener()
