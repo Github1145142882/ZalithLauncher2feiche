@@ -38,11 +38,11 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.Button
@@ -61,7 +61,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -76,6 +76,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -147,15 +148,17 @@ fun TextInputBarArea(
  *
  * @param mode 控制输入条的显示模式，主要用于照顾全屏输入法（悬浮输入法或者关闭输入法时，可以使用 [InputBarMode.Floating]）
  * @param show 控制是否显示输入条，主要用于淡出淡入的动画效果
- * @param onSendText 用户确认发送文本到游戏（已在内部判断不为空字符串）
  */
 @Composable
 fun TextInputBar(
     modifier: Modifier = Modifier,
     mode: InputBarMode = InputBarMode.Floating,
+    textFieldState: TextFieldState,
     show: Boolean,
     onClose: () -> Unit,
-    onSendText: (String) -> Unit,
+    onHandle: (text: String, selection: TextRange) -> Unit,
+    onClear: () -> Unit,
+//    onSendText: (String) -> Unit,
     onShiftClick: (press: Boolean) -> Unit,
     onCtrlClick: (press: Boolean) -> Unit,
     onTabClick: () -> Unit,
@@ -175,8 +178,19 @@ fun TextInputBar(
             targetOffsetY = { -it }
         ) + fadeOut(),
     ) {
-        //已输入的文本
-        var text by rememberSaveable { mutableStateOf("") }
+        val currentOnHandle by rememberUpdatedState(onHandle)
+        LaunchedEffect(textFieldState.text, textFieldState.selection) {
+            val currentText = textFieldState.text.toString()
+            val currentSelection = textFieldState.selection
+            currentOnHandle(currentText, currentSelection)
+        }
+
+        val currentOnClear by rememberUpdatedState(onClear)
+        DisposableEffect(Unit) {
+            onDispose {
+                currentOnClear()
+            }
+        }
 
         val surfaceShape = when (mode) {
             InputBarMode.Floating -> MaterialTheme.shapes.extraLarge
@@ -217,8 +231,7 @@ fun TextInputBar(
                         modifier = Modifier
                             .weight(1f)
                             .focusRequester(inputFocus),
-                        value = text,
-                        onValueChange = { text = it },
+                        state = textFieldState,
                         leadingIcon = {
                             //关闭按钮
                             IconButton(
@@ -246,12 +259,12 @@ fun TextInputBar(
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Done
                         ),
-                        keyboardActions = KeyboardActions(
-                            onDone = {
-                                focusManager.clearFocus(true)
-                            }
-                        ),
-                        singleLine = true,
+                        onKeyboardAction = {
+                            focusManager.clearFocus(true)
+                            onEnterClick()
+                            onClear()
+                        },
+                        lineLimits = TextFieldLineLimits.SingleLine,
                         shape = MaterialTheme.shapes.large
                     )
 
@@ -273,20 +286,20 @@ fun TextInputBar(
                             color = itemLayoutColorOnSurface(),
                             contentColor = MaterialTheme.colorScheme.onSurface
                         )
-
-                        //发送按钮
-                        SurfaceButton(
-                            icon = Icons.AutoMirrored.Default.Send,
-                            contentDescription = stringResource(R.string.control_editor_edit_event_launcher_send_text),
-                            onClick = {
-                                val text0 = text
-                                //不应该发送空字符串
-                                if (text0.isNotEmpty()) {
-                                    text = ""
-                                    onSendText(text0)
-                                }
-                            }
-                        )
+//
+//                        //发送按钮
+//                        SurfaceButton(
+//                            icon = Icons.AutoMirrored.Default.Send,
+//                            contentDescription = stringResource(R.string.control_editor_edit_event_launcher_send_text),
+//                            onClick = {
+//                                val text0 = text
+//                                //不应该发送空字符串
+//                                if (text0.isNotEmpty()) {
+//                                    text = ""
+//                                    onSendText(text0)
+//                                }
+//                            }
+//                        )
                     }
                 }
 
@@ -298,14 +311,38 @@ fun TextInputBar(
                             .fadeEdge(state = scrollState, direction = EdgeDirection.Horizontal)
                             .fillMaxWidth()
                             .horizontalScroll(scrollState),
-                        onShiftClick = onShiftClick,
-                        onCtrlClick = onCtrlClick,
-                        onTabClick = onTabClick,
-                        onEnterClick = onEnterClick,
-                        onUpClick = onUpClick,
-                        onDownClick = onDownClick,
-                        onLeftClick = onLeftClick,
-                        onRightClick = onRightClick
+                        onShiftClick = { press ->
+                            onShiftClick(press)
+                            if (press) onClear()
+                        },
+                        onCtrlClick = { press ->
+                            onCtrlClick(press)
+                            if (press) onClear()
+                        },
+                        onTabClick = {
+                            onTabClick()
+                            onClear()
+                        },
+                        onEnterClick = {
+                            onEnterClick()
+                            onClear()
+                        },
+                        onUpClick = {
+                            onUpClick()
+                            onClear()
+                        },
+                        onDownClick = {
+                            onDownClick()
+                            onClear()
+                        },
+                        onLeftClick = {
+                            onLeftClick()
+                            onClear()
+                        },
+                        onRightClick = {
+                            onRightClick()
+                            onClear()
+                        }
                     )
                 }
             }
