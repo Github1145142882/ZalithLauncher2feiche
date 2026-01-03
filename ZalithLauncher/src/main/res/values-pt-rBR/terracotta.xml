@@ -2,8 +2,8 @@
 <resources>
     <string name="terracotta">Multijogador</string>
     <string name="terracotta_metadata_ver">versão do terracota:%s</string>
-    <string name="terracotta_metadata_easytier_ver">Versão do nível fácil:%s</string>
-    <string name="terracotta_easytier">Sobre o Nível Fácil</string>
+    <string name="terracotta_metadata_easytier_ver">Versão do EasyTier: %s</string>
+    <string name="terracotta_easytier">Sobre o EasyTier</string>
     <string name="terracotta_terracotta">Terracota | Multijogador</string>
     <string name="terracotta_back">Sair</string>
     <string name="terracotta_enable">Habilitar Multijogador</string>
@@ -11,7 +11,7 @@
     <string name="terracotta_difficulty_easiest">Excelente rede: quase conectado!</string>
     <string name="terracotta_difficulty_simple">Boa rede: a conexão pode demorar um pouco</string>
     <string name="terracotta_difficulty_medium">Rede média: rotas alternativas ativadas, embora a conexão possa falhar</string>
-    <string name="terracotta_difficulty_tough">Rede deficiente: rotas alternativas ativadas, embora a conexão possa falhar</string>
+    <string name="terracotta_difficulty_tough">Rede ruim: rotas alternativas ativadas, embora a conexão possa falhar</string>
     <string name="terracotta_difficulty_estimate_only">A taxa de sucesso é uma estimativa baseada nos tipos de NAT do host e do cliente, apenas para referência!</string>
     <string name="terracotta_log">Olhar Logs</string>
     <string name="terracotta_log_exit">Feche o log e retorne à página de recursos.</string>
