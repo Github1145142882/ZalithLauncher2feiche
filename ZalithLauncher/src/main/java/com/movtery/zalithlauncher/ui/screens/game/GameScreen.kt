@@ -34,6 +34,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -161,6 +162,31 @@ private class GameViewModel(
     var moveOnlyPointers = mutableSetOf<PointerId>()
     /** 鼠标触摸指针处理层占用指针列表 */
     var occupiedPointers = mutableSetOf<PointerId>()
+
+    /** 游戏内帧率状态 */
+    var gameFps by mutableIntStateOf(0)
+        private set
+    private var fpsJob: Job? = null
+    /** 开始帧率捕获 */
+    fun startFpsCapture() {
+        //开启一个新的协程，每秒更新一次帧率数据
+        fpsJob = viewModelScope.launch(Dispatchers.Default) {
+            while (true) {
+                runCatching {
+                    ensureActive()
+                }.onFailure {
+                    break
+                }
+                gameFps = CallbackBridge.getCurrentFps()
+                delay(1000L)
+            }
+        }
+    }
+    /** 停止帧率捕获 */
+    fun stopFpsCapture() {
+        fpsJob?.cancel()
+        fpsJob = null
+    }
 
     /** 启动器默认摇杆样式 */
     var launcherJoystickStyle by mutableStateOf(DefaultObservableJoystickStyle)
@@ -726,10 +752,25 @@ fun GameScreen(
             }
         } else {
             if (AllSettings.showMenuBall.state) {
+                //在这里根据设置决定是否启用帧率捕获协程
+                val showFps = AllSettings.showFPS.state
+                DisposableEffect(showFps) {
+                    if (showFps) viewModel.startFpsCapture()
+                    onDispose {
+                        viewModel.stopFpsCapture()
+                    }
+                }
+
+                val gameFps: Int? = if (showFps) {
+                    viewModel.gameFps
+                } else {
+                    null
+                }
+
                 DraggableGameBall(
                     position = viewModel.gameBallPosition,
                     onPositionChanged = { viewModel.gameBallPosition = it },
-                    showGameFps = AllSettings.showFPS.state,
+                    gameFps = gameFps,
                     showMemory = AllSettings.showMemory.state,
                     alpha = AllSettings.menuBallOpacity.state / 100f,
                     onClick = {

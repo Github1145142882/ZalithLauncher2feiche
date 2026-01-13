@@ -39,12 +39,6 @@ object ZLBridgeStates {
     var cursorShape by mutableStateOf(CursorShape.Arrow)
 
     /**
-     * 状态：当前画面帧率
-     */
-    @JvmStatic
-    var currentFPS by mutableIntStateOf(0)
-
-    /**
      * 状态：窗口变更刷新key
      */
     @JvmStatic

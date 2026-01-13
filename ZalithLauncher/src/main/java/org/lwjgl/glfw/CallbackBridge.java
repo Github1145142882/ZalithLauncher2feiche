@@ -268,6 +268,7 @@ public class CallbackBridge {
     @Keep @CriticalNative private static native void nativeSendScroll(double xoffset, double yoffset);
     @Keep @CriticalNative private static native void nativeSendScreenSize(int width, int height);
     @Keep public static native void nativeSetWindowAttrib(int attrib, int value);
+    @Keep public static native int getCurrentFps();
 
     static {
         System.loadLibrary("pojavexec");
