@@ -45,4 +45,5 @@ java {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
+    compileOnly(fileTree("dir" to "compileOnly", "include" to listOf("*.jar")))
 }
