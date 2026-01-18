@@ -54,6 +54,8 @@ open class BaseComponentActivity(
             Renderers.init()
             //加载插件
             PluginLoader.loadAllPlugins(this, false)
+            //刷新其他内容
+            refreshData()
         }
     }
 
@@ -62,9 +64,6 @@ open class BaseComponentActivity(
         super.onResume()
         loadAllSettings(this, true)
         checkStoragePermissions()
-        if (refreshData) {
-            refreshData()
-        }
     }
 
     override fun onAttachedToWindow() {
