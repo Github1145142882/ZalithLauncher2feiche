@@ -257,7 +257,7 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
                                             clipboard.setPrimaryClip(clip)
                                             Toast.makeText(
                                                 this@ErrorActivity,
-                                                R.string.generic_copy_success,
+                                                getString(R.string.generic_copy_success),
                                                 Toast.LENGTH_SHORT
                                             ).show()
                                             uploadResultUrl = null
