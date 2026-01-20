@@ -70,6 +70,7 @@ fun ErrorScreen(
     shareLogs: Boolean = true,
     canRestart: Boolean = true,
     onShareLogsClick: () -> Unit = {},
+    onUploadLogsClick: () -> Unit = {},
     onRestartClick: () -> Unit = {},
     onExitClick: () -> Unit = {}
 ) {
@@ -85,6 +86,7 @@ fun ErrorScreen(
             shareLogs = shareLogs,
             canRestart = canRestart,
             onShareLogsClick = onShareLogsClick,
+            onUploadLogsClick = onUploadLogsClick,
             onRestartClick = onRestartClick,
             onExitClick = onExitClick
         )
@@ -96,6 +98,7 @@ fun ErrorScreen(
             shareLogs = shareLogs,
             canRestart = canRestart,
             onShareLogsClick = onShareLogsClick,
+            onUploadLogsClick = onUploadLogsClick,
             onRestartClick = onRestartClick,
             onExitClick = onExitClick
         )
@@ -113,6 +116,7 @@ private fun ErrorScreenLandscape(
     shareLogs: Boolean,
     canRestart: Boolean,
     onShareLogsClick: () -> Unit,
+    onUploadLogsClick: () -> Unit,
     onRestartClick: () -> Unit,
     onExitClick: () -> Unit
 ) {
@@ -155,6 +159,7 @@ private fun ErrorScreenLandscape(
                     shareLogs = shareLogs,
                     canRestart = canRestart,
                     onShareLogsClick = onShareLogsClick,
+                    onUploadLogsClick = onUploadLogsClick,
                     onRestartClick = onRestartClick,
                     onExitClick = onExitClick
                 )
@@ -175,6 +180,7 @@ private fun ErrorScreenPortrait(
     shareLogs: Boolean,
     canRestart: Boolean,
     onShareLogsClick: () -> Unit,
+    onUploadLogsClick: () -> Unit,
     onRestartClick: () -> Unit,
     onExitClick: () -> Unit
 ) {
@@ -213,6 +219,16 @@ private fun ErrorScreenPortrait(
                             onClick = {
                                 showMenu = false
                                 onShareLogsClick()
+                            },
+                            enabled = shareLogs
+                        )
+                        DropdownMenuItem(
+                            text = {
+                                MarqueeText(text = stringResource(R.string.crash_upload_logs))
+                            },
+                            onClick = {
+                                showMenu = false
+                                onUploadLogsClick()
                             },
                             enabled = shareLogs
                         )
@@ -341,6 +357,7 @@ private fun ActionContext(
     shareLogs: Boolean,
     canRestart: Boolean,
     onShareLogsClick: () -> Unit = {},
+    onUploadLogsClick: () -> Unit = {},
     onRestartClick: () -> Unit = {},
     onExitClick: () -> Unit = {}
 ) {
@@ -374,6 +391,13 @@ private fun ActionContext(
                     onClick = onShareLogsClick
                 ) {
                     MarqueeText(text = stringResource(R.string.crash_share_logs))
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                ScalingActionButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onUploadLogsClick
+                ) {
+                    MarqueeText(text = stringResource(R.string.crash_upload_logs))
                 }
                 Spacer(modifier = Modifier.height(4.dp))
             }

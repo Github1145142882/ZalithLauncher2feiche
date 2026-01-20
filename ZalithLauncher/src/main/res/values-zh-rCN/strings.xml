@@ -99,6 +99,15 @@
     <string name="crash_share_logs">分享日志</string>
     <string name="crash_restart">重启应用</string>
     <string name="crash_exit">退出应用</string>
+    <string name="crash_upload_logs">上传日志</string>
+    <string name="crash_upload_logs_success">上传成功: %s</string>
+    <string name="crash_upload_logs_failed">上传失败: %s</string>
+    <string name="crash_uploading_logs">正在上传日志...</string>
+    <string name="crash_upload_success_title">日志上传成功</string>
+    <string name="crash_upload_option_open">在浏览器打开</string>
+    <string name="crash_upload_option_copy">复制链接</string>
+    <string name="crash_upload_option_share">分享链接</string>
+    <string name="crash_upload_share_template">我在启动器里遇到了问题，以下是链接：\n%s</string>
     <string name="crash_launch_crash_title">应用启动失败</string>
     <string name="crash_launch_crash_message">启动器在启动的过程中遇到了严重的问题崩溃了</string>
     <!--  错误  -->

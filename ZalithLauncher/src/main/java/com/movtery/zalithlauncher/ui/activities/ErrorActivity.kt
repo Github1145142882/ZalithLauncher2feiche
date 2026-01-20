@@ -18,25 +18,59 @@
 
 package com.movtery.zalithlauncher.ui.activities
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.lifecycleScope
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.launch.LogName
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.path.createOkHttpClient
+import com.movtery.zalithlauncher.path.createRequestBuilder
 import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
+import com.movtery.zalithlauncher.ui.components.MarqueeText
+import com.movtery.zalithlauncher.ui.components.ScalingActionButton
 import com.movtery.zalithlauncher.ui.screens.main.ErrorScreen
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.getParcelableSafely
 import com.movtery.zalithlauncher.utils.getSerializableSafely
+import com.movtery.zalithlauncher.utils.network.openLink
 import com.movtery.zalithlauncher.utils.string.throwableToString
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
+import okhttp3.FormBody
 import java.io.File
+import java.util.Locale
 
 private const val BUNDLE_EXIT_TYPE = "BUNDLE_EXIT_TYPE"
 private const val BUNDLE_THROWABLE = "BUNDLE_THROWABLE"
@@ -104,6 +138,8 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
 
         setContent {
             ZalithLauncherTheme {
+                var uploadResultUrl by remember { mutableStateOf<String?>(null) }
+
                 Box {
                     ErrorScreen(
                         crashType = errorMessage.crashType,
@@ -116,11 +152,150 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
                                 shareFile(this@ErrorActivity, logFile)
                             }
                         },
+                        onUploadLogsClick = {
+                            if (logFile.exists() && logFile.isFile) {
+                                lifecycleScope.launch {
+                                    try {
+                                        Toast.makeText(
+                                            this@ErrorActivity,
+                                            R.string.crash_uploading_logs,
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        val logContent =
+                                            withContext(Dispatchers.IO) { logFile.readText() }
+
+                                        val locale = Locale.getDefault()
+                                        val isChinese = locale.language == "zh"
+                                        val apiUrl =
+                                            if (isChinese) "https://api.mclogs.lemwood.icu/1/log" else "https://api.mclo.gs/1/log"
+
+                                        val formBody = FormBody.Builder()
+                                            .add("content", logContent)
+                                            .build()
+
+                                        val request = createRequestBuilder(apiUrl, formBody).build()
+                                        val client = createOkHttpClient()
+
+                                        val response = withContext(Dispatchers.IO) {
+                                            client.newCall(request).execute().use { resp ->
+                                                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
+                                                val body = resp.body?.string()
+                                                    ?: throw Exception("Empty body")
+                                                Json {
+                                                    ignoreUnknownKeys = true
+                                                }.decodeFromString<MclogsResponse>(body)
+                                            }
+                                        }
+
+                                        if (response.success && response.url != null) {
+                                            uploadResultUrl = response.url
+                                        } else {
+                                            Toast.makeText(
+                                                this@ErrorActivity,
+                                                getString(
+                                                    R.string.crash_upload_logs_failed,
+                                                    response.error ?: "Unknown error"
+                                                ),
+                                                Toast.LENGTH_LONG
+                                            ).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(
+                                            this@ErrorActivity,
+                                            getString(
+                                                R.string.crash_upload_logs_failed,
+                                                e.message ?: "Unknown error"
+                                            ),
+                                            Toast.LENGTH_LONG
+                                        ).show()
+                                    }
+                                }
+                            }
+                        },
                         onRestartClick = {
                             ProcessPhoenix.triggerRebirth(this@ErrorActivity)
                         },
                         onExitClick = { finish() }
                     )
+
+                    if (uploadResultUrl != null) {
+                        val url = uploadResultUrl!!
+                        Dialog(onDismissRequest = { uploadResultUrl = null }) {
+                            Surface(
+                                shape = MaterialTheme.shapes.extraLarge,
+                                shadowElevation = 6.dp,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                            ) {
+                                val scrollState = rememberScrollState()
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .verticalScroll(scrollState),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.crash_upload_success_title),
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                    Text(
+                                        text = url,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+
+                                    val options = listOf(
+                                        R.string.crash_upload_option_open to {
+                                            openLink(url)
+                                            uploadResultUrl = null
+                                        },
+                                        R.string.crash_upload_option_copy to {
+                                            val clipboard =
+                                                getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                            val clip = ClipData.newPlainText("mclogs", url)
+                                            clipboard.setPrimaryClip(clip)
+                                            Toast.makeText(
+                                                this@ErrorActivity,
+                                                R.string.generic_copy_success,
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            uploadResultUrl = null
+                                        },
+                                        R.string.crash_upload_option_share to {
+                                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                type = "text/plain"
+                                                putExtra(
+                                                    Intent.EXTRA_TEXT,
+                                                    getString(
+                                                        R.string.crash_upload_share_template,
+                                                        url
+                                                    )
+                                                )
+                                            }
+                                            startActivity(
+                                                Intent.createChooser(
+                                                    shareIntent,
+                                                    getString(R.string.crash_upload_option_share)
+                                                )
+                                            )
+                                            uploadResultUrl = null
+                                        },
+                                        R.string.generic_cancel to { uploadResultUrl = null }
+                                    )
+
+                                    options.forEach { (resId, action) ->
+                                        ScalingActionButton(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onClick = action
+                                        ) {
+                                            MarqueeText(text = stringResource(resId))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -132,6 +307,13 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
         val crashType: CrashType
     )
 }
+
+@Serializable
+private data class MclogsResponse(
+    val success: Boolean,
+    val url: String? = null,
+    val error: String? = null
+)
 
 /**
  * 崩溃类型
