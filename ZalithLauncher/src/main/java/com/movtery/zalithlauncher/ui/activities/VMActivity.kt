@@ -64,6 +64,7 @@ import com.movtery.zalithlauncher.bridge.LoggerBridge
 import com.movtery.zalithlauncher.bridge.ZLBridge
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates
 import com.movtery.zalithlauncher.game.input.AWTCharSender
+import com.movtery.zalithlauncher.game.input.CharacterSenderStrategy
 import com.movtery.zalithlauncher.game.input.GameInputProxy
 import com.movtery.zalithlauncher.game.input.LWJGLCharSender
 import com.movtery.zalithlauncher.game.keycodes.LwjglGlfwKeycode
@@ -109,23 +110,18 @@ private const val INTENT_RUN_GAME = "BUNDLE_RUN_GAME"
 private const val INTENT_RUN_JAR = "INTENT_RUN_JAR"
 private const val INTENT_VERSION = "INTENT_VERSION"
 private const val INTENT_JAR_INFO = "INTENT_JAR_INFO"
-private var isRunning = false
+
+data class LaunchSession(
+    val launcher: Launcher,
+    val handler: AbstractHandler,
+    val inputSender: CharacterSenderStrategy
+)
 
 /**
  * 一些关键状态须在此存放
  */
 class VMViewModel : ViewModel() {
-    lateinit var launcher: Launcher
-    lateinit var handler: AbstractHandler
-
-    /**
-     * 当前输入法开启状态
-     */
-    var textInputMode by mutableStateOf(TextInputMode.DISABLE)
-
-    fun disableInputMode() {
-        if (textInputMode == TextInputMode.ENABLE) textInputMode = TextInputMode.DISABLE
-    }
+    var isRunning = false
 
     /**
      * 是否允许VMActivity处理按键
@@ -137,6 +133,94 @@ class VMViewModel : ViewModel() {
      */
     val inputProxy = GameInputProxy(LWJGLCharSender)
     val inputTextFieldState = TextFieldState()
+
+    private var _session: LaunchSession? = null
+    val session: LaunchSession
+        get() = _session ?: error("LaunchSession not initialized")
+
+    fun initSession(
+        activity: VMActivity,
+        bundle: Bundle,
+        errorViewModel: ErrorViewModel,
+        eventViewModel: EventViewModel,
+        gamepadViewModel: GamepadViewModel,
+        createWindowSize: (scaling: Float) -> IntSize,
+        exitListener: (Int, Boolean) -> Unit
+    ) {
+        if (_session != null) return
+
+        _session = when {
+            bundle.getBoolean(INTENT_RUN_GAME) -> {
+                val version: Version = bundle.getParcelableSafely(INTENT_VERSION, Version::class.java)
+                    ?: throw IllegalStateException("No launch version has been set.")
+                val windowSize = createWindowSize(
+                    AllSettings.resolutionRatio.state / 100f
+                )
+
+                val launcher = GameLauncher(
+                    activity = activity,
+                    version = version,
+                    windowSize = windowSize,
+                    onExit = exitListener
+                )
+
+                inputProxy.sender = LWJGLCharSender
+
+                LaunchSession(
+                    launcher = launcher,
+                    handler = GameHandler(
+                        activity = activity,
+                        version = version,
+                        errorViewModel = errorViewModel,
+                        eventViewModel = eventViewModel,
+                        gamepadViewModel = gamepadViewModel,
+                        windowSize = windowSize,
+                        gameLauncher = launcher
+                    ) { code ->
+                        exitListener(code, false)
+                    },
+                    inputSender = LWJGLCharSender
+                )
+            }
+            bundle.getBoolean(INTENT_RUN_JAR) -> {
+                val jvmLaunchInfo: JvmLaunchInfo = bundle.getParcelableSafely(INTENT_JAR_INFO, JvmLaunchInfo::class.java)
+                    ?: throw IllegalStateException("No launch jar info has been set.")
+                val windowSize = createWindowSize(0.8f)
+
+                val launcher = JvmLauncher(
+                    context = activity,
+                    windowSize = windowSize,
+                    jvmLaunchInfo = jvmLaunchInfo,
+                    onExit = exitListener
+                )
+
+                inputProxy.sender = AWTCharSender
+
+                LaunchSession(
+                    launcher = launcher,
+                    handler = JVMHandler(
+                        jvmLauncher = launcher,
+                        errorViewModel = errorViewModel,
+                        eventViewModel = eventViewModel,
+                        windowSize = windowSize
+                    ) { code ->
+                        exitListener(code, false)
+                    },
+                    inputSender = AWTCharSender
+                )
+            }
+            else -> error("Unknown VM launch mode")
+        }
+    }
+
+    /**
+     * 当前输入法开启状态
+     */
+    var textInputMode by mutableStateOf(TextInputMode.DISABLE)
+
+    fun disableInputMode() {
+        if (textInputMode == TextInputMode.ENABLE) textInputMode = TextInputMode.DISABLE
+    }
 
     private val _enabledInputActionBar = MutableStateFlow(false)
     val enabledInputActionBar = _enabledInputActionBar.asStateFlow()
@@ -193,14 +277,6 @@ class VMViewModel : ViewModel() {
             }
         }
     }
-
-    fun runIfHandlerInitialized(
-        block: (AbstractHandler) -> Unit
-    ) {
-        if (this::handler.isInitialized) block(this.handler)
-    }
-
-    fun isHandlerInitialized(): Boolean = this::handler.isInitialized
 }
 
 class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
@@ -218,6 +294,14 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
     private var mTextureWidth: Int = 0
     private var mTextureHeight: Int = 0
 
+    private inline fun <T> withHandler(block: AbstractHandler.() -> T): T {
+        return vmViewModel.session.handler.block()
+    }
+
+    private inline fun <T> withLauncher(block: Launcher.() -> T): T {
+        return vmViewModel.session.launcher.block()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         //初始化物理鼠标连接检查器
@@ -225,63 +309,24 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
         val bundle = intent.extras ?: throw IllegalStateException("Unknown VM launch state!")
 
-        val exitListener = { exitCode: Int, isSignal: Boolean ->
-            if (exitCode != 0) {
-                showExitMessage(this, exitCode, isSignal)
-            } else {
-                //重启启动器
-                startActivity(Intent(this@VMActivity, MainActivity::class.java))
-            }
-        }
-
-        vmViewModel.launcher = if (bundle.getBoolean(INTENT_RUN_GAME, false)) {
-            val version: Version = bundle.getParcelableSafely(INTENT_VERSION, Version::class.java)
-                ?: throw IllegalStateException("No launch version has been set.")
-            val windowSize = getPhysicalWindowSize(
-                AllSettings.resolutionRatio.state / 100f
-            )
-            GameLauncher(
-                activity = this,
-                version = version,
-                windowSize = windowSize,
-                onExit = exitListener
-            ).also { launcher ->
-                vmViewModel.handler = GameHandler(
-                    activity = this,
-                    version = version,
-                    errorViewModel = errorViewModel,
-                    eventViewModel = eventViewModel,
-                    gamepadViewModel = gamepadViewModel,
-                    windowSize = windowSize,
-                    gameLauncher = launcher
-                ) { code ->
-                    exitListener(code, false)
+        vmViewModel.initSession(
+            activity = this,
+            bundle = bundle,
+            errorViewModel = errorViewModel,
+            eventViewModel = eventViewModel,
+            gamepadViewModel = gamepadViewModel,
+            createWindowSize = { scaling ->
+                getPhysicalWindowSize(scaling)
+            },
+            exitListener = { exitCode: Int, isSignal: Boolean ->
+                if (exitCode != 0) {
+                    showExitMessage(this, exitCode, isSignal)
+                } else {
+                    //重启启动器
+                    startActivity(Intent(this@VMActivity, MainActivity::class.java))
                 }
-                vmViewModel.inputProxy.sender = LWJGLCharSender
             }
-        } else if (bundle.getBoolean(INTENT_RUN_JAR, false)) {
-            val jvmLaunchInfo: JvmLaunchInfo = bundle.getParcelableSafely(INTENT_JAR_INFO, JvmLaunchInfo::class.java)
-                ?: throw IllegalStateException("No launch jar info has been set.")
-            val windowSize = getPhysicalWindowSize(0.8f)
-            JvmLauncher(
-                context = this,
-                windowSize = windowSize,
-                jvmLaunchInfo = jvmLaunchInfo,
-                onExit = exitListener
-            ).also { launcher ->
-                vmViewModel.handler = JVMHandler(
-                    jvmLauncher = launcher,
-                    errorViewModel = errorViewModel,
-                    eventViewModel = eventViewModel,
-                    windowSize = windowSize
-                ) { code ->
-                    exitListener(code, false)
-                }
-                vmViewModel.inputProxy.sender = AWTCharSender
-            }
-        } else {
-            throw IllegalStateException("Unknown VM launch mode, or the launch mode was not set at all!")
-        }
+        )
 
         window?.apply {
             setBackgroundDrawable(NativeColor.BLACK.toDrawable())
@@ -291,7 +336,7 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
             addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) // 防止系统息屏
         }
 
-        val logFile = File(PathManager.DIR_FILES_EXTERNAL, "${vmViewModel.launcher.getLogName()}.log")
+        val logFile = File(PathManager.DIR_FILES_EXTERNAL, "${withLauncher { getLogName() } }.log")
         if (!logFile.exists() && !logFile.createNewFile()) throw IOException("Failed to create a new log file")
         LoggerBridge.start(logFile.absolutePath)
 
@@ -341,7 +386,9 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
         setContent {
             ZalithLauncherTheme {
                 Screen {
-                    vmViewModel.handler.ComposableLayout(vmViewModel.textInputMode)
+                    withHandler {
+                        ComposableLayout(vmViewModel.textInputMode)
+                    }
 
                     //输入栏控制区域
                     TextInputBarArea {innerModifier, mode ->
@@ -410,13 +457,13 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
     override fun onResume() {
         super.onResume()
-        vmViewModel.runIfHandlerInitialized { it.onResume() }
+        withHandler { onResume() }
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 1)
     }
 
     override fun onPause() {
         super.onPause()
-        vmViewModel.runIfHandlerInitialized { it.onPause() }
+        withHandler { onPause() }
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 0)
     }
 
@@ -458,24 +505,24 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
     }
 
     private fun refreshWindowSize(surface: SurfaceTexture?, width: Int, height: Int) {
-        vmViewModel.runIfHandlerInitialized { handler ->
-            fun getDisplayPixels(pixels: Int): Int {
-                return when (handler.type) {
+        fun getDisplayPixels(pixels: Int): Int {
+            return withHandler {
+                when (type) {
                     HandlerType.GAME -> getDisplayFriendlyRes(pixels, AllSettings.resolutionRatio.state / 100f)
                     HandlerType.JVM -> getDisplayFriendlyRes(pixels, 0.8f)
                 }
             }
-
-            val windowWidth = getDisplayPixels(width)
-            val windowHeight = getDisplayPixels(height)
-            surface?.setDefaultBufferSize(windowWidth, windowHeight)
-            ZLBridgeStates.onWindowChange()
-            CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight)
         }
+
+        val windowWidth = getDisplayPixels(width)
+        val windowHeight = getDisplayPixels(height)
+        surface?.setDefaultBufferSize(windowWidth, windowHeight)
+        ZLBridgeStates.onWindowChange()
+        CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight)
     }
 
     override fun onDestroy() {
-        vmViewModel.runIfHandlerInitialized { it.onDestroy() }
+        withHandler { onDestroy() }
         super.onDestroy()
     }
 
@@ -525,32 +572,32 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
                 if (event.keyCode == KeyEvent.KEYCODE_BACK) {
                     //一些系统会将鼠标右键当成KEYCODE_BACK来处理，需要在这里进行拦截
                     //然后发送真实的鼠标右键
-                    vmViewModel.runIfHandlerInitialized { it.sendMouseRight(isPressed) }
+                    withHandler { sendMouseRight(isPressed) }
                     return false
                 }
             }
         }
-        if (vmViewModel.isHandlerInitialized() && vmViewModel.handler.shouldIgnoreKeyEvent(event)) {
-            return super.dispatchKeyEvent(event)
+        withHandler {
+            if (shouldIgnoreKeyEvent(event)) {
+                return super.dispatchKeyEvent(event)
+            }
         }
         return true
     }
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-        if (isRunning) {
+        if (vmViewModel.isRunning) {
             ZLBridge.setupBridgeWindow(Surface(surface))
             return
         }
-        isRunning = true
+        vmViewModel.isRunning = true
 
         this.mTextureWidth = width
         this.mTextureHeight = height
         refreshWindowSize(surface, width, height)
-        vmViewModel.runIfHandlerInitialized { handler ->
-            handler.mIsSurfaceDestroyed = false
-            lifecycleScope.launch(Dispatchers.Default) {
-                handler.execute(Surface(surface), lifecycleScope)
-            }
+        withHandler { mIsSurfaceDestroyed = false }
+        lifecycleScope.launch(Dispatchers.Default) {
+            withHandler { execute(Surface(surface), lifecycleScope) }
         }
     }
 
@@ -561,12 +608,12 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
     }
 
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-        vmViewModel.runIfHandlerInitialized { it.mIsSurfaceDestroyed = true }
+        withHandler { mIsSurfaceDestroyed = true }
         return true
     }
 
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
-        vmViewModel.runIfHandlerInitialized { it.onGraphicOutput() }
+        withHandler { onGraphicOutput() }
     }
 
     override fun getWindowMode(): WindowMode {
@@ -582,7 +629,7 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
         content: @Composable () -> Unit = {}
     ) {
         val imeInsets = WindowInsets.ime
-        val inputArea by vmViewModel.handler.inputArea.collectAsStateWithLifecycle()
+        val inputArea by withHandler { inputArea }.collectAsStateWithLifecycle()
 
         BoxWithConstraints(
             modifier = Modifier.fillMaxSize().background(Color.Black)
