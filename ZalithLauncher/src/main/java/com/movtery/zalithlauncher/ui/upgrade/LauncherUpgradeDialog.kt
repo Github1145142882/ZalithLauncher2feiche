@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.upgrade.RemoteData
+import com.movtery.zalithlauncher.upgrade.findCurrentBody
+import com.movtery.zalithlauncher.upgrade.getCurrentCouldDrive
 import com.movtery.zalithlauncher.utils.formatDate
 import java.util.Locale
 
@@ -55,18 +57,11 @@ fun UpgradeDialog(
     onIgnored: () -> Unit,
     onLinkClick: (String) -> Unit
 ) {
-    val language = remember(Unit) {
-        Locale.getDefault().language
+    val body = remember(data) {
+        data.findCurrentBody(Locale.getDefault()) ?: data.defaultBody
     }
-    val body = remember(language, data) {
-        data.bodies.find { it.language == language } ?: data.defaultBody
-    }
-    val cloudDrive = remember(language, data) {
-        data.cloudDrives.find { it.language == language } ?: data.defaultCloudDrive?.takeIf {
-            //如果是 NULL，则是全区域可用
-            //否则根据语言决定是否可用
-            it.language == "NULL" || it.language == language
-        }
+    val cloudDrive = remember(data) {
+        data.getCurrentCouldDrive(Locale.getDefault())
     }
 
     Dialog(

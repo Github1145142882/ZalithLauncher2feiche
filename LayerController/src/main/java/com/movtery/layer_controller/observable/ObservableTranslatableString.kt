@@ -47,7 +47,9 @@ class ObservableTranslatableString(
     }
 
     fun translate(locale: Locale = Locale.getDefault()): String {
-        matchQueue.forEach { ls ->
+        matchQueue.sortedByDescending {
+            it.languageTag.contains("-")
+        }.forEach { ls ->
             val value = ls.check(locale)
             if (value != null) return value
         }

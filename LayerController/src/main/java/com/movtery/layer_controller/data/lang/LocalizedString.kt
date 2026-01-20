@@ -19,6 +19,7 @@
 package com.movtery.layer_controller.data.lang
 
 import com.movtery.layer_controller.observable.Modifiable
+import com.movtery.layer_controller.utils.compareLangTag
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.util.Locale
@@ -48,5 +49,5 @@ val EmptyLocalizedString = LocalizedString(languageTag = "", value = "")
 fun LocalizedString.check(
     locale: Locale = Locale.getDefault()
 ): String? = value.takeIf {
-    locale.toLanguageTag() == languageTag
+    locale.compareLangTag(languageTag)
 }
