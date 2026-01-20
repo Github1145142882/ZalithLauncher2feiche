@@ -86,5 +86,6 @@
     <string name="download_game_install_base_install">Installiere %s</string>
     <string name="generic_rename">Umbenennen</string>
     <string name="generic_copy">Kopieren</string>
+    <string name="generic_copy_success">Erfolgreich kopiert</string>
     <string name="generic_paste">Einfügen</string>
 </resources>
