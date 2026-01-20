@@ -13,6 +13,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.Nullable;
 
 import com.movtery.zalithlauncher.bridge.CursorShape;
+import com.movtery.zalithlauncher.bridge.NativeLibraryLoader;
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates;
 import com.movtery.zalithlauncher.bridge.ZLNativeInvoker;
 import com.movtery.zalithlauncher.context.ContextsKt;
@@ -25,13 +26,22 @@ import dalvik.annotation.optimization.CriticalNative;
 
 @Keep
 public class CallbackBridge {
+    private static final int GLFW_IBEAM_CURSOR = 0x36002;
+    private static final int GLFW_HAND_CURSOR = 0x36004;
+    private static final int GLFW_CROSSHAIR_CURSOR = 0x36003;
+    private static final int GLFW_RESIZE_NS_CURSOR = 0x36006;
+    private static final int GLFW_RESIZE_EW_CURSOR = 0x36005;
+    private static final int GLFW_RESIZE_ALL_CURSOR = 0x36009;
+    private static final int GLFW_NOT_ALLOWED_CURSOR = 0x3600A;
+    private static final int GLFW_ARROW_CURSOR = 0x36001;
+
     public static final Choreographer sChoreographer = Choreographer.getInstance();
     private static boolean isGrabbing = false;
     private static final Consumer<Boolean> grabListener = isGrabbing ->
-            ZLBridgeStates.setCursorMode(isGrabbing ? CURSOR_DISABLED : CURSOR_ENABLED);
+            ZLBridgeStates.changeCursorMode(isGrabbing ? CURSOR_DISABLED : CURSOR_ENABLED);
 
-    private static int cursorShape = 0x36001;
-    private static final Consumer<CursorShape> cursorShapeListener = ZLBridgeStates::setCursorShape;
+    private static int cursorShape = GLFW_ARROW_CURSOR;
+    private static final Consumer<CursorShape> cursorShapeListener = ZLBridgeStates::changeCursorShape;
     
     public static final int CLIPBOARD_COPY = 2000;
     public static final int CLIPBOARD_PASTE = 2001;
@@ -218,35 +228,35 @@ public class CallbackBridge {
                 CursorShape shape1;
                 switch (cursorShape) {
                     // IBeam
-                    case 0x36002: //GLFW_IBEAM_CURSOR
+                    case GLFW_IBEAM_CURSOR:
                         shape1 = CursorShape.IBeam;
                         break;
                     // Hand
-                    case 0x36004: //GLFW_HAND_CURSOR
+                    case GLFW_HAND_CURSOR:
                         shape1 = CursorShape.Hand;
                         break;
                     // Cross Hair
-                    case 0x36003: //GLFW_CROSSHAIR_CURSOR
+                    case GLFW_CROSSHAIR_CURSOR:
                         shape1 = CursorShape.CrossHair;
                         break;
                     // Resize NS
-                    case 0x36006: //GLFW_RESIZE_NS_CURSOR
+                    case GLFW_RESIZE_NS_CURSOR:
                         shape1 = CursorShape.ResizeNS;
                         break;
                     // Resize EW
-                    case 0x36005: //GLFW_RESIZE_EW_CURSOR
+                    case GLFW_RESIZE_EW_CURSOR:
                         shape1 = CursorShape.ResizeEW;
                         break;
                     // Resize All
-                    case 0x36009: //GLFW_RESIZE_ALL_CURSOR
+                    case GLFW_RESIZE_ALL_CURSOR:
                         shape1 = CursorShape.ResizeAll;
                         break;
                     // Not Allowed
-                    case 0x3600A: // GLFW_NOT_ALLOWED_CURSOR
+                    case GLFW_NOT_ALLOWED_CURSOR:
                         shape1 = CursorShape.NotAllowed;
                         break;
                     // Arrow
-                    case 0x36001: //GLFW_ARROW_CURSOR
+                    case GLFW_ARROW_CURSOR:
                     default:
                         shape1 = CursorShape.Arrow;
                 }
@@ -271,7 +281,7 @@ public class CallbackBridge {
     @Keep public static native int getCurrentFps();
 
     static {
-        System.loadLibrary("pojavexec");
+        NativeLibraryLoader.loadPojavLib();
     }
 }
 
