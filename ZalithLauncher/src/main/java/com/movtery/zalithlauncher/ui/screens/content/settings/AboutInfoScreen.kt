@@ -178,6 +178,18 @@ fun AboutInfoScreen(
                             text = stringResource(R.string.about_acknowledgements_mcmod_text, InfoDistributor.LAUNCHER_SHORT_NAME),
                             openLink = { openLink(URL_MCMOD) }
                         )
+                        ButtonIconItem(
+                            icon = painterResource(R.drawable.img_mcim),
+                            title = "mcmod-info-mirror",
+                            text = stringResource(R.string.about_acknowledgements_mcim_text, InfoDistributor.LAUNCHER_SHORT_NAME),
+                            button = {
+                                OutlinedButton(
+                                    onClick = { openLink("https://www.mcimirror.top/sponsor") }
+                                ) {
+                                    Text(text = stringResource(R.string.about_sponsor))
+                                }
+                            }
+                        )
                         LinkIconItem(
                             icon = painterResource(R.drawable.img_launcher_pcl2),
                             title = "Plain Craft Launcher 2",

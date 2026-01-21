@@ -1059,6 +1059,7 @@
     <string name="about_acknowledgements_mcmod">MCMod (mcmod.cn)</string>
     <string name="about_acknowledgements_mcmod_text">%s uses Simplified Chinese translations of mods and modpacks from MCMod</string>
     <string name="about_acknowledgements_bangbang93_text">%s uses the BMCL API mirror source</string>
+    <string name="about_acknowledgements_mcim_text">%s uses the MCIM mirror source</string>
     <string name="about_acknowledgements_github_community">GitHub Community</string>
     <string name="about_acknowledgements_github_community_text">All issue reporters and contributors from the GitHub community</string>
     <string name="about_acknowledgements_weblate_community">Weblate Community</string>
