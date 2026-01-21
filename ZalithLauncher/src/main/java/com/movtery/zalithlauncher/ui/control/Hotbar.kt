@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates
 import com.movtery.zalithlauncher.game.keycodes.HOTBAR_1
@@ -138,9 +139,11 @@ fun BoxScope.MinecraftHotbar(
 
     when (rule) {
         HotbarRule.Auto -> {
+            val optionsChangeKey by MCOptions.refreshKey.collectAsStateWithLifecycle()
+            val windowChangeKey by ZLBridgeStates.windowChangeKey.collectAsStateWithLifecycle()
             LaunchedEffect(
-                isGrabbing, MCOptions.refreshKey, screenSize, density,
-                resolutionRatio, ZLBridgeStates.windowChangeKey
+                isGrabbing, optionsChangeKey, screenSize, density,
+                resolutionRatio, windowChangeKey
             ) {
                 val guiScale = getMCGuiScale(
                     width = (screenSize.width * resolutionRatio / 100f).toInt(),

@@ -30,7 +30,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.movtery.layer_controller.ControlEditorLayer
 import com.movtery.layer_controller.data.ButtonSize
@@ -54,6 +53,7 @@ import com.movtery.zalithlauncher.ui.components.MenuState
 import com.movtery.zalithlauncher.ui.components.ProgressDialog
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.SimpleEditDialog
+import com.movtery.zalithlauncher.ui.components.rememberBoxSize
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.edit_joystick.EditJoystickStyleDialog
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.edit_joystick.EditJoystickStyleMode
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.edit_layer.EditControlLayerDialog
@@ -93,15 +93,7 @@ fun BoxWithConstraintsScope.ControlEditor(
     val defaultTextName = stringResource(R.string.control_editor_edit_text_default)
 
     val density = LocalDensity.current
-    val screenSize = remember(maxWidth, maxHeight) {
-        with(density) {
-            IntSize(
-                width = maxWidth.roundToPx(),
-                height = maxHeight.roundToPx()
-            )
-        }
-    }
-    val screenHeight = remember(screenSize) { screenSize.height }
+    val screenSize = rememberBoxSize()
 
     if (viewModel.isPreviewMode) {
         PreviewControlBox(
@@ -152,7 +144,7 @@ fun BoxWithConstraintsScope.ControlEditor(
                             uuid = uuid,
                             position = CenterPosition,
                             buttonSize = createAdaptiveButtonSize(
-                                referenceLength = screenHeight,
+                                referenceLength = screenSize.height,
                                 density = density.density
                             ),
                             visibilityType = VisibilityType.ALWAYS,
@@ -173,7 +165,7 @@ fun BoxWithConstraintsScope.ControlEditor(
                             uuid = uuid,
                             position = CenterPosition,
                             buttonSize = createAdaptiveButtonSize(
-                                referenceLength = screenHeight,
+                                referenceLength = screenSize.height,
                                 density = density.density,
                                 type = ButtonSize.Type.WrapContent //文本框默认使用包裹内容
                             ),

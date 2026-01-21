@@ -31,35 +31,42 @@ import android.view.TextureView
 import android.view.TextureView.SurfaceTextureListener
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewModelScope
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.bridge.LoggerBridge
 import com.movtery.zalithlauncher.bridge.ZLBridge
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates
+import com.movtery.zalithlauncher.game.input.AWTCharSender
+import com.movtery.zalithlauncher.game.input.CharacterSenderStrategy
+import com.movtery.zalithlauncher.game.input.GameInputProxy
+import com.movtery.zalithlauncher.game.input.LWJGLCharSender
 import com.movtery.zalithlauncher.game.keycodes.LwjglGlfwKeycode
 import com.movtery.zalithlauncher.game.launch.GameLauncher
 import com.movtery.zalithlauncher.game.launch.JvmLaunchInfo
@@ -75,18 +82,25 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
 import com.movtery.zalithlauncher.ui.base.WindowMode
+import com.movtery.zalithlauncher.ui.components.rememberBoxSize
+import com.movtery.zalithlauncher.ui.control.input.TextInputMode
+import com.movtery.zalithlauncher.ui.screens.game.elements.TextInputBar
+import com.movtery.zalithlauncher.ui.screens.game.elements.TextInputBarArea
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.device.PhysicalMouseChecker
 import com.movtery.zalithlauncher.utils.getDisplayFriendlyRes
 import com.movtery.zalithlauncher.utils.getParcelableSafely
-import com.movtery.zalithlauncher.utils.logging.Logger.lError
-import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.GamepadViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import org.lwjgl.glfw.CallbackBridge
 import java.io.File
 import java.io.IOException
@@ -96,7 +110,174 @@ private const val INTENT_RUN_GAME = "BUNDLE_RUN_GAME"
 private const val INTENT_RUN_JAR = "INTENT_RUN_JAR"
 private const val INTENT_VERSION = "INTENT_VERSION"
 private const val INTENT_JAR_INFO = "INTENT_JAR_INFO"
-private var isRunning = false
+
+data class LaunchSession(
+    val launcher: Launcher,
+    val handler: AbstractHandler,
+    val inputSender: CharacterSenderStrategy
+)
+
+/**
+ * 一些关键状态须在此存放
+ */
+class VMViewModel : ViewModel() {
+    var isRunning = false
+
+    /**
+     * 是否允许VMActivity处理按键
+     */
+    var keyHandle = true
+
+    /**
+     * 输入代理
+     */
+    val inputProxy = GameInputProxy(LWJGLCharSender)
+    val inputTextFieldState = TextFieldState()
+
+    private var _session: LaunchSession? = null
+    val session: LaunchSession
+        get() = _session ?: error("LaunchSession not initialized")
+
+    fun initSession(
+        activity: VMActivity,
+        bundle: Bundle,
+        errorViewModel: ErrorViewModel,
+        eventViewModel: EventViewModel,
+        gamepadViewModel: GamepadViewModel,
+        createWindowSize: (scaling: Float) -> IntSize,
+        exitListener: (Int, Boolean) -> Unit
+    ) {
+        if (_session != null) return
+
+        _session = when {
+            bundle.getBoolean(INTENT_RUN_GAME) -> {
+                val version: Version = bundle.getParcelableSafely(INTENT_VERSION, Version::class.java)
+                    ?: throw IllegalStateException("No launch version has been set.")
+                val windowSize = createWindowSize(
+                    AllSettings.resolutionRatio.state / 100f
+                )
+
+                val launcher = GameLauncher(
+                    activity = activity,
+                    version = version,
+                    windowSize = windowSize,
+                    onExit = exitListener
+                )
+
+                inputProxy.sender = LWJGLCharSender
+
+                LaunchSession(
+                    launcher = launcher,
+                    handler = GameHandler(
+                        activity = activity,
+                        version = version,
+                        errorViewModel = errorViewModel,
+                        eventViewModel = eventViewModel,
+                        gamepadViewModel = gamepadViewModel,
+                        windowSize = windowSize,
+                        gameLauncher = launcher
+                    ) { code ->
+                        exitListener(code, false)
+                    },
+                    inputSender = LWJGLCharSender
+                )
+            }
+            bundle.getBoolean(INTENT_RUN_JAR) -> {
+                val jvmLaunchInfo: JvmLaunchInfo = bundle.getParcelableSafely(INTENT_JAR_INFO, JvmLaunchInfo::class.java)
+                    ?: throw IllegalStateException("No launch jar info has been set.")
+                val windowSize = createWindowSize(0.8f)
+
+                val launcher = JvmLauncher(
+                    context = activity,
+                    windowSize = windowSize,
+                    jvmLaunchInfo = jvmLaunchInfo,
+                    onExit = exitListener
+                )
+
+                inputProxy.sender = AWTCharSender
+
+                LaunchSession(
+                    launcher = launcher,
+                    handler = JVMHandler(
+                        jvmLauncher = launcher,
+                        errorViewModel = errorViewModel,
+                        eventViewModel = eventViewModel,
+                        windowSize = windowSize
+                    ) { code ->
+                        exitListener(code, false)
+                    },
+                    inputSender = AWTCharSender
+                )
+            }
+            else -> error("Unknown VM launch mode")
+        }
+    }
+
+    /**
+     * 当前输入法开启状态
+     */
+    var textInputMode by mutableStateOf(TextInputMode.DISABLE)
+
+    fun disableInputMode() {
+        if (textInputMode == TextInputMode.ENABLE) textInputMode = TextInputMode.DISABLE
+    }
+
+    private val _enabledInputActionBar = MutableStateFlow(false)
+    val enabledInputActionBar = _enabledInputActionBar.asStateFlow()
+
+    fun updateInputActionBar(enabled: Boolean) {
+        _enabledInputActionBar.update { enabled }
+    }
+
+    private var lastInputText = ""
+    private var lastInputSelection = TextRange.Zero
+
+    private var isInputCleaning = false
+
+    private val inputMutex = Mutex()
+
+    fun handleInputText(text: String, selection: TextRange) {
+        viewModelScope.launch {
+            inputMutex.withLock {
+                if (!isInputCleaning && (text != lastInputText || selection != lastInputSelection)) {
+                    withContext(Dispatchers.Main) {
+                        inputProxy.handleTextChange(
+                            oldText = lastInputText,
+                            newText = text,
+                            oldSelection = lastInputSelection,
+                            newSelection = selection
+                        )
+                    }
+
+                    lastInputText = text
+                    lastInputSelection = selection
+                }
+            }
+        }
+    }
+
+    /**
+     * 清空输入栏的状态
+     */
+    fun clearInput() {
+        viewModelScope.launch {
+            inputMutex.withLock {
+                isInputCleaning = true
+
+                withContext(Dispatchers.Main) {
+                    inputTextFieldState.edit {
+                        replace(0, inputTextFieldState.text.length, "")
+                        selection = TextRange.Zero
+                    }
+                }
+
+                lastInputText = ""
+                lastInputSelection = TextRange.Zero
+                isInputCleaning = false
+            }
+        }
+    }
+}
 
 class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
     private val errorViewModel: ErrorViewModel by viewModels()
@@ -107,15 +288,18 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
      */
     private val gamepadViewModel: GamepadViewModel by viewModels()
 
+    private val vmViewModel: VMViewModel by viewModels()
+
     private var mTextureView: TextureView? = null
+    private var mTextureWidth: Int = 0
+    private var mTextureHeight: Int = 0
 
-    private lateinit var launcher: Launcher
-    private lateinit var handler: AbstractHandler
+    private inline fun <T> withHandler(block: AbstractHandler.() -> T): T {
+        return vmViewModel.session.handler.block()
+    }
 
-    private fun runIfHandlerInitialized(
-        block: (AbstractHandler) -> Unit
-    ) {
-        if (this::handler.isInitialized) block(this.handler)
+    private inline fun <T> withLauncher(block: Launcher.() -> T): T {
+        return vmViewModel.session.launcher.block()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -125,64 +309,24 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
         val bundle = intent.extras ?: throw IllegalStateException("Unknown VM launch state!")
 
-        val exitListener = { exitCode: Int, isSignal: Boolean ->
-            if (exitCode != 0) {
-                showExitMessage(this, exitCode, isSignal)
-            } else {
-                //重启启动器
-                startActivity(Intent(this@VMActivity, MainActivity::class.java))
-            }
-        }
-
-        val getWindowSize = {
-            val displayMetrics = getDisplayMetrics()
-            IntSize(displayMetrics.widthPixels, displayMetrics.heightPixels)
-        }
-
-        launcher = if (bundle.getBoolean(INTENT_RUN_GAME, false)) {
-            val version: Version = bundle.getParcelableSafely(INTENT_VERSION, Version::class.java)
-                ?: throw IllegalStateException("No launch version has been set.")
-            GameLauncher(
-                activity = this,
-                version = version,
-                getWindowSize = getWindowSize,
-                onExit = exitListener
-            ).also { launcher ->
-                handler = GameHandler(
-                    activity = this,
-                    version = version,
-                    errorViewModel = errorViewModel,
-                    eventViewModel = eventViewModel,
-                    gamepadViewModel = gamepadViewModel,
-                    getWindowSize = getWindowSize,
-                    gameLauncher = launcher
-                ) { code ->
-                    exitListener(code, false)
+        vmViewModel.initSession(
+            activity = this,
+            bundle = bundle,
+            errorViewModel = errorViewModel,
+            eventViewModel = eventViewModel,
+            gamepadViewModel = gamepadViewModel,
+            createWindowSize = { scaling ->
+                getPhysicalWindowSize(scaling)
+            },
+            exitListener = { exitCode: Int, isSignal: Boolean ->
+                if (exitCode != 0) {
+                    showExitMessage(this, exitCode, isSignal)
+                } else {
+                    //重启启动器
+                    startActivity(Intent(this@VMActivity, MainActivity::class.java))
                 }
             }
-        } else if (bundle.getBoolean(INTENT_RUN_JAR, false)) {
-            val jvmLaunchInfo: JvmLaunchInfo = bundle.getParcelableSafely(INTENT_JAR_INFO, JvmLaunchInfo::class.java)
-                ?: throw IllegalStateException("No launch jar info has been set.")
-            JvmLauncher(
-                context = this,
-                getWindowSize = getWindowSize,
-                jvmLaunchInfo = jvmLaunchInfo,
-                onExit = exitListener
-            ).also { launcher ->
-                handler = JVMHandler(
-                    jvmLauncher = launcher,
-                    errorViewModel = errorViewModel,
-                    eventViewModel = eventViewModel,
-                    getWindowSize = getWindowSize
-                ) { code ->
-                    exitListener(code, false)
-                }
-            }
-        } else {
-            throw IllegalStateException("Unknown VM launch mode, or the launch mode was not set at all!")
-        }
-
-        refreshWindowSize()
+        )
 
         window?.apply {
             setBackgroundDrawable(NativeColor.BLACK.toDrawable())
@@ -192,7 +336,7 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
             addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON) // 防止系统息屏
         }
 
-        val logFile = File(PathManager.DIR_FILES_EXTERNAL, "${launcher.getLogName()}.log")
+        val logFile = File(PathManager.DIR_FILES_EXTERNAL, "${withLauncher { getLogName() } }.log")
         if (!logFile.exists() && !logFile.createNewFile()) throw IOException("Failed to create a new log file")
         LoggerBridge.start(logFile.absolutePath)
 
@@ -213,30 +357,99 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
             eventViewModel.events.collect { event ->
                 when (event) {
                     is EventViewModel.Event.Game.RefreshSize -> {
-                        refreshSize()
+                        refreshWindowSize(null, mTextureWidth, mTextureHeight)
+                    }
+                    is EventViewModel.Event.Game.SwitchIme -> {
+                        vmViewModel.textInputMode = event.mode ?: vmViewModel.textInputMode.switch()
+                    }
+                    is EventViewModel.Event.Game.KeyHandle -> {
+                        vmViewModel.keyHandle = event.handle
                     }
                     else -> { /* Ignore */ }
                 }
             }
         }
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (vmViewModel.textInputMode == TextInputMode.ENABLE) {
+                    //那应该是想退出输入框了
+                    vmViewModel.disableInputMode()
+                    return
+                }
+                if (!vmViewModel.keyHandle) return
+
+                eventViewModel.sendEvent(EventViewModel.Event.Game.OnBack)
+            }
+        })
+
         setContent {
             ZalithLauncherTheme {
-                //Surface屏幕整体偏移
-                var surfaceOffset by remember { mutableStateOf(Offset.Zero) }
+                Screen {
+                    withHandler {
+                        ComposableLayout(vmViewModel.textInputMode)
+                    }
 
-                Screen(
-                    surfaceOffset = surfaceOffset
-                ) {
-                    handler.ComposableLayout(
-                        surfaceOffset = surfaceOffset,
-                        incrementScreenOffset = { new: Offset ->
-                            surfaceOffset += new
-                        },
-                        resetScreenOffset = {
-                            surfaceOffset = Offset.Zero
-                        }
-                    )
+                    //输入栏控制区域
+                    TextInputBarArea {innerModifier, mode ->
+                        val enabledActionBar by vmViewModel.enabledInputActionBar.collectAsStateWithLifecycle()
+
+                        TextInputBar(
+                            modifier = innerModifier,
+                            mode = mode,
+                            textFieldState = vmViewModel.inputTextFieldState,
+                            show = vmViewModel.textInputMode == TextInputMode.ENABLE,
+                            enabledActionBar = enabledActionBar,
+                            onChangeActionBar = { vmViewModel.updateInputActionBar(it) },
+                            onClose = { vmViewModel.disableInputMode() },
+                            onHandle = { text, selection ->
+                                vmViewModel.handleInputText(text, selection)
+                            },
+                            onClear = {
+                                vmViewModel.clearInput()
+                            },
+//                            onSendText = { text ->
+//                                vmViewModel.runIfHandlerInitialized {
+//                                    text.forEach { char ->
+//                                        it.sender.sendChar(char)
+//                                    }
+//                                }
+//                            },
+                            onShiftClick = { press ->
+                                vmViewModel.inputProxy.sender.sendModifierShift(press)
+                            },
+                            onCtrlClick = { press ->
+                                vmViewModel.inputProxy.sender.sendModifierCtrl(press)
+                            },
+                            onTabClick = {
+                                vmViewModel.inputProxy.sender.sendTab()
+                            },
+                            onEnterClick = {
+                                vmViewModel.inputProxy.sender.sendEnter()
+                            },
+                            onUpClick = {
+                                vmViewModel.inputProxy.sender.sendUp()
+                            },
+                            onDownClick = {
+                                vmViewModel.inputProxy.sender.sendDown()
+                            },
+                            onLeftClick = {
+                                vmViewModel.inputProxy.sender.sendLeft()
+                            },
+                            onRightClick = {
+                                vmViewModel.inputProxy.sender.sendRight()
+                            },
+                            onBackspaceClick = {
+                                vmViewModel.inputProxy.sender.sendBackspace()
+                            },
+                        )
+                    }
+
+                    //鼠标抓获模式变更时，应该关闭输入框
+                    val cursorMode by ZLBridgeStates.cursorMode.collectAsStateWithLifecycle()
+                    LaunchedEffect(cursorMode) {
+                        vmViewModel.disableInputMode()
+                    }
                 }
             }
         }
@@ -244,13 +457,13 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
     override fun onResume() {
         super.onResume()
-        runIfHandlerInitialized { it.onResume() }
+        withHandler { onResume() }
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 1)
     }
 
     override fun onPause() {
         super.onPause()
-        runIfHandlerInitialized { it.onPause() }
+        withHandler { onPause() }
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 0)
     }
 
@@ -266,32 +479,90 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        refreshDisplayMetrics()
-        refreshSize()
+        refreshTextureSize()
     }
 
     override fun onPostResume() {
         super.onPostResume()
-        refreshDisplayMetrics()
-        lifecycleScope.launch {
-            delay(500)
-            refreshSize()
+        refreshTextureSize()
+    }
+
+    private fun getPhysicalWindowSize(scaling: Float): IntSize {
+        val display = getDisplayMetrics()
+        val windowWidth = getDisplayFriendlyRes(display.widthPixels, scaling)
+        val windowHeight = getDisplayFriendlyRes(display.heightPixels, scaling)
+        return IntSize(windowWidth, windowHeight)
+    }
+    
+    private fun refreshTextureSize() {
+        val textureView = mTextureView ?: return
+        val surface = textureView.surfaceTexture ?: return
+        textureView.post {
+            this.mTextureWidth = textureView.width
+            this.mTextureHeight = textureView.height
+            refreshWindowSize(surface, textureView.width, textureView.height)
         }
     }
 
+    private fun refreshWindowSize(surface: SurfaceTexture?, width: Int, height: Int) {
+        fun getDisplayPixels(pixels: Int): Int {
+            return withHandler {
+                when (type) {
+                    HandlerType.GAME -> getDisplayFriendlyRes(pixels, AllSettings.resolutionRatio.state / 100f)
+                    HandlerType.JVM -> getDisplayFriendlyRes(pixels, 0.8f)
+                }
+            }
+        }
+
+        val windowWidth = getDisplayPixels(width)
+        val windowHeight = getDisplayPixels(height)
+        surface?.setDefaultBufferSize(windowWidth, windowHeight)
+        ZLBridgeStates.onWindowChange()
+        CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight)
+    }
+
     override fun onDestroy() {
-        runIfHandlerInitialized { it.onDestroy() }
+        withHandler { onDestroy() }
         super.onDestroy()
     }
 
     @SuppressLint("RestrictedApi")
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (!vmViewModel.keyHandle) return super.dispatchKeyEvent(event)
+
+        val isPressed = event.action == KeyEvent.ACTION_DOWN
+
         val code = AllSettings.physicalKeyImeCode.state
-        if (code != null && event.keyCode == code) {
+        if (isPressed && code != null && event.keyCode == code) {
             //用户按下了绑定呼出输入法的按键
-            //向Compose端发送事件，调出输入法
-            eventViewModel.sendEvent(EventViewModel.Event.Game.ShowIme)
+            //开启或关闭输入法
+            vmViewModel.textInputMode = vmViewModel.textInputMode.switch()
             return true
+        }
+        if (vmViewModel.textInputMode == TextInputMode.ENABLE) {
+            if (isPressed && !vmViewModel.inputProxy.keyCanHandle(event)) {
+                return super.dispatchKeyEvent(event)
+            }
+
+            //代理输入时同时允许处理事件
+            if (
+                isPressed &&
+                //光是检测文本的变化来判断是否退格或者方向移动是不够的
+                //如果文本为空，此处应该特殊处理，仍然对游戏发出退格按键
+                !vmViewModel.inputProxy.handleSpecialKey(event, vmViewModel.inputTextFieldState.text)
+            ) {
+                //无特殊处理的情况
+                vmViewModel.inputProxy.handleSpecialKey(event) {
+                    vmViewModel.clearInput()
+                }
+            }
+            if (event.keyCode == KeyEvent.KEYCODE_TAB) {
+                //对于Tab键，为了避免选中其他的组件，这里应该直接拦截
+                return true
+            }
+            //在输入文本的时候，应该避免继续处理按键事件
+            //否则输入法的一些功能键会失效
+            return super.dispatchKeyEvent(event)
         }
         event.device?.let {
             val source = event.source
@@ -300,46 +571,49 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
 
                 if (event.keyCode == KeyEvent.KEYCODE_BACK) {
                     //一些系统会将鼠标右键当成KEYCODE_BACK来处理，需要在这里进行拦截
-                    val isPressed = event.action == KeyEvent.ACTION_DOWN
                     //然后发送真实的鼠标右键
-                    runIfHandlerInitialized { it.sendMouseRight(isPressed) }
+                    withHandler { sendMouseRight(isPressed) }
                     return false
                 }
             }
         }
-        if (this::handler.isInitialized && handler.shouldIgnoreKeyEvent(event)) {
-            return super.dispatchKeyEvent(event)
+        withHandler {
+            if (shouldIgnoreKeyEvent(event)) {
+                return super.dispatchKeyEvent(event)
+            }
         }
         return true
     }
 
     override fun onSurfaceTextureAvailable(surface: SurfaceTexture, width: Int, height: Int) {
-        if (isRunning) {
+        if (vmViewModel.isRunning) {
             ZLBridge.setupBridgeWindow(Surface(surface))
             return
         }
-        isRunning = true
+        vmViewModel.isRunning = true
 
-        runIfHandlerInitialized { it.mIsSurfaceDestroyed = false }
-        refreshSize()
-        runIfHandlerInitialized { handler ->
-            lifecycleScope.launch(Dispatchers.Default) {
-                handler.execute(Surface(surface), lifecycleScope)
-            }
+        this.mTextureWidth = width
+        this.mTextureHeight = height
+        refreshWindowSize(surface, width, height)
+        withHandler { mIsSurfaceDestroyed = false }
+        lifecycleScope.launch(Dispatchers.Default) {
+            withHandler { execute(Surface(surface), lifecycleScope) }
         }
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
-        refreshSize()
+        this.mTextureWidth = width
+        this.mTextureHeight = height
+        refreshWindowSize(surface, width, height)
     }
 
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
-        runIfHandlerInitialized { it.mIsSurfaceDestroyed = true }
+        withHandler { mIsSurfaceDestroyed = true }
         return true
     }
 
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
-        runIfHandlerInitialized { it.onGraphicOutput() }
+        withHandler { onGraphicOutput() }
     }
 
     override fun getWindowMode(): WindowMode {
@@ -350,94 +624,41 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
         }
     }
 
-    /**
-     * @param surfaceOffset Surface整体偏移
-     */
     @Composable
     private fun Screen(
-        surfaceOffset: Offset = Offset.Zero,
         content: @Composable () -> Unit = {}
     ) {
-        if (this::handler.isInitialized) {
-            val imeInsets = WindowInsets.ime
-            val inputArea by handler.inputArea.collectAsStateWithLifecycle()
+        val imeInsets = WindowInsets.ime
+        val inputArea by withHandler { inputArea }.collectAsStateWithLifecycle()
 
-            Layout(
-                modifier = Modifier.fillMaxSize().background(Color.Black),
-                content = {
-                    AndroidView(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .absoluteOffset {
-                                val area = inputArea ?: return@absoluteOffset IntOffset.Zero
-                                val imeHeight = imeInsets.getBottom(this@absoluteOffset)
-                                val bottomDistance = CallbackBridge.windowHeight - area.bottom
-                                val bottomPadding = (imeHeight - bottomDistance).coerceAtLeast(0)
-                                IntOffset(0, -bottomPadding)
-                            }
-                            .absoluteOffset(x = 0.dp, y = surfaceOffset.y.dp),
-                        factory = { context ->
-                            TextureView(context).apply {
-                                isOpaque = true
-                                alpha = 1.0f
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxSize().background(Color.Black)
+        ) {
+            val screenSize = rememberBoxSize()
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .absoluteOffset {
+                        val area = inputArea ?: return@absoluteOffset IntOffset.Zero
+                        val imeHeight = imeInsets.getBottom(this@absoluteOffset)
+                        val bottomDistance = screenSize.height - area.bottom
+                        val bottomPadding = (imeHeight - bottomDistance).coerceAtLeast(0)
+                        IntOffset(0, -bottomPadding)
+                    },
+                factory = { context ->
+                    TextureView(context).apply {
+                        isOpaque = true
+                        alpha = 1.0f
 
-                                surfaceTextureListener = this@VMActivity
-                            }.also { view ->
-                                mTextureView = view
-                            }
-                        }
-                    )
-
-                    content()
+                        surfaceTextureListener = this@VMActivity
+                    }.also { view ->
+                        mTextureView = view
+                    }
                 }
-            ) { measurables, constraints ->
-                val placeables = measurables.map { it.measure(constraints) }
+            )
 
-                layout(constraints.maxWidth, constraints.maxHeight) {
-                    placeables.forEach { it.place(0, 0) }
-                }
-            }
+            content()
         }
-    }
-
-    private fun refreshDisplayMetrics() {
-        val displayMetrics = getDisplayMetrics()
-        CallbackBridge.physicalWidth = displayMetrics.widthPixels
-        CallbackBridge.physicalHeight = displayMetrics.heightPixels
-    }
-
-    private fun refreshWindowSize() {
-        runIfHandlerInitialized { handler ->
-            val displayMetrics = getDisplayMetrics()
-
-            fun getDisplayPixels(pixels: Int): Int {
-                return when (handler.type) {
-                    HandlerType.GAME -> getDisplayFriendlyRes(pixels, AllSettings.resolutionRatio.state / 100f)
-                    HandlerType.JVM -> getDisplayFriendlyRes(pixels, 0.8f)
-                }
-            }
-
-            val width = getDisplayPixels(displayMetrics.widthPixels)
-            val height = getDisplayPixels(displayMetrics.heightPixels)
-            if (width < 1 || height < 1) {
-                lError("Impossible resolution : $width x $height")
-                return@runIfHandlerInitialized
-            }
-            CallbackBridge.windowWidth = width
-            CallbackBridge.windowHeight = height
-            ZLBridgeStates.onWindowChange()
-        }
-    }
-
-    private fun refreshSize() {
-        refreshWindowSize()
-        mTextureView?.surfaceTexture?.apply {
-            setDefaultBufferSize(CallbackBridge.windowWidth, CallbackBridge.windowHeight)
-        } ?: run {
-            lWarning("Attempt to refresh size on null surface")
-            return
-        }
-        CallbackBridge.sendUpdateWindowSize(CallbackBridge.windowWidth, CallbackBridge.windowHeight)
     }
 }
 

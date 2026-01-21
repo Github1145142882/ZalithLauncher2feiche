@@ -372,6 +372,16 @@ object AllSettings : SettingsRegistry() {
      */
     val fileDownloadSource = enumSetting("fileDownloadSource", MirrorSourceType.OFFICIAL_FIRST)
 
+    /**
+     * 资源搜索镜像源类型
+     */
+    val assetSearchSource = enumSetting("assetSearchSource", MirrorSourceType.OFFICIAL_FIRST)
+
+    /**
+     * 资源下载镜像源类型
+     */
+    val assetDownloadSource = enumSetting("assetDownloadSource", MirrorSourceType.OFFICIAL_FIRST)
+
     //Control
     /**
      * 全局默认控制布局文件名

@@ -64,7 +64,7 @@ import javax.microedition.khronos.egl.EGLContext
 class GameLauncher(
     private val activity: Activity,
     private val version: Version,
-    private val getWindowSize: () -> IntSize,
+    private val windowSize: IntSize,
     onExit: (code: Int, isSignal: Boolean) -> Unit
 ) : Launcher(onExit) {
     private lateinit var gameManifest: GameManifest
@@ -137,8 +137,8 @@ class GameLauncher(
 
     override fun getLogName(): String = LogName.GAME.fileName
 
-    override fun initEnv(): MutableMap<String, String> {
-        val envMap = super.initEnv()
+    override fun initEnv(windowSize: IntSize): MutableMap<String, String> {
+        val envMap = super.initEnv(windowSize)
 
         DriverPluginManager.setDriverById(version.getDriver())
         envMap["DRIVER_PATH"] = DriverPluginManager.getDriver().path
@@ -201,8 +201,7 @@ class GameLauncher(
             runtime = runtime,
             readAssetsFile = { path -> activity.readAssetFile(path) },
             getCacioJavaArgs = { isJava8 ->
-                val size = getWindowSize()
-                getCacioJavaArgs(size.width, size.height, isJava8)
+                getCacioJavaArgs(windowSize, isJava8)
             }
         ).getAllArgs()
 
@@ -212,7 +211,7 @@ class GameLauncher(
             context = activity,
             jvmArgs = launchArgs,
             userArgs = customArgs,
-            getWindowSize = getWindowSize
+            windowSize = windowSize
         )
     }
 

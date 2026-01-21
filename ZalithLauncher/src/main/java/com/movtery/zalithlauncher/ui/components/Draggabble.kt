@@ -22,8 +22,8 @@ import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.absoluteOffset
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -42,9 +42,11 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import kotlin.math.roundToInt
 
 @Composable
@@ -77,6 +79,8 @@ fun FloatingBall(
         var isInitialized by rememberSaveable { mutableStateOf(false) }
         LaunchedEffect(Unit) { isInitialized = true }
 
+        //检查是否是RTL布局，需要做初始位置适配
+        val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
         Surface(
             modifier = modifier
                 .onSizeChanged { size ->
@@ -87,7 +91,7 @@ fun FloatingBall(
                     val positionY = 0f.coerceIn(0f, (parentHeight - ballSize.height).toFloat())
                     onPositionChanged(Offset(positionX, positionY))
                 }
-                .absoluteOffset {
+                .offset {
                     IntOffset(currentPosition.x.roundToInt(), currentPosition.y.roundToInt())
                 }
                 .pointerInput(Unit) {
@@ -108,7 +112,8 @@ fun FloatingBall(
                             }
 
                             if (isDragging) { //只有在拖动的情况下，才会变更位置
-                                val newX = currentPosition.x + delta.x
+                                val deltaX = if (isRtl) -delta.x else delta.x
+                                val newX = currentPosition.x + deltaX
                                 val newY = currentPosition.y + delta.y
                                 val positionX = newX.coerceIn(0f, (parentWidth - ballSize.width).toFloat())
                                 val positionY = newY.coerceIn(0f, (parentHeight - ballSize.height).toFloat())

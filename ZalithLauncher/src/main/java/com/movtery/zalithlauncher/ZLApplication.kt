@@ -19,7 +19,6 @@
 package com.movtery.zalithlauncher
 
 import android.app.Application
-import android.content.Context
 import android.content.res.Configuration
 import android.os.Process
 import android.util.Log
@@ -32,7 +31,6 @@ import coil3.memory.MemoryCache
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import com.kyant.fishnet.Fishnet
-import com.movtery.zalithlauncher.context.getContextWrapper
 import com.movtery.zalithlauncher.context.refreshContext
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.game.account.AccountsManager
@@ -56,6 +54,8 @@ class ZLApplication : Application(), SingletonImageLoader.Factory {
     }
 
     override fun onCreate() {
+        refreshContext(this)
+
         Thread.setDefaultUncaughtExceptionHandler { _, th ->
             //停止所有任务
             TaskSystem.stopAll()
@@ -102,10 +102,6 @@ class ZLApplication : Application(), SingletonImageLoader.Factory {
             }
             showFatalError(this, launchTh)
         }
-    }
-
-    override fun attachBaseContext(base: Context) {
-        super.attachBaseContext(getContextWrapper(base))
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

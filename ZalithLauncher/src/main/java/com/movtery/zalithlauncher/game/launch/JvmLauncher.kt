@@ -42,7 +42,7 @@ import java.io.IOException
 
 open class JvmLauncher(
     private val context: Context,
-    private val getWindowSize: () -> IntSize,
+    private val windowSize: IntSize,
     private val jvmLaunchInfo: JvmLaunchInfo,
     onExit: (code: Int, isSignal: Boolean) -> Unit
 ) : Launcher(onExit) {
@@ -61,7 +61,7 @@ open class JvmLauncher(
             jvmArgs = argList,
             userHome = jvmLaunchInfo.userHome,
             userArgs = AllSettings.jvmArgs.getValue(),
-            getWindowSize = getWindowSize
+            windowSize = windowSize
         )
     }
 
@@ -80,9 +80,8 @@ open class JvmLauncher(
             RuntimesManager.forceReload(AllSettings.javaRuntime.getValue())
         }
 
-        val windowSize = getWindowSize()
         val argList: MutableList<String> = ArrayList(
-            getCacioJavaArgs(windowSize.width, windowSize.height, runtime.javaVersion == 8)
+            getCacioJavaArgs(windowSize, runtime.javaVersion == 8)
         ).apply {
             addAll(args)
         }

@@ -31,12 +31,13 @@ import com.movtery.zalithlauncher.coroutine.TaskFlowExecutor
 import com.movtery.zalithlauncher.coroutine.TitledTask
 import com.movtery.zalithlauncher.coroutine.addTask
 import com.movtery.zalithlauncher.coroutine.buildPhase
-import com.movtery.zalithlauncher.game.addons.mirror.mapMirrorableUrls
+import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.game.addons.modloader.ModLoader
 import com.movtery.zalithlauncher.game.addons.modloader.fabriclike.FabricLikeVersion
 import com.movtery.zalithlauncher.game.addons.modloader.forgelike.ForgeLikeVersion
 import com.movtery.zalithlauncher.game.addons.modloader.forgelike.neoforge.NeoForgeVersion
 import com.movtery.zalithlauncher.game.addons.modloader.modlike.ModVersion
+import com.movtery.zalithlauncher.game.download.assets.platform.mcim.mapMCIMMirrorUrls
 import com.movtery.zalithlauncher.game.download.game.fabric.getFabricLikeCompleterTask
 import com.movtery.zalithlauncher.game.download.game.fabric.getFabricLikeDownloadTask
 import com.movtery.zalithlauncher.game.download.game.forge.getForgeLikeAnalyseTask
@@ -60,7 +61,6 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.utils.file.copyDirectoryContents
 import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
-import com.movtery.zalithlauncher.utils.network.downloadFileSuspend
 import com.movtery.zalithlauncher.utils.network.downloadFromMirrorListSuspend
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -367,7 +367,7 @@ class GameInstaller(
                     //下载原版 Jar
                     val tempJarFile = downloader.getVersionJarPath(clientVersion, mcFolder)
                     manifest.downloads?.client?.let { client ->
-                        val urls = client.url.mapMirrorableUrls()
+                        val urls = client.url.mapBMCLMirrorUrls()
                         val sizeConfig = object {
                             val totalSize = client.size
                             var downloadedSize: Long = 0L
@@ -744,8 +744,8 @@ class GameInstaller(
     ) = Task.runTask(
         id = "Download.Mods",
         task = {
-            downloadFileSuspend(
-                url = modVersion.file.url,
+            downloadFromMirrorListSuspend(
+                urls = modVersion.file.url.mapMCIMMirrorUrls(),
                 sha1 = modVersion.file.hashes.sha1,
                 outputFile = File(tempModsDir, modVersion.file.fileName)
             )

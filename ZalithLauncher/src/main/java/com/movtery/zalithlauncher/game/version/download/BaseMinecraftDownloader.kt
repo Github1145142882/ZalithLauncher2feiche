@@ -18,7 +18,7 @@
 
 package com.movtery.zalithlauncher.game.version.download
 
-import com.movtery.zalithlauncher.game.addons.mirror.mapMirrorableUrls
+import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.game.path.getAssetsHome
 import com.movtery.zalithlauncher.game.path.getLibrariesHome
 import com.movtery.zalithlauncher.game.path.getResourcesHome
@@ -116,7 +116,7 @@ class BaseMinecraftDownloader(
     ) {
         val clientFile = getVersionJarPath(clientName, mcFolder)
         gameManifest.downloads?.client?.let { client ->
-            scheduleDownload(client.url.mapMirrorableUrls(), client.sha1, clientFile, client.size)
+            scheduleDownload(client.url.mapBMCLMirrorUrls(), client.sha1, clientFile, client.size)
         } ?: run {
             //如果未提供下载方式，则很可能是需要复制原版的Jar文件
             scheduleCopy(clientFile)
@@ -140,7 +140,7 @@ class BaseMinecraftDownloader(
             } else {
                 File(targetPath, "objects/${hashedPath}".replace("/", File.separator))
             }
-            scheduleDownload("$MINECRAFT_RES$hashedPath".mapMirrorableUrls(), objectInfo.hash, targetFile, objectInfo.size)
+            scheduleDownload("$MINECRAFT_RES$hashedPath".mapBMCLMirrorUrls(), objectInfo.hash, targetFile, objectInfo.size)
         }
     }
 
@@ -180,7 +180,7 @@ class BaseMinecraftDownloader(
                     Quadruple(library.sha1, url, library.size, isDownloadable)
                 }
 
-                scheduleDownload(url.mapMirrorableUrls(), sha1, File(targetDir, artifactPath), size, isDownloadable)
+                scheduleDownload(url.mapBMCLMirrorUrls(), sha1, File(targetDir, artifactPath), size, isDownloadable)
             }
         }
     }

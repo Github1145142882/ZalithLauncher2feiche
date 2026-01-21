@@ -890,6 +890,8 @@
     <string name="settings_launcher_log_share_packing">Package launcher log files</string>
     <string name="settings_launcher_mirror_modloader_title">Mod Loader Version Source</string>
     <string name="settings_launcher_mirror_file_download_title">File Download Source</string>
+    <string name="settings_launcher_mirror_assets_search_title">Asset Platform Search Source</string>
+    <string name="settings_launcher_mirror_assets_download_title">Asset Platform Download Source</string>
     <string name="settings_launcher_mirror_official_first">Prefer Official Source</string>
     <string name="settings_launcher_mirror_mirror_first">Prefer Mirror Source</string>
     <string name="settings_launcher_background_title">Launcher Background</string>

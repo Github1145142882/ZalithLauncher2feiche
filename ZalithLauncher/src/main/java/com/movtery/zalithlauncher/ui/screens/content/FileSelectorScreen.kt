@@ -39,7 +39,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,6 +48,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.movtery.zalithlauncher.R
@@ -56,6 +59,7 @@ import com.movtery.zalithlauncher.state.FilePathSelectorData
 import com.movtery.zalithlauncher.state.MutableStates
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
+import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.ScalingActionButton
 import com.movtery.zalithlauncher.ui.components.ScalingLabel
@@ -69,6 +73,12 @@ import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.file.sortWithFileName
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.io.File
 
 /**
@@ -83,110 +93,164 @@ fun NavBackStack<NavKey>.navigateToFileSelector(
     useClassEquality = true
 )
 
+private sealed interface SelectorOperation {
+    data object None : SelectorOperation
+    /** 创建文件夹时 */
+    data object CreateDir : SelectorOperation
+}
+
+private class FileSelectorViewModel(
+    val startPath: String,
+    val selectFile: Boolean
+): ViewModel() {
+    var currentPath by mutableStateOf(startPath)
+    var operation by mutableStateOf<SelectorOperation>(SelectorOperation.None)
+
+    private val _files = MutableStateFlow(emptyList<File>())
+    val files = _files.asStateFlow()
+
+    fun createDir(
+        newDir: File,
+        onCreated: () -> Unit,
+        onEnd: () -> Unit
+    ) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (newDir.mkdirs()) onCreated()
+            onEnd()
+        }
+    }
+
+    fun parent() {
+        File(currentPath).parentFile?.let {
+            currentPath = it.absolutePath
+            refreshList()
+        }
+    }
+
+    private var currentJob: Job? = null
+    fun refreshList() {
+        currentJob?.cancel()
+        currentJob = viewModelScope.launch(Dispatchers.IO) {
+            val path = File(currentPath)
+            val tempFiles = path.listFiles()?.toList()?.filter {
+                //如果为非选择文件模式，则仅展示文件夹目录
+                if (!selectFile) it.isDirectory else true
+            }?.sortedWith { o1, o2 ->
+                sortWithFileName(o1, o2)
+            }
+
+            _files.update { tempFiles ?: emptyList() }
+        }
+    }
+
+    init {
+        refreshList()
+    }
+
+    override fun onCleared() {
+        currentJob?.cancel()
+        currentJob = null
+    }
+}
+
+@Composable
+private fun rememberFileSelectorViewModel(
+    key: NormalNavKey.FileSelector
+) = viewModel(key = key.startPath + "_" + "selectFile=" + key.selectFile) {
+    FileSelectorViewModel(key.startPath, key.selectFile)
+}
+
+@Composable
+private fun SelectorOperation(
+    operation: SelectorOperation,
+    onChange: (SelectorOperation) -> Unit,
+    currentPath: String,
+    onCreatePath: (File) -> Unit,
+) {
+    when (operation) {
+        SelectorOperation.None -> {}
+        SelectorOperation.CreateDir -> {
+            CreateNewDirDialog(
+                onDismissRequest = { onChange(SelectorOperation.None) },
+                createDir = {
+                    onCreatePath(File(currentPath, it))
+                }
+            )
+        }
+    }
+}
+
 @Composable
 fun FileSelectorScreen(
     key: NormalNavKey.FileSelector,
     backScreenViewModel: ScreenBackStackViewModel,
     back: () -> Unit
 ) {
-    val startPath1 = File(key.startPath)
-    var currentPath by rememberSaveable { mutableStateOf(startPath1) }
+    val viewModel = rememberFileSelectorViewModel(key = key)
+
+    SelectorOperation(
+        operation = viewModel.operation,
+        onChange = { viewModel.operation = it },
+        currentPath = viewModel.currentPath,
+        onCreatePath = { newDir ->
+            viewModel.createDir(
+                newDir = newDir,
+                onCreated = {
+                    viewModel.currentPath = newDir.absolutePath
+                    viewModel.refreshList()
+                },
+                onEnd = {
+                    viewModel.operation = SelectorOperation.None
+                }
+            )
+        }
+    )
 
     BaseScreen(
         screenKey = key,
         currentKey = backScreenViewModel.mainScreen.currentKey,
         useClassEquality = true
     ) { isVisible ->
-        Column(
-            modifier = Modifier.fillMaxSize()
+        Row(
+            modifier = Modifier
+                .padding(all = 12.dp)
+                .fillMaxSize()
         ) {
-            TopPathLayout(
+            LeftActionMenu(
                 isVisible = isVisible,
-                currentPath = currentPath.absolutePath,
+                backEnabled =
+                    viewModel.currentPath != viewModel.startPath,
+                backToParent = {
+                    viewModel.parent()
+                },
+                createDir = { viewModel.operation = SelectorOperation.CreateDir },
+                selectDir = {
+                    MutableStates.filePathSelector = FilePathSelectorData(
+                        saveKey = key.saveKey,
+                        path = viewModel.currentPath
+                    )
+                    back()
+                },
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(all = 12.dp),
-                color = MaterialTheme.colorScheme.surfaceContainer
+                    .fillMaxHeight()
+                    .weight(2.5f)
             )
 
-            var createDir by remember { mutableStateOf(false) }
-            if (createDir) {
-                CreateNewDirDialog(
-                    onDismissRequest = { createDir = false },
-                    createDir = {
-                        val newDir = File(currentPath, it)
-                        if (newDir.mkdir()) currentPath = newDir
-                        createDir = false
-                    }
-                )
-            }
+            val files by viewModel.files.collectAsStateWithLifecycle()
 
-            Row(
+            FilesLayout(
+                isVisible = isVisible,
+                currentPath = viewModel.currentPath,
+                updatePath = { path ->
+                    viewModel.currentPath = path
+                    viewModel.refreshList()
+                },
+                files = files,
+                selectFile = key.selectFile,
                 modifier = Modifier
-                    .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                LeftActionMenu(
-                    isVisible = isVisible,
-                    backEnabled = currentPath.absolutePath != startPath1.absolutePath,
-                    backToParent = {
-                        currentPath = currentPath.parentFile!!
-                    },
-                    createDir = { createDir = true },
-                    selectDir = {
-                        MutableStates.filePathSelector = FilePathSelectorData(key.saveKey, currentPath.absolutePath)
-                        back()
-                    },
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(2.5f)
-                )
-
-                FilesLayout(
-                    isVisible = isVisible,
-                    currentPath = currentPath,
-                    updatePath = { currentPath = it },
-                    selectFile = key.selectFile,
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .weight(7.5f)
-                        .padding(start = 12.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TopPathLayout(
-    isVisible: Boolean,
-    currentPath: String,
-    modifier: Modifier = Modifier,
-    color: Color
-) {
-    val surfaceYOffset by swapAnimateDpAsState(
-        targetValue = (-40).dp,
-        swapIn = isVisible
-    )
-
-    Surface(
-        modifier = modifier
-            .offset {
-                IntOffset(
-                    x = 0,
-                    y = surfaceYOffset.roundToPx()
-                )
-            },
-        shape = MaterialTheme.shapes.extraLarge,
-        color = color
-    ) {
-        Row(
-            modifier = Modifier.padding(PaddingValues(horizontal = 12.dp, vertical = 8.dp))
-        ) {
-            Text(
-                text = stringResource(R.string.files_current_path, currentPath),
-                style = MaterialTheme.typography.labelMedium
+                    .fillMaxHeight()
+                    .weight(7.5f)
+                    .padding(start = 12.dp)
             )
         }
     }
@@ -207,35 +271,48 @@ private fun LeftActionMenu(
         isHorizontal = true
     )
 
-    BackgroundCard(
-        modifier = modifier.offset { IntOffset(x = surfaceXOffset.roundToPx(), y = 0) },
-        shape = MaterialTheme.shapes.extraLarge
+    Column(
+        modifier = modifier
+            .offset { IntOffset(x = surfaceXOffset.roundToPx(), y = 0) },
+        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom),
     ) {
+        ScalingActionButton(
+            enabled = backEnabled,
+            modifier = Modifier.fillMaxWidth(),
+            onClick = backToParent
+        ) {
+            MarqueeText(text = stringResource(R.string.files_back_to_parent))
+        }
+        ScalingActionButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = createDir
+        ) {
+            MarqueeText(text = stringResource(R.string.files_create_dir))
+        }
+        ScalingActionButton(
+            modifier = Modifier.fillMaxWidth(),
+            onClick = selectDir
+        ) {
+            MarqueeText(text = stringResource(R.string.files_select_dir))
+        }
+    }
+}
+
+@Composable
+private fun TopPathHeader(
+    path: String,
+    modifier: Modifier = Modifier,
+) {
+    CardTitleLayout(modifier = modifier) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.Bottom
+                .fillMaxWidth()
+                .padding(start = 12.dp, end = 12.dp, top = 16.dp, bottom = 12.dp)
         ) {
-            ScalingActionButton(
-                enabled = backEnabled,
-                modifier = Modifier.fillMaxWidth(),
-                onClick = backToParent
-            ) {
-                MarqueeText(text = stringResource(R.string.files_back_to_parent))
-            }
-            ScalingActionButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = createDir
-            ) {
-                MarqueeText(text = stringResource(R.string.files_create_dir))
-            }
-            ScalingActionButton(
-                modifier = Modifier.fillMaxWidth(),
-                onClick = selectDir
-            ) {
-                MarqueeText(text = stringResource(R.string.files_select_dir))
-            }
+            Text(
+                text = stringResource(R.string.files_current_path, path),
+                style = MaterialTheme.typography.labelMedium
+            )
         }
     }
 }
@@ -243,8 +320,9 @@ private fun LeftActionMenu(
 @Composable
 private fun FilesLayout(
     isVisible: Boolean,
-    currentPath: File,
-    updatePath: (File) -> Unit,
+    currentPath: String,
+    files: List<File>,
+    updatePath: (String) -> Unit,
     selectFile: Boolean,
     modifier: Modifier = Modifier
 ) {
@@ -258,19 +336,17 @@ private fun FilesLayout(
         modifier = modifier.offset { IntOffset(x = surfaceXOffset.roundToPx(), y = 0) },
         shape = MaterialTheme.shapes.extraLarge
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            currentPath.listFiles()?.toList()?.filter {
-                //如果为非选择文件模式，则仅展示文件夹目录
-                if (!selectFile) it.isDirectory else true
-            }?.sortedWith { o1, o2 ->
-                sortWithFileName(o1, o2)
-            }?.takeIf {
-                it.isNotEmpty()
-            }?.let { files ->
+        Column(modifier = Modifier.fillMaxSize()) {
+            TopPathHeader(
+                modifier = Modifier.fillMaxWidth(),
+                path = currentPath
+            )
+
+            if (files.isNotEmpty()) {
                 LazyColumn(
                     contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
                 ) {
-                    items(files) { file ->
+                    items(files, key = { it.absolutePath }) { file ->
                         FileItem(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -278,17 +354,21 @@ private fun FilesLayout(
                             file = file,
                             onClick = {
                                 if (!selectFile && file.isDirectory) {
-                                    updatePath(file)
+                                    updatePath(file.absolutePath)
                                 }
                             }
                         )
                     }
                 }
-            } ?: run {
-                ScalingLabel(
-                    modifier = Modifier.align(Alignment.Center),
-                    text = stringResource(R.string.files_no_selectable_content)
-                )
+            } else {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    ScalingLabel(
+                        text = stringResource(R.string.files_no_selectable_content)
+                    )
+                }
             }
         }
     }
@@ -315,7 +395,7 @@ private fun FileItem(
     ) {
         BaseFileItem(
             file = file,
-            modifier = Modifier.padding(PaddingValues(horizontal = 12.dp, vertical = 8.dp))
+            modifier = Modifier.padding(all = 12.dp)
         )
     }
 }

@@ -46,8 +46,6 @@ struct pojav_environ_s {
     jmethodID method_onCursorShapeChanged;
     jmethodID method_glftSetWindowAttrib;
     jmethodID method_internalWindowSizeChanged;
-    jmethodID method_PutFpsValue;
-    jclass class_ZLInvoker; // ZL Invoker
     jclass bridgeClazz;
     jclass vmGlfwClass;
     jboolean isGrabbing;

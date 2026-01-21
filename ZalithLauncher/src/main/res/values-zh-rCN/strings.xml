@@ -889,6 +889,8 @@
     <string name="settings_launcher_log_share_packing">打包启动器日志文件</string>
     <string name="settings_launcher_mirror_modloader_title">模组加载器版本获取源</string>
     <string name="settings_launcher_mirror_file_download_title">文件下载源</string>
+    <string name="settings_launcher_mirror_assets_search_title">资源平台搜索源</string>
+    <string name="settings_launcher_mirror_assets_download_title">资源平台文件下载源</string>
     <string name="settings_launcher_mirror_official_first">优先使用官方源</string>
     <string name="settings_launcher_mirror_mirror_first">优先使用镜像源</string>
     <string name="settings_launcher_background_title">启动器背景</string>

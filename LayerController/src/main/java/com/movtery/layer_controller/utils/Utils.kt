@@ -26,6 +26,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import java.io.File
 import java.util.Base64
+import java.util.Locale
 import java.util.UUID
 
 internal val layoutJson = Json {
@@ -95,5 +96,23 @@ fun <E : Comparable<E>> checkInRange(
 ) {
     if (value !in range) {
         error("{$tag} exceeds the valid range of values: $range, current: $value")
+    }
+}
+
+/**
+ * 生成简单的语言标签
+ */
+fun Locale.toSimpleLangTag(): String {
+    return "$language-$country"
+}
+
+internal fun Locale.compareLangTag(
+    targetTag: String
+): Boolean {
+    return if (targetTag.contains("-")) {
+        toSimpleLangTag() == targetTag
+    } else {
+        //仅检查语言（不包含国家）
+        language == targetTag
     }
 }

@@ -4,6 +4,10 @@
             "default": "default",
             "matchQueue": [
                 {
+                    "language_tag": "zh",
+                    "value": "預設"
+                },
+                {
                     "language_tag": "zh-CN",
                     "value": "默认"
                 }
@@ -13,7 +17,7 @@
             "default": "MovTery",
             "matchQueue": [
                 {
-                    "language_tag": "zh-CN",
+                    "language_tag": "zh",
                     "value": "墨北MovTery"
                 }
             ]
@@ -274,6 +278,10 @@
                         "default": "IME",
                         "matchQueue": [
                             {
+                                "language_tag": "zh",
+                                "value": "輸入法"
+                            },
+                            {
                                 "language_tag": "zh-CN",
                                 "value": "输入法"
                             }
@@ -388,6 +396,10 @@
                         "default": "PRI",
                         "matchQueue": [
                             {
+                                "language_tag": "zh",
+                                "value": "左鍵"
+                            },
+                            {
                                 "language_tag": "zh-CN",
                                 "value": "左键"
                             }
@@ -423,6 +435,10 @@
                     "text": {
                         "default": "SEC",
                         "matchQueue": [
+                            {
+                                "language_tag": "zh",
+                                "value": "右鍵"
+                            },
                             {
                                 "language_tag": "zh-CN",
                                 "value": "右键"

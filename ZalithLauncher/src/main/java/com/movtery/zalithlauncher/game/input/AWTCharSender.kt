@@ -51,32 +51,44 @@ object AWTCharSender : CharacterSenderStrategy {
         ZLBridge.sendKey(' ', AWTInputEvent.VK_ENTER)
     }
 
+    override fun sendTab() {
+        ZLBridge.sendKey(' ', AWTInputEvent.VK_TAB)
+    }
+
     override fun sendOther(key: KeyEvent) {
         // Ignore
     }
 
     override fun sendCopy() {
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 1)
+        sendModifierCtrl(true)
         ZLBridge.sendKey(' ', AWTInputEvent.VK_C)
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 0)
+        sendModifierCtrl(false)
     }
 
     override fun sendCut() {
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 1)
+        sendModifierCtrl(true)
         ZLBridge.sendKey(' ', AWTInputEvent.VK_X)
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 0)
+        sendModifierCtrl(false)
     }
 
     override fun sendPaste() {
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 1)
+        sendModifierCtrl(true)
         ZLBridge.sendKey(' ', AWTInputEvent.VK_V)
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 0)
+        sendModifierCtrl(false)
     }
 
     override fun sendSelectAll() {
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 1)
+        sendModifierCtrl(true)
         ZLBridge.sendKey(' ', AWTInputEvent.VK_A)
-        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, 0)
+        sendModifierCtrl(false)
+    }
+
+    override fun sendModifierShift(press: Boolean) {
+        ZLBridge.sendKey(' ', AWTInputEvent.VK_SHIFT, if (press) 1 else 0)
+    }
+
+    override fun sendModifierCtrl(press: Boolean) {
+        ZLBridge.sendKey(' ', AWTInputEvent.VK_CONTROL, if (press) 1 else 0)
     }
 
     /**

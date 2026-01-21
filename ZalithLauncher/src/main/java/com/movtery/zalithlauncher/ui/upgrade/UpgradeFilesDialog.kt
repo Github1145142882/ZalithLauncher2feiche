@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.SimpleListDialog
+import com.movtery.zalithlauncher.ui.screens.content.elements.DisabledAlpha
 import com.movtery.zalithlauncher.upgrade.RemoteData
 import com.movtery.zalithlauncher.utils.device.Architecture
 import com.movtery.zalithlauncher.utils.file.formatFileSize
@@ -87,7 +88,9 @@ fun UpgradeFilesDialog(
                 file = item,
                 currentArch = currentArch,
                 selected = isCurrent,
-                onClick = onClick
+                onClick = onClick,
+                //根据设备架构决定哪些安装包不能选择，避免下载到错误架构的安装包（允许选择全架构）
+                enabled = item.arch == RemoteData.RemoteFile.Arch.ALL || item.arch == currentArch
             )
         },
         showConfirm = true,
@@ -103,19 +106,22 @@ private fun UpgradeFileLayout(
     currentArch: RemoteData.RemoteFile.Arch,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
 ) {
     Row(
         modifier = modifier
             .clip(shape = MaterialTheme.shapes.large)
-            .clickable(onClick = onClick),
+            .clickable(enabled = enabled, onClick = onClick),
         verticalAlignment = Alignment.CenterVertically
     ) {
         RadioButton(
             selected = selected,
-            onClick = onClick
+            onClick = onClick,
+            enabled = enabled
         )
         Column(
+            modifier = Modifier.alpha(if (enabled) 1.0f else DisabledAlpha),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             //文件名

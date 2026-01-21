@@ -21,6 +21,7 @@ package com.movtery.zalithlauncher.viewmodel
 import android.view.KeyEvent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.movtery.zalithlauncher.ui.control.input.TextInputMode
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
@@ -48,8 +49,10 @@ class EventViewModel : ViewModel() {
             data class OnKeyDown(val key: KeyEvent) : Key
         }
         sealed interface Game : Event {
+            /** 禁用/启用VMActivity按键处理 */
+            data class KeyHandle(val handle: Boolean): Game
             /** 呼出IME */
-            data object ShowIme : Game
+            data class SwitchIme(val mode: TextInputMode?) : Game
             /** 刷新游戏画面分辨率 */
             data object RefreshSize : Game
             /** 用户按下系统返回键 */

@@ -68,9 +68,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -551,14 +553,15 @@ private fun TaskMenu(
 ) {
     val show = isExpanded && tasks.isNotEmpty()
 
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
     AnimatedVisibility(
         modifier = modifier,
         enter = slideInHorizontally(
-            initialOffsetX = { -it },
+            initialOffsetX = { if (isRtl) it else -it },
             animationSpec = getAnimateTween()
         ) + fadeIn(),
         exit = slideOutHorizontally(
-            targetOffsetX = { -it },
+            targetOffsetX = { if (isRtl) it else -it },
             animationSpec = getAnimateTween()
         ) + fadeOut(),
         visible = show

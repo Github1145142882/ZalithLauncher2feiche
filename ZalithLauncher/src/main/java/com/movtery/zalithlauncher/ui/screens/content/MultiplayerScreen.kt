@@ -197,21 +197,21 @@ private fun MainMenu(
             .padding(vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        //关于地区的警告
-        BackgroundCard(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors().copy(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
-            ),
-            shape = MaterialTheme.shapes.extraLarge
-        ) {
-            Text(
-                modifier = Modifier.padding(all = 16.dp),
-                text = stringResource(R.string.terracotta_warning_region),
-                style = MaterialTheme.typography.titleSmall
-            )
-        }
+//        //关于地区的警告
+//        BackgroundCard(
+//            modifier = Modifier.fillMaxWidth(),
+//            colors = CardDefaults.cardColors().copy(
+//                containerColor = MaterialTheme.colorScheme.secondaryContainer,
+//                contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+//            ),
+//            shape = MaterialTheme.shapes.extraLarge
+//        ) {
+//            Text(
+//                modifier = Modifier.padding(all = 16.dp),
+//                text = stringResource(R.string.terracotta_warning_region),
+//                style = MaterialTheme.typography.titleSmall
+//            )
+//        }
 
         //多人联机设置菜单
         SettingsCardColumn(

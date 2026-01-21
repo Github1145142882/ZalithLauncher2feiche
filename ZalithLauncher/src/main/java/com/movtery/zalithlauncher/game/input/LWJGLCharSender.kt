@@ -33,6 +33,10 @@ object LWJGLCharSender : CharacterSenderStrategy {
         CallbackBridge.sendKeyPress(LwjglGlfwKeycode.GLFW_KEY_ENTER.toInt())
     }
 
+    override fun sendTab() {
+        CallbackBridge.sendKeyPress(LwjglGlfwKeycode.GLFW_KEY_TAB.toInt())
+    }
+
     override fun sendLeft() {
         CallbackBridge.sendKeyPress(LwjglGlfwKeycode.GLFW_KEY_LEFT.toInt())
     }
@@ -75,6 +79,18 @@ object LWJGLCharSender : CharacterSenderStrategy {
 
     override fun sendSelectAll() {
         // Ignore
+    }
+
+    override fun sendModifierShift(press: Boolean) {
+        val keycode = LwjglGlfwKeycode.GLFW_KEY_LEFT_SHIFT.toInt()
+        CallbackBridge.sendKeyPress(keycode, CallbackBridge.getCurrentMods(), press)
+        CallbackBridge.setModifiers(keycode, press)
+    }
+
+    override fun sendModifierCtrl(press: Boolean) {
+        val keycode = LwjglGlfwKeycode.GLFW_KEY_LEFT_CONTROL.toInt()
+        CallbackBridge.sendKeyPress(keycode, CallbackBridge.getCurrentMods(), press)
+        CallbackBridge.setModifiers(keycode, press)
     }
 
     /**

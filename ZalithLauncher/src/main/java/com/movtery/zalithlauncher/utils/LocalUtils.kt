@@ -159,11 +159,6 @@ fun copyText(label: String?, text: String?, context: Context) {
     clipboardManager.setPrimaryClip(ClipData.newPlainText(label, text))
 }
 
-fun getSystemLanguage(): String {
-    val locale = Locale.getDefault()
-    return locale.language + "_" + locale.country.lowercase(Locale.getDefault())
-}
-
 fun getDisplayFriendlyRes(displaySideRes: Int, scaling: Float): Int {
     var display = (displaySideRes * scaling).toInt()
     if (display % 2 != 0) display--

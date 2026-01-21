@@ -18,7 +18,7 @@
 
 package com.movtery.zalithlauncher.game.version.download
 
-import com.movtery.zalithlauncher.game.addons.mirror.mapMirrorableUrls
+import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.game.versioninfo.models.GameManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.OperatingSystem
 import com.movtery.zalithlauncher.utils.GSON
@@ -55,7 +55,7 @@ suspend fun <T> downloadAndParseJson(
         val json = withContext(Dispatchers.IO) {
             val string = withRetry(UTILS_LOG_TAG, maxRetries = 1) {
                 fetchStringFromUrls(
-                    url.mapMirrorableUrls()
+                    url.mapBMCLMirrorUrls()
                 )
             }
             if (string.isBlank()) {

@@ -21,6 +21,7 @@ package com.movtery.zalithlauncher.game.version.mod.update
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformVersion
+import com.movtery.zalithlauncher.game.download.assets.platform.mcim.mapMCIMMirrorUrls
 import com.movtery.zalithlauncher.game.version.download.DownloadFailedException
 import com.movtery.zalithlauncher.utils.file.formatFileSize
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
@@ -83,7 +84,9 @@ class ModVersionUpdater(
             val downloadJobs = tasks.map { newVersion ->
                 launch {
                     semaphore.withPermit {
-                        val urls = listOf(newVersion.platformDownloadUrl())
+                        val urls = newVersion
+                            .platformDownloadUrl()
+                            .mapMCIMMirrorUrls()
                         val outputFile = File(targetDir, newVersion.platformFileName())
 
                         runCatching {

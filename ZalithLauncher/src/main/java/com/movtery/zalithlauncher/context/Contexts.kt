@@ -19,7 +19,6 @@
 package com.movtery.zalithlauncher.context
 
 import android.content.Context
-import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.provider.OpenableColumns
@@ -38,11 +37,6 @@ var GlobalContext by Delegates.notNull<Context>()
 
 fun refreshContext(context: Context) {
     PathManager.refreshPaths(context)
-}
-
-fun getContextWrapper(context: Context): ContextWrapper {
-    refreshContext(context)
-    return ContextWrapper(context)
 }
 
 fun Context.readAssetFile(filePath: String): String {

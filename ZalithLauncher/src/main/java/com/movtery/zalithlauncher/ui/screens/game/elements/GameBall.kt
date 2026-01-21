@@ -40,11 +40,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
-import com.movtery.zalithlauncher.bridge.ZLBridgeStates
 import com.movtery.zalithlauncher.ui.components.FloatingBall
 import com.movtery.zalithlauncher.ui.screens.content.elements.MemoryPreview
 
@@ -52,7 +52,7 @@ import com.movtery.zalithlauncher.ui.screens.content.elements.MemoryPreview
 fun DraggableGameBall(
     position: Offset,
     onPositionChanged: (Offset) -> Unit,
-    showGameFps: Boolean,
+    gameFps: Int?,
     showMemory: Boolean,
     alpha: Float = 1f,
     onClick: () -> Unit = {}
@@ -64,7 +64,7 @@ fun DraggableGameBall(
         alpha = alpha
     ) {
         GameBallContent(
-            showGameFps = showGameFps,
+            gameFps = gameFps,
             showMemory = showMemory
         )
     }
@@ -72,9 +72,13 @@ fun DraggableGameBall(
 
 @Composable
 private fun GameBallContent(
-    showGameFps: Boolean,
+    gameFps: Int?,
     showMemory: Boolean
 ) {
+    val showFps = remember(gameFps) {
+        gameFps != null
+    }
+
     Row(
         modifier = Modifier.padding(all = 2.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -86,7 +90,7 @@ private fun GameBallContent(
         )
 
         AnimatedVisibility(
-            visible = showGameFps || showMemory
+            visible = showFps || showMemory
         ) {
             Spacer(Modifier.width(4.dp))
         }
@@ -98,18 +102,17 @@ private fun GameBallContent(
                 .animateContentSize()
         ) {
             CustomAnimatedVisibility(
-                visible = showGameFps || showMemory
+                visible = showFps || showMemory
             ) {
                 Spacer(Modifier.height(4.dp))
             }
             //帧率显示
             CustomAnimatedVisibility(
-                visible = showGameFps
+                visible = showFps
             ) {
-                val fps = ZLBridgeStates.currentFPS
                 Text(
                     modifier = Modifier.padding(end = 4.dp),
-                    text = "FPS: $fps",
+                    text = "FPS: ${gameFps ?: 0}",
                     style = MaterialTheme.typography.labelMedium
                 )
             }
@@ -118,7 +121,9 @@ private fun GameBallContent(
                 visible = showMemory
             ) {
                 MemoryPreview(
-                    modifier = Modifier.width(168.dp).padding(end = 4.dp),
+                    modifier = Modifier
+                        .width(168.dp)
+                        .padding(end = 4.dp),
                     mainColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
                     backgroundColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
                     textStyle = MaterialTheme.typography.labelSmall,
@@ -128,7 +133,7 @@ private fun GameBallContent(
                 )
             }
             CustomAnimatedVisibility(
-                visible = showGameFps || showMemory
+                visible = showFps || showMemory
             ) {
                 Spacer(Modifier.height(4.dp))
             }

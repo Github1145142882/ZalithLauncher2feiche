@@ -57,6 +57,7 @@ import kotlin.text.forEach
  * @param mode 控制文本输入启用或禁用的 [TextInputMode]
  * @param sender 用于将字符发送到游戏的 [CharacterSenderStrategy]
  */
+@Deprecated("因兼容性问题，现已改用输入栏UI代理输入法输入，此处代码已不再使用，仅作参考")
 @Composable
 fun Modifier.textInputHandler(
     mode: TextInputMode,

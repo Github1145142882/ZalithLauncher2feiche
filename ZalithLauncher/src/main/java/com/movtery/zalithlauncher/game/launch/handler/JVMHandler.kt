@@ -26,13 +26,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntSize
 import androidx.core.graphics.createBitmap
 import androidx.core.graphics.withSave
 import com.movtery.zalithlauncher.bridge.ZLBridge
 import com.movtery.zalithlauncher.game.input.AWTInputEvent
 import com.movtery.zalithlauncher.game.launch.JvmLauncher
+import com.movtery.zalithlauncher.ui.control.input.TextInputMode
 import com.movtery.zalithlauncher.ui.screens.game.JVMScreen
 import com.movtery.zalithlauncher.ui.screens.game.elements.LogState
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
@@ -46,13 +46,12 @@ class JVMHandler(
     jvmLauncher: JvmLauncher,
     errorViewModel: ErrorViewModel,
     eventViewModel: EventViewModel,
-    getWindowSize: () -> IntSize,
+    private val windowSize: IntSize,
     onExit: (code: Int) -> Unit
 ) : AbstractHandler(
     type = HandlerType.JVM,
     errorViewModel = errorViewModel,
     eventViewModel = eventViewModel,
-    getWindowSize = getWindowSize,
     launcher = jvmLauncher,
     onExit = onExit
 ) {
@@ -63,10 +62,8 @@ class JVMHandler(
 
     override suspend fun execute(surface: Surface?, scope: CoroutineScope) {
         surface?.run {
-            val windowSize = getWindowSize()
-
-            val canvasWidth = (windowSize.width * 0.8).toInt()
-            val canvasHeight = (windowSize.height * 0.8).toInt()
+            val canvasWidth = windowSize.width
+            val canvasHeight = windowSize.height
 
             scope.launch(Dispatchers.Default) {
                 var canvas: Canvas?
@@ -128,17 +125,12 @@ class JVMHandler(
 
     @Composable
     override fun ComposableLayout(
-        surfaceOffset: Offset,
-        incrementScreenOffset: (Offset) -> Unit,
-        resetScreenOffset: () -> Unit
+        textInputMode: TextInputMode
     ) {
         JVMScreen(
             logState = logState,
             onLogStateChange = { logState = it },
-            eventViewModel = eventViewModel,
-            surfaceOffset = surfaceOffset,
-            incrementScreenOffset = incrementScreenOffset,
-            resetScreenOffset = resetScreenOffset
+            eventViewModel = eventViewModel
         )
     }
 }

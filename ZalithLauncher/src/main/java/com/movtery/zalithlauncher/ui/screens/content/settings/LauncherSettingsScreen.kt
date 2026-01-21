@@ -75,6 +75,7 @@ import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SwitchSett
 import com.movtery.zalithlauncher.ui.theme.ColorThemeType
 import com.movtery.zalithlauncher.utils.animation.TransitionAnimationType
 import com.movtery.zalithlauncher.utils.file.shareFile
+import com.movtery.zalithlauncher.utils.isChinese
 import com.movtery.zalithlauncher.utils.logging.Logger
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.utils.string.getMessageOrToString
@@ -286,6 +287,30 @@ fun LauncherSettingsScreen(
                         title = stringResource(R.string.settings_launcher_mirror_file_download_title),
                         getItemText = { stringResource(it.textRes) }
                     )
+
+                    val isChinese = remember {
+                        isChinese(context = context)
+                    }
+
+                    if (isChinese) {
+                        ListSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.assetSearchSource,
+                            items = MirrorSourceType.entries,
+                            title = stringResource(R.string.settings_launcher_mirror_assets_search_title),
+                            getItemText = { stringResource(it.textRes) }
+                        )
+
+                        ListSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.assetDownloadSource,
+                            items = MirrorSourceType.entries,
+                            title = stringResource(R.string.settings_launcher_mirror_assets_download_title),
+                            getItemText = { stringResource(it.textRes) }
+                        )
+                    }
 
                     IntSliderSettingsCard(
                         modifier = Modifier.fillMaxWidth(),

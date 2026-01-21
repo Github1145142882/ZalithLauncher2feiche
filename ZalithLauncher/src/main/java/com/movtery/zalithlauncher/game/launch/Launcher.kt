@@ -42,13 +42,11 @@ import com.movtery.zalithlauncher.setting.unit.getOrMin
 import com.movtery.zalithlauncher.utils.device.Architecture
 import com.movtery.zalithlauncher.utils.device.Architecture.ARCH_X86
 import com.movtery.zalithlauncher.utils.device.Architecture.is64BitsDevice
-import com.movtery.zalithlauncher.utils.getDisplayFriendlyRes
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.oracle.dalvik.VMLauncher
 import org.apache.commons.io.FileUtils
-import org.lwjgl.glfw.CallbackBridge
 import java.io.File
 import java.io.IOException
 import java.util.Locale
@@ -76,14 +74,14 @@ abstract class Launcher(
         jvmArgs: List<String>,
         userHome: String? = null,
         userArgs: String,
-        getWindowSize: () -> IntSize
+        windowSize: IntSize
     ): Int {
         ZLNativeInvoker.staticLauncher = this
 
         ZLBridge.setLdLibraryPath(getRuntimeLibraryPath())
 
         LoggerBridge.appendTitle("Env Map")
-        setEnv()
+        setEnv(windowSize)
 
         LoggerBridge.appendTitle("DLOPEN Java Runtime")
         dlopenJavaRuntime()
@@ -95,7 +93,7 @@ abstract class Launcher(
             jvmArgs = jvmArgs,
             userHome = userHome,
             userArgs = userArgs,
-            getWindowSize = getWindowSize
+            windowSize = windowSize
         )
     }
 
@@ -105,9 +103,8 @@ abstract class Launcher(
         jvmArgs: List<String>,
         userHome: String? = null,
         userArgs: String,
-        getWindowSize: () -> IntSize
+        windowSize: IntSize
     ): Int {
-        val windowSize = getWindowSize()
         val args = getJavaArgs(userHome, userArgs, windowSize).toMutableList()
         progressFinalUserArgs(args)
 
@@ -162,9 +159,8 @@ abstract class Launcher(
             put("pojav.path.minecraft", getGameHome())
             put("pojav.path.private.account", PathManager.DIR_DATA_BASES.absolutePath)
             put("org.lwjgl.vulkan.libname", "libvulkan.so")
-            val scaleFactor = AllSettings.resolutionRatio.getValue() / 100f
-            put("glfwstub.windowWidth", getDisplayFriendlyRes(windowSize.width, scaleFactor).toString())
-            put("glfwstub.windowHeight", getDisplayFriendlyRes(windowSize.height, scaleFactor).toString())
+            put("glfwstub.windowWidth", windowSize.width.toString())
+            put("glfwstub.windowHeight", windowSize.height.toString())
             put("glfwstub.initEgl", "false")
             put("ext.net.resolvPath", resolvFile.absolutePath)
 
@@ -355,8 +351,8 @@ abstract class Launcher(
         }
     }
 
-    private fun setEnv() {
-        val envMap = initEnv()
+    private fun setEnv(windowSize: IntSize) {
+        val envMap = initEnv(windowSize)
         envMap.forEach { (key, value) ->
             LoggerBridge.append("Added env: $key = $value")
             runCatching {
@@ -368,13 +364,19 @@ abstract class Launcher(
     }
 
     @CallSuper
-    protected open fun initEnv(): MutableMap<String, String> {
+    protected open fun initEnv(windowSize: IntSize): MutableMap<String, String> {
         val envMap: MutableMap<String, String> = ArrayMap()
-        setJavaEnv(envMap = { envMap })
+        setJavaEnv(
+            windowSize = windowSize,
+            envMap = { envMap }
+        )
         return envMap
     }
 
-    private fun setJavaEnv(envMap: () -> MutableMap<String, String>) {
+    private fun setJavaEnv(
+        windowSize: IntSize,
+        envMap: () -> MutableMap<String, String>
+    ) {
         val path = listOfNotNull("$runtimeHome/bin", Os.getenv("PATH"))
 
         envMap().let { map ->
@@ -384,8 +386,8 @@ abstract class Launcher(
             map["TMPDIR"] = PathManager.DIR_CACHE.absolutePath
             map["LD_LIBRARY_PATH"] = getLibraryPath()
             map["PATH"] = path.joinToString(":")
-            map["AWTSTUB_WIDTH"] = (CallbackBridge.windowWidth.takeIf { it > 0 } ?: CallbackBridge.physicalWidth).toString()
-            map["AWTSTUB_HEIGHT"] = (CallbackBridge.windowHeight.takeIf { it > 0 } ?: CallbackBridge.physicalHeight).toString()
+            map["AWTSTUB_WIDTH"] = windowSize.width.toString()
+            map["AWTSTUB_HEIGHT"] = windowSize.height.toString()
             map["MOD_ANDROID_RUNTIME"] = PathManager.DIR_RUNTIME_MOD?.absolutePath ?: ""
 
             if (AllSettings.dumpShaders.getValue()) map["LIBGL_VGPU_DUMP"] = "1"
@@ -466,15 +468,14 @@ fun parseJavaArguments(args: String): List<String> {
 }
 
 fun getCacioJavaArgs(
-    screenWidth: Int,
-    screenHeight: Int,
+    windowSize: IntSize,
     isJava8: Boolean
 ): List<String> {
     val argsList: MutableList<String> = ArrayList()
 
     // Caciocavallo config AWT-enabled version
     argsList.add("-Djava.awt.headless=false")
-    argsList.add("-Dcacio.managed.screensize=" + (screenWidth * 0.8).toInt() + "x" + (screenHeight * 0.8).toInt())
+    argsList.add("-Dcacio.managed.screensize=${windowSize.width}x${windowSize.height}")
     argsList.add("-Dcacio.font.fontmanager=sun.awt.X11FontManager")
     argsList.add("-Dcacio.font.fontscaler=sun.font.FreetypeFontScaler")
     argsList.add("-Dswing.defaultlaf=javax.swing.plaf.nimbus.NimbusLookAndFeel")

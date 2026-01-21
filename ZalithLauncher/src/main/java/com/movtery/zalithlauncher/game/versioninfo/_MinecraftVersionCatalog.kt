@@ -19,7 +19,7 @@
 package com.movtery.zalithlauncher.game.versioninfo
 
 import com.movtery.zalithlauncher.R
-import java.util.regex.Pattern
+import com.movtery.zalithlauncher.game.version.installed.utils.isLegacyReleaseVer
 
 /**
  * 所有支持的资源下载过滤的版本号
@@ -122,7 +122,7 @@ const val LEGACY_RELEASE_REGEX = """^\d+\.\d+\.\d+$|^\d+\.\d+$"""
  */
 fun filterRelease(versionString: String): Boolean {
     //先检查旧的正式版版本规则匹配
-    if (Pattern.compile(LEGACY_RELEASE_REGEX).matcher(versionString).find()) return true
+    if (versionString.isLegacyReleaseVer()) return true
     //开始使用新的版本号规则进行匹配
     return parseNewVersionFormat(versionString)?.isRelease() ?: false
 }

@@ -19,18 +19,20 @@
 package com.movtery.zalithlauncher.game.download.assets.platform
 
 import com.movtery.zalithlauncher.game.download.assets.mapExceptionToMessage
-import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.CurseForgeSearchRequest
-import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.models.CurseForgeCategory
-import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.models.CurseForgeModLoader
-import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.ModrinthSearchRequest
-import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.ModrinthFacet
-import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.ModrinthModLoaderCategory
-import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.VersionFacet
+import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.CurseForgeSearcher
+import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.MCIM_CURSEFORGE_API
+import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.MCIM_MODRINTH_API
+import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.ModrinthSearcher
 import com.movtery.zalithlauncher.game.download.assets.utils.localizedModSearchKeywords
+import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
 import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.DownloadAssetsState
 import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.SearchAssetsState
+import com.movtery.zalithlauncher.utils.isChinese
+import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
+import com.movtery.zalithlauncher.utils.network.isInterruptedIOException
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -38,6 +40,90 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileNotFoundException
+import java.io.IOException
+
+private val modrinthSearcher = ModrinthSearcher()
+private val mirrorModrinthSearcher = ModrinthSearcher(
+    api = MCIM_MODRINTH_API,
+    source = "MCIM Modrinth"
+)
+
+private val curseForgeSearcher = CurseForgeSearcher()
+private val mirrorCurseForgeSearcher = CurseForgeSearcher(
+    api = MCIM_CURSEFORGE_API,
+    apiKey = null, //不向镜像源提供 api key
+    source = "MCIM CurseForge"
+)
+
+/**
+ * 对资源平台搜索启用镜像源机制进行操作
+ */
+suspend fun <E: AbstractPlatformSearcher, T> mirroredPlatformSearcher(
+    searchers: List<E>,
+    block: suspend (E) -> T
+): T {
+    require(searchers.isNotEmpty()) { "Searcher list must not be empty." }
+
+    val errors = mutableListOf<Exception>()
+    var lastException: Exception? = null
+
+    for (searcher in searchers) {
+        try {
+            lDebug("Starting to attempt to perform the operation on source: {${searcher.source}}")
+            return block(searcher)
+        } catch (e: Exception) {
+            lastException = e
+
+            if (e.isInterruptedIOException()) {
+                throw e
+            } else if (e is FileNotFoundException) {
+                errors.add(e)
+                break
+            } else {
+                errors.add(e)
+            }
+        }
+    }
+
+    throw IOException("All sources have failed to attempt)", lastException).apply {
+        errors.forEachIndexed { i, e ->
+            addSuppressed(Exception("Mirror error #${i + 1}: ${e.message}"))
+        }
+    }
+}
+
+/**
+ * 镜像源只能在中国地区使用
+ */
+fun mirroredCurseForgeSource(
+    enabledMirror: Boolean = isChinese()
+): List<CurseForgeSearcher> {
+    val source = AllSettings.fileDownloadSource.getValue()
+    val mirrorSource = mirrorCurseForgeSearcher.takeIf { enabledMirror }
+    return when (source) {
+        MirrorSourceType.OFFICIAL_FIRST ->
+            listOfNotNull(curseForgeSearcher, mirrorSource)
+        MirrorSourceType.MIRROR_FIRST ->
+            listOfNotNull(mirrorSource, curseForgeSearcher)
+    }
+}
+
+/**
+ * 镜像源只能在中国地区使用
+ */
+fun mirroredModrinthSource(
+    enabledMirror: Boolean = isChinese()
+): List<ModrinthSearcher> {
+    val source = AllSettings.fileDownloadSource.getValue()
+    val mirrorSource = mirrorModrinthSearcher.takeIf { enabledMirror }
+    return when (source) {
+        MirrorSourceType.OFFICIAL_FIRST ->
+            listOfNotNull(modrinthSearcher, mirrorSource)
+        MirrorSourceType.MIRROR_FIRST ->
+            listOfNotNull(mirrorSource, modrinthSearcher)
+    }
+}
 
 suspend fun searchAssets(
     searchPlatform: Platform,
@@ -50,52 +136,22 @@ suspend fun searchAssets(
         val (containsChinese, englishKeywords) = searchFilter.searchName.localizedModSearchKeywords(platformClasses)
         val query = englishKeywords?.joinToString(" ") ?: searchFilter.searchName
         val result = when (searchPlatform) {
-            Platform.CURSEFORGE -> {
-                val curseforgeCategories = searchFilter.categories.map { category ->
-                    category as? CurseForgeCategory
-                }.toTypedArray()
-
-                searchWithCurseforge(
-                    request = CurseForgeSearchRequest(
-                        classId = platformClasses.curseforge.classID,
-                        categories = setOfNotNull(
-                            *curseforgeCategories
-                        ),
-                        searchFilter = query,
-                        gameVersion = searchFilter.gameVersion,
-                        sortField = searchFilter.sortField,
-                        modLoader = searchFilter.modloader as? CurseForgeModLoader,
-                        index = searchFilter.index,
-                        pageSize = searchFilter.limit
-                    ),
-                    retry = 1 //只尝试一次
+            Platform.CURSEFORGE -> mirroredPlatformSearcher(
+                searchers = mirroredCurseForgeSource()
+            ) { searcher ->
+                searcher.searchAssets(
+                    query = query,
+                    searchFilter = searchFilter,
+                    platformClasses = platformClasses
                 )
             }
-            Platform.MODRINTH -> {
-                val modrinthVersion = searchFilter.gameVersion?.let { version ->
-                    VersionFacet(version)
-                }
-                val modrinthCategories = searchFilter.categories.map { category ->
-                    category as? ModrinthFacet
-                }.toTypedArray()
-                val modrinthModLoader = searchFilter.modloader?.let { modloader ->
-                    modloader as? ModrinthModLoaderCategory
-                }
-
-                searchWithModrinth(
-                    request = ModrinthSearchRequest(
-                        query = query,
-                        facets = listOfNotNull(
-                            platformClasses.modrinth!!, //必须为非空处理
-                            modrinthVersion,
-                            *modrinthCategories,
-                            modrinthModLoader
-                        ),
-                        index = searchFilter.sortField,
-                        offset = searchFilter.index,
-                        limit = searchFilter.limit
-                    ),
-                    retry = 1 //只尝试一次
+            Platform.MODRINTH -> mirroredPlatformSearcher(
+                searchers = mirroredModrinthSource()
+            ) { searcher ->
+                searcher.searchAssets(
+                    query = query,
+                    searchFilter = searchFilter,
+                    platformClasses = platformClasses
                 )
             }
         }
@@ -120,8 +176,22 @@ suspend fun getVersions(
     platform: Platform,
     pageCallback: (chunk: Int, page: Int) -> Unit = { _, _ -> },
 ) = when (platform) {
-    Platform.CURSEFORGE -> getAllVersionsFromCurseForge(projectID, pageCallback = pageCallback)
-    Platform.MODRINTH -> getVersionsFromModrinth(projectID)
+    Platform.CURSEFORGE -> mirroredPlatformSearcher(
+        searchers = mirroredCurseForgeSource()
+    ) { searcher ->
+        searcher.getVersions(
+            projectID = projectID,
+            pageCallback = pageCallback
+        )
+    }
+    Platform.MODRINTH -> mirroredPlatformSearcher(
+        searchers = mirroredModrinthSource()
+    ) { searcher ->
+        searcher.getVersions(
+            projectID = projectID,
+            pageCallback = pageCallback
+        )
+    }
 }
 
 suspend fun <E> getVersions(
@@ -154,8 +224,16 @@ suspend fun <E> getProject(
 ) {
     runCatching {
         when (platform) {
-            Platform.CURSEFORGE -> getProjectFromCurseForge(projectID)
-            Platform.MODRINTH -> getProjectFromModrinth(projectID)
+            Platform.CURSEFORGE -> mirroredPlatformSearcher(
+                searchers = mirroredCurseForgeSource()
+            ) { searcher ->
+                searcher.getProject(projectID)
+            }
+            Platform.MODRINTH -> mirroredPlatformSearcher(
+                searchers = mirroredModrinthSource()
+            ) { searcher ->
+                searcher.getProject(projectID)
+            }
         }
     }.fold(
         onSuccess = onSuccess,
@@ -177,25 +255,37 @@ suspend fun getProjectByVersion(
     platform: Platform
 ): PlatformProject = withContext(Dispatchers.IO) {
     when (platform) {
-        Platform.MODRINTH -> getProjectFromModrinth(projectID = projectId)
-        Platform.CURSEFORGE -> getProjectFromCurseForge(projectID = projectId)
+        Platform.MODRINTH -> mirroredPlatformSearcher(
+            searchers = mirroredModrinthSource()
+        ) { searcher ->
+            searcher.getProject(projectId)
+        }
+        Platform.CURSEFORGE -> mirroredPlatformSearcher(
+            searchers = mirroredCurseForgeSource()
+        ) { searcher ->
+            searcher.getProject(projectId)
+        }
     }
 }
 
 suspend fun getVersionByLocalFile(file: File, sha1: String): PlatformVersion? = coroutineScope {
     val modrinthDeferred = async(Dispatchers.IO) {
         runCatching {
-            getVersionByLocalFileFromModrinth(sha1)
+            mirroredPlatformSearcher(
+                searchers = mirroredModrinthSource()
+            ) { searcher ->
+                searcher.getVersionByLocalFile(file, sha1)
+            }
         }.getOrNull()
     }
 
     val curseForgeDeferred = async(Dispatchers.IO) {
         runCatching {
-            getVersionByLocalFileFromCurseForge(file)
-                .data.exactMatches
-                ?.takeIf { it.isNotEmpty() }
-                ?.firstOrNull()
-                ?.file
+            mirroredPlatformSearcher(
+                searchers = mirroredCurseForgeSource()
+            ) { searcher ->
+                searcher.getVersionByLocalFile(file, sha1)
+            }
         }.getOrNull()
     }
 

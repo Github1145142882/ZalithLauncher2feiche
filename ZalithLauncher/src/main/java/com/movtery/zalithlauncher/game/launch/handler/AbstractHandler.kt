@@ -22,10 +22,9 @@ import android.view.KeyEvent
 import android.view.Surface
 import androidx.annotation.CallSuper
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.IntRect
-import androidx.compose.ui.unit.IntSize
 import com.movtery.zalithlauncher.game.launch.Launcher
+import com.movtery.zalithlauncher.ui.control.input.TextInputMode
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import kotlinx.coroutines.CoroutineScope
@@ -38,7 +37,6 @@ abstract class AbstractHandler(
     val type: HandlerType,
     protected val errorViewModel: ErrorViewModel,
     protected val eventViewModel: EventViewModel,
-    protected val getWindowSize: () -> IntSize,
     val launcher: Launcher,
     val onExit: (code: Int) -> Unit
 ) {
@@ -65,8 +63,6 @@ abstract class AbstractHandler(
 
     @Composable
     abstract fun ComposableLayout(
-        surfaceOffset: Offset,
-        incrementScreenOffset: (Offset) -> Unit,
-        resetScreenOffset: () -> Unit
+        textInputMode: TextInputMode
     )
 }

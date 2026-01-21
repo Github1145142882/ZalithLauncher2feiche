@@ -33,7 +33,6 @@ import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.loadAllSettings
 import com.movtery.zalithlauncher.utils.checkStoragePermissionsForInit
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
-import kotlin.math.max
 import kotlin.math.min
 
 open class BaseComponentActivity(
@@ -54,6 +53,8 @@ open class BaseComponentActivity(
             Renderers.init()
             //加载插件
             PluginLoader.loadAllPlugins(this, false)
+            //刷新其他内容
+            refreshData()
         }
     }
 
@@ -62,9 +63,6 @@ open class BaseComponentActivity(
         super.onResume()
         loadAllSettings(this, true)
         checkStoragePermissions()
-        if (refreshData) {
-            refreshData()
-        }
     }
 
     override fun onAttachedToWindow() {
@@ -101,30 +99,18 @@ open class BaseComponentActivity(
      */
     @Suppress("DEPRECATION")
     fun getDisplayMetrics(): DisplayMetrics {
-        val displayMetrics = DisplayMetrics()
-
+        var displayMetrics = DisplayMetrics()
         if (isInMultiWindowMode || isInPictureInPictureMode) {
-            //For devices with free form/split screen, we need window size, not screen size.
-            displayMetrics.setTo(resources.displayMetrics)
+            displayMetrics = resources.displayMetrics
         } else {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 display.getRealMetrics(displayMetrics)
-            } else { // Removed the clause for devices with unofficial notch support, since it also ruins all devices with virtual nav bars before P
+            } else {
                 windowManager.defaultDisplay.getRealMetrics(displayMetrics)
             }
-
-            if (getWindowMode() == WindowMode.DEFAULT && notchSize > 0) {
-                val orientation = resources.configuration.orientation
-
-                when (orientation) {
-                    Configuration.ORIENTATION_PORTRAIT -> {
-                        displayMetrics.heightPixels = max(1, displayMetrics.heightPixels - notchSize)
-                    }
-                    Configuration.ORIENTATION_LANDSCAPE -> {
-                        displayMetrics.widthPixels = max(1, displayMetrics.widthPixels - notchSize)
-                    }
-                    else -> {}
-                }
+            if (getWindowMode() == WindowMode.DEFAULT) {
+                if (resources.configuration.orientation == Configuration.ORIENTATION_PORTRAIT) displayMetrics.heightPixels -= notchSize
+                else displayMetrics.widthPixels -= notchSize
             }
         }
         return displayMetrics

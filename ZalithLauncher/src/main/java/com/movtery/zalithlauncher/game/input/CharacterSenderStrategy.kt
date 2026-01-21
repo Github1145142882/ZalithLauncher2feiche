@@ -31,6 +31,9 @@ interface CharacterSenderStrategy {
     /** Called when we want to send enter specifically  */
     fun sendEnter()
 
+    /** Called when the Tab key is pressed */
+    fun sendTab()
+
     /** Called when the left arrow key is pressed */
     fun sendLeft()
 
@@ -71,4 +74,16 @@ interface CharacterSenderStrategy {
      * Called when the "Select All" action needs to be triggered, typically selects all available text or content
      */
     fun sendSelectAll()
+
+    /**
+     * Called when the Shift modifier key needs to be sent or toggled
+     * Typically used to modify the behavior of subsequent key or character inputs
+     */
+    fun sendModifierShift(press: Boolean)
+
+    /**
+     * Called when the Control (Ctrl) modifier key needs to be sent or toggled
+     * Typically used for shortcut combinations such as copy, paste, or other control commands
+     */
+    fun sendModifierCtrl(press: Boolean)
 }
