@@ -1047,4 +1047,7 @@
     <string name="game_styles_joystick_deadzone">ジョイスティックのデッドゾーン範囲</string>
     <string name="control_editor_special_joystick_style_tip_title">ジョイスティックが作れませんか？</string>
     <string name="control_editor_special_joystick_style_tip_summary">実装がとても複雑なため、コントロールレイアウトシステムはジョイスティックコンポーネントを直接統合できません。ジョイスティックコンポーネントを使用するには、ゲーム内メニューでジョイスティックコンポーネントを有効にすることしかできません。ただし、コントロールレイアウトを通してジョイスティックコンポーネントの見た目をカスタマイズし、一貫したスタイルにすることは可能です。</string>
+    <string name="settings_launcher_mirror_assets_search_title">アセットプラットフォームの検索ソース</string>
+    <string name="settings_launcher_mirror_assets_download_title">アセットプラットフォームのダウンロードソース</string>
+    <string name="about_acknowledgements_mcim_text">%s はMCIMミラーソースを使っています</string>
 </resources>
