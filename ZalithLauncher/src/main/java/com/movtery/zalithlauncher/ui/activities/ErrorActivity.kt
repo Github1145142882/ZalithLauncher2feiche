@@ -52,6 +52,8 @@ import com.movtery.zalithlauncher.game.launch.LogName
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.path.createOkHttpClient
 import com.movtery.zalithlauncher.path.createRequestBuilder
+import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
 import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.ScalingActionButton
@@ -60,17 +62,16 @@ import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.getParcelableSafely
 import com.movtery.zalithlauncher.utils.getSerializableSafely
+import com.movtery.zalithlauncher.utils.isChinese
 import com.movtery.zalithlauncher.utils.network.openLink
 import com.movtery.zalithlauncher.utils.string.throwableToString
+import com.movtery.zalithlauncher.viewmodel.ErrorActivityViewModel
+import com.movtery.zalithlauncher.viewmodel.ErrorOperation
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
-import okhttp3.FormBody
 import java.io.File
-import java.util.Locale
 
 private const val BUNDLE_EXIT_TYPE = "BUNDLE_EXIT_TYPE"
 private const val BUNDLE_THROWABLE = "BUNDLE_THROWABLE"
@@ -136,9 +137,32 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
 
         val canRestart: Boolean = extras.getBoolean(BUNDLE_CAN_RESTART, true)
 
+        val viewModel: ErrorActivityViewModel by viewModels()
+
         setContent {
             ZalithLauncherTheme {
-                var uploadResultUrl by remember { mutableStateOf<String?>(null) }
+                val operation = viewModel.errorOperation
+
+                LaunchedEffect(operation) {
+                    when (operation) {
+                        is ErrorOperation.Uploading -> {
+                            Toast.makeText(
+                                this@ErrorActivity,
+                                R.string.crash_uploading_logs,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        is ErrorOperation.UploadFailed -> {
+                            Toast.makeText(
+                                this@ErrorActivity,
+                                getString(R.string.crash_upload_logs_failed, operation.error),
+                                Toast.LENGTH_LONG
+                            ).show()
+                            viewModel.resetOperation()
+                        }
+                        else -> {}
+                    }
+                }
 
                 Box {
                     ErrorScreen(
@@ -153,64 +177,7 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
                             }
                         },
                         onUploadLogsClick = {
-                            if (logFile.exists() && logFile.isFile) {
-                                lifecycleScope.launch {
-                                    try {
-                                        Toast.makeText(
-                                            this@ErrorActivity,
-                                            R.string.crash_uploading_logs,
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                        val logContent =
-                                            withContext(Dispatchers.IO) { logFile.readText() }
-
-                                        val locale = Locale.getDefault()
-                                        val isChinese = locale.language == "zh"
-                                        val apiUrl =
-                                            if (isChinese) "https://api.mclogs.lemwood.icu/1/log" else "https://api.mclo.gs/1/log"
-
-                                        val formBody = FormBody.Builder()
-                                            .add("content", logContent)
-                                            .build()
-
-                                        val request = createRequestBuilder(apiUrl, formBody).build()
-                                        val client = createOkHttpClient()
-
-                                        val response = withContext(Dispatchers.IO) {
-                                            client.newCall(request).execute().use { resp ->
-                                                if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
-                                                val body = resp.body?.string()
-                                                    ?: throw Exception("Empty body")
-                                                Json {
-                                                    ignoreUnknownKeys = true
-                                                }.decodeFromString<MclogsResponse>(body)
-                                            }
-                                        }
-
-                                        if (response.success && response.url != null) {
-                                            uploadResultUrl = response.url
-                                        } else {
-                                            Toast.makeText(
-                                                this@ErrorActivity,
-                                                getString(
-                                                    R.string.crash_upload_logs_failed,
-                                                    response.error ?: "Unknown error"
-                                                ),
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    } catch (e: Exception) {
-                                        Toast.makeText(
-                                            this@ErrorActivity,
-                                            getString(
-                                                R.string.crash_upload_logs_failed,
-                                                e.message ?: "Unknown error"
-                                            ),
-                                            Toast.LENGTH_LONG
-                                        ).show()
-                                    }
-                                }
-                            }
+                            viewModel.uploadLogs(this@ErrorActivity, logFile)
                         },
                         onRestartClick = {
                             ProcessPhoenix.triggerRebirth(this@ErrorActivity)
@@ -218,9 +185,9 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
                         onExitClick = { finish() }
                     )
 
-                    if (uploadResultUrl != null) {
-                        val url = uploadResultUrl!!
-                        Dialog(onDismissRequest = { uploadResultUrl = null }) {
+                    if (operation is ErrorOperation.UploadSuccess) {
+                        val url = operation.url
+                        Dialog(onDismissRequest = { viewModel.resetOperation() }) {
                             Surface(
                                 shape = MaterialTheme.shapes.extraLarge,
                                 shadowElevation = 6.dp,
@@ -248,7 +215,7 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
                                     val options = listOf(
                                         R.string.crash_upload_option_open to {
                                             openLink(url)
-                                            uploadResultUrl = null
+                                            viewModel.resetOperation()
                                         },
                                         R.string.crash_upload_option_copy to {
                                             val clipboard =
@@ -260,7 +227,7 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
                                                 getString(R.string.generic_copy_success),
                                                 Toast.LENGTH_SHORT
                                             ).show()
-                                            uploadResultUrl = null
+                                            viewModel.resetOperation()
                                         },
                                         R.string.crash_upload_option_share to {
                                             val shareIntent = Intent(Intent.ACTION_SEND).apply {
@@ -279,9 +246,9 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
                                                     getString(R.string.crash_upload_option_share)
                                                 )
                                             )
-                                            uploadResultUrl = null
+                                            viewModel.resetOperation()
                                         },
-                                        R.string.generic_cancel to { uploadResultUrl = null }
+                                        R.string.generic_cancel to { viewModel.resetOperation() }
                                     )
 
                                     options.forEach { (resId, action) ->
@@ -307,13 +274,6 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
         val crashType: CrashType
     )
 }
-
-@Serializable
-private data class MclogsResponse(
-    val success: Boolean,
-    val url: String? = null,
-    val error: String? = null
-)
 
 /**
  * 崩溃类型
