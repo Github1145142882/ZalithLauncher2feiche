@@ -814,7 +814,7 @@
     <string name="versions_config_microphone_check_title">Periksa Mikrofon</string>
     <string name="saves_manage_import_unpacking">Membongkar dunia: %s</string>
     <string name="saves_manage_import_failed">Terjadi kesalahan saat mengimpor dunia</string>
-    <string name="control_editor_layers_merge_downward">Gabungkan Lapisan Ke bawah</string>
+    <string name="control_editor_layers_merge_downward">Gabungkan Lapisan Kebawah</string>
     <string name="cape_name_home">Beranda</string>
     <string name="cape_name_mojang_office">Kantor Mojang</string>
     <string name="theme_color_picker_edit_hex">Atur Hex</string>
@@ -956,7 +956,7 @@
     <string name="control_editor_menu_preview_is_mouse">Menggunakan mouse fisik</string>
     <string name="control_editor_menu_preview_is_gamepad">Menggunakan gamepad</string>
     <string name="control_editor_layers_attribute_hide_when_mouse">Tetap terlihat saat menggunakan mouse</string>
-    <string name="control_editor_layers_attribute_hide_when_gamepad">Selalu terlihat saat menggunakan gamepad</string>
+    <string name="control_editor_layers_attribute_hide_when_gamepad">Tetap terlihat saat menggunakan gamepad</string>
     <string name="control_editor_edit_text_alignment">Posisi Teks</string>
     <string name="control_editor_edit_hide_layers">Paksa Sembunyikan Lapisan Kontrol</string>
     <string name="control_editor_edit_show_layers">Paksa Tampilkan Lapisan Kontrol</string>
@@ -1040,11 +1040,14 @@
     <string name="upgrade_version_size">Ukuran: %s</string>
     <string name="upgrade_version_create_at">Terakhir Diperbarui: %s</string>
     <string name="upgrade_get_remote_failed">Gagal cek pembaruan. Coba lagi nanti.</string>
-    <string name="upgrade_is_latest">Kamu sudah menggunakan versi terbaru.</string>
+    <string name="upgrade_is_latest">Kamu sudah menggunakan versi terbaru</string>
     <string name="game_styles_joystick_deadzone">Rentang Deadzone Joystick</string>
     <string name="control_editor_special_joystick_style_tip_summary">Karena tingkat implementasinya cukup rumit, sistem layout kontrol belum bisa langsung mengintegrasikan komponen joystick. Untuk pakai joystick, kamu hanya bisa mengaktifkan joystick universal lewat menu di dalam game. Meski begitu, kamu tetap bisa menentukan tampilan joystick lewat layout kontrol supaya gayanya tetap konsisten.</string>
     <string name="upgrade_cloud_drive">Penyimpanan Cloud</string>
     <string name="cape_name_zombie_horse">Kuda Zombi</string>
     <string name="control_editor_edit_text_size_custom">Ukuran Teks Kustom</string>
     <string name="control_editor_special_joystick_style_tip_title">Tidak bisa membuat joystick?</string>
+    <string name="settings_launcher_mirror_assets_search_title">Sumber Pencarian Platform Aset</string>
+    <string name="settings_launcher_mirror_assets_download_title">Sumber Unduhan Platform Aset</string>
+    <string name="about_acknowledgements_mcim_text">%s menggunakan sumber mirror MCIM</string>
 </resources>
