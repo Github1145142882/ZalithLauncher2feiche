@@ -11,7 +11,11 @@
     <string name="generic_delete">刪除</string>
     <string name="generic_rename">重新命名</string>
     <string name="generic_copy">複製</string>
+<<<<<<< HEAD
     <string name="generic_copy_success">已複製到剪貼板</string>
+=======
+    <string name="generic_copy_success">複製成功</string>
+>>>>>>> 16ea2547141f71f353c0f92a8e5dedcc91aebe76
     <string name="generic_paste">貼上</string>
     <string name="generic_more">更多</string>
     <string name="generic_setting">設定</string>

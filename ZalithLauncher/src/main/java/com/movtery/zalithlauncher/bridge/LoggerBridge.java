@@ -47,4 +47,8 @@ public final class LoggerBridge {
         String logText = "==================== " + title + " ====================";
         append(logText);
     }
+
+    static {
+        NativeLibraryLoader.loadPojavLib();
+    }
 }

@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.core.app.NotificationCompat
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.bridge.LoggerBridge
+import com.movtery.zalithlauncher.bridge.NativeLibraryLoader
 import com.movtery.zalithlauncher.game.launch.JvmLaunchInfo
 import com.movtery.zalithlauncher.game.launch.JvmLauncher
 import com.movtery.zalithlauncher.game.launch.Launcher
@@ -134,7 +135,7 @@ class JvmService : Service() {
     ): Unit = withContext(Dispatchers.IO) {
         withContext(Dispatchers.Main) {
             //在主线程加载 exec
-            System.loadLibrary("pojavexec")
+            NativeLibraryLoader.loadPojavLib()
         }
 
         //开始记录日志

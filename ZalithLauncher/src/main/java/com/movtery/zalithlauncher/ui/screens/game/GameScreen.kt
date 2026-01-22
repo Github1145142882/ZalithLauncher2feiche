@@ -266,7 +266,7 @@ private class GameViewModel(
                 //游戏内文本发送事件
                 if (pressed) {
                     val text = event.key
-                    val inGame = ZLBridgeStates.cursorMode == CURSOR_DISABLED
+                    val inGame = ZLBridgeStates.cursorMode.value == CURSOR_DISABLED
                     gameTextSender.send(GameTextSender.Data(text, inGame))
                 }
                 return
@@ -522,8 +522,9 @@ fun GameScreen(
         eventViewModel.sendEvent(EventViewModel.Event.Game.SwitchIme(mode))
     }
     val editorViewModel = rememberEditorViewModel("ControlEditor_Times=${viewModel.editorRefresh}")
-    val isGrabbing = remember(ZLBridgeStates.cursorMode) {
-        ZLBridgeStates.cursorMode == CURSOR_DISABLED
+    val cursorMode by ZLBridgeStates.cursorMode.collectAsStateWithLifecycle()
+    val isGrabbing = remember(cursorMode) {
+        cursorMode == CURSOR_DISABLED
     }
     val joystickMovementViewModel: JoystickMovementViewModel = viewModel()
     val terracottaViewModel = rememberTerracottaViewModel(
@@ -622,6 +623,7 @@ fun GameScreen(
                 MouseControlLayout(
                     isTouchProxyEnabled = isTouchProxyEnabled,
                     modifier = Modifier.fillMaxSize(),
+                    cursorMode = cursorMode,
                     screenSize = screenSize,
                     onInputAreaRectUpdated = onInputAreaRectUpdated,
                     textInputMode = textInputMode,
@@ -886,6 +888,7 @@ private fun GameInfoBox(
 /**
  * 鼠标控制层
  * @param isTouchProxyEnabled 是否启用控制代理（TouchController模组支持）
+ * @param cursorMode 当前鼠标模式
  * @param textInputMode 输入法状态
  * @param isMoveOnlyPointer 检查指针是否被标记为仅处理滑动事件
  * @param onOccupiedPointer 标记指针已被占用
@@ -897,6 +900,7 @@ private fun GameInfoBox(
 private fun MouseControlLayout(
     isTouchProxyEnabled: Boolean,
     modifier: Modifier = Modifier,
+    cursorMode: Int,
     screenSize: IntSize,
     onInputAreaRectUpdated: (IntRect?) -> Unit,
     textInputMode: TextInputMode,
@@ -930,7 +934,7 @@ private fun MouseControlLayout(
         SwitchableMouseLayout(
             modifier = Modifier.fillMaxSize(),
             screenSize = screenSize,
-            cursorMode = ZLBridgeStates.cursorMode,
+            cursorMode = cursorMode,
             onTouch = onTouch,
             onMouse = onMouseMoved,
             gamepadViewModel = gamepadViewModel,

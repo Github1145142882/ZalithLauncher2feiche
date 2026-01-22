@@ -18,34 +18,46 @@
 
 package com.movtery.zalithlauncher.bridge
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.input.pointer.PointerIcon
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import android.view.PointerIcon as NativePointerIcon
 
 object ZLBridgeStates {
-    /**
-     * 状态：指针模式（启用、禁用）
-     */
-    @JvmStatic
-    var cursorMode by mutableIntStateOf(CURSOR_ENABLED)
+
+    private val _cursorMode = MutableStateFlow(CURSOR_ENABLED)
+    /** 状态：指针模式（启用、禁用） */
+    val cursorMode = _cursorMode.asStateFlow()
 
     /**
-     * 状态：指针形状
+     * 变更指针模式
      */
     @JvmStatic
-    var cursorShape by mutableStateOf(CursorShape.Arrow)
+    fun changeCursorMode(mode: Int) {
+        require(mode in 0..1)
+        this._cursorMode.update { mode }
+    }
+
+    private val _cursorShape = MutableStateFlow(CursorShape.Arrow)
+    /** 状态：指针形状 */
+    val cursorShape = _cursorShape.asStateFlow()
 
     /**
-     * 状态：窗口变更刷新key
+     * 变更指针形状
      */
     @JvmStatic
-    var windowChangeKey by mutableStateOf(false)
+    fun changeCursorShape(shape: CursorShape) {
+        _cursorShape.update { shape }
+    }
+
+    @JvmStatic
+    private val _windowChangeKey = MutableStateFlow(false)
+    /** 状态：窗口变更刷新key */
+    val windowChangeKey = _windowChangeKey.asStateFlow()
 
     fun onWindowChange() {
-        this.windowChangeKey = !this.windowChangeKey
+        this._windowChangeKey.update { old -> old.not() }
     }
 }
 

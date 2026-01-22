@@ -39,6 +39,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.gif.GifDecoder
@@ -174,7 +175,7 @@ fun VirtualPointerLayout(
     }
 
     Box(modifier = modifier) {
-        val cursorShape = ZLBridgeStates.cursorShape
+        val cursorShape by ZLBridgeStates.cursorShape.collectAsStateWithLifecycle()
 
         if (showMousePointer) {
             MousePointer(

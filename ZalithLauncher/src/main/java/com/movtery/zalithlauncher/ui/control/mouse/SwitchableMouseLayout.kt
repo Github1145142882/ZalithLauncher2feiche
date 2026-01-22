@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.movtery.zalithlauncher.bridge.CURSOR_DISABLED
 import com.movtery.zalithlauncher.bridge.CURSOR_ENABLED
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates
@@ -211,7 +212,7 @@ fun SwitchableMouseLayout(
     }
 
     Box(modifier = modifier) {
-        val cursorShape = ZLBridgeStates.cursorShape
+        val cursorShape by ZLBridgeStates.cursorShape.collectAsStateWithLifecycle()
 
         if (showMousePointer) {
             MousePointer(

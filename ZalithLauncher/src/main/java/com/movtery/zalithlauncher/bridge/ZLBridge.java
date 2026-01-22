@@ -80,8 +80,8 @@ public final class ZLBridge {
     @Keep public static native int chdir(String path);
 
     static {
-        System.loadLibrary("exithook");
-        System.loadLibrary("pojavexec");
-        System.loadLibrary("pojavexec_awt");
+        NativeLibraryLoader.loadExitHookLib();
+        NativeLibraryLoader.loadPojavLib();
+        NativeLibraryLoader.loadPojavAWTLib();
     }
 }
