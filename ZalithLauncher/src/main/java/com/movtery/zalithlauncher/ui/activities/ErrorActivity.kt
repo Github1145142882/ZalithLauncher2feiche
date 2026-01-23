@@ -62,14 +62,10 @@ import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.getParcelableSafely
 import com.movtery.zalithlauncher.utils.getSerializableSafely
-import com.movtery.zalithlauncher.utils.isChinese
 import com.movtery.zalithlauncher.utils.network.openLink
 import com.movtery.zalithlauncher.utils.string.throwableToString
 import com.movtery.zalithlauncher.viewmodel.ErrorActivityViewModel
 import com.movtery.zalithlauncher.viewmodel.ErrorOperation
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize
 import java.io.File
 
@@ -94,6 +90,7 @@ fun showExitMessage(context: Context, code: Int, isSignal: Boolean) {
 private data class JvmCrash(val code: Int, val isSignal: Boolean): Parcelable
 
 class ErrorActivity : BaseComponentActivity(refreshData = false) {
+    private val viewModel: ErrorActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,11 +134,9 @@ class ErrorActivity : BaseComponentActivity(refreshData = false) {
 
         val canRestart: Boolean = extras.getBoolean(BUNDLE_CAN_RESTART, true)
 
-        val viewModel: ErrorActivityViewModel by viewModels()
-
         setContent {
             ZalithLauncherTheme {
-                val operation = viewModel.errorOperation
+                val operation = viewModel.operation
 
                 LaunchedEffect(operation) {
                     when (operation) {
