@@ -65,8 +65,16 @@ class ErrorActivityViewModel : ViewModel() {
 
                 val response = withContext(Dispatchers.IO) {
                     client.newCall(request).execute().use { resp ->
-                        if (!resp.isSuccessful) throw Exception("HTTP ${resp.code}")
                         val body = resp.body?.string() ?: throw Exception("Empty body")
+                        if (!resp.isSuccessful) {
+                            // 尝试解析错误信息，如果解析失败则抛出 HTTP 状态码
+                            val errorMsg = try {
+                                json.decodeFromString<MclogsResponse>(body).error
+                            } catch (_: Exception) {
+                                null
+                            }
+                            throw Exception(errorMsg ?: "HTTP ${resp.code}")
+                        }
                         json.decodeFromString<MclogsResponse>(body)
                     }
                 }
