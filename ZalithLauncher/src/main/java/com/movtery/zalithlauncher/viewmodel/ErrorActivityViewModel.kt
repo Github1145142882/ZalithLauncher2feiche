@@ -65,7 +65,21 @@ class ErrorActivityViewModel : ViewModel() {
 
                 val response = withContext(Dispatchers.IO) {
                     client.newCall(request).execute().use { resp ->
-                        val body = resp.body?.string() ?: throw Exception("Empty body")
+                        val rawBody = resp.body?.string() ?: throw Exception("Empty body")
+                        
+                        // 清洗响应内容：提取第一个 { 和最后一个 } 之间的 JSON 部分
+                        val body = try {
+                            val startIndex = rawBody.indexOf('{')
+                            val endIndex = rawBody.lastIndexOf('}')
+                            if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+                                rawBody.substring(startIndex, endIndex + 1)
+                            } else {
+                                rawBody
+                            }
+                        } catch (_: Exception) {
+                            rawBody
+                        }
+
                         if (!resp.isSuccessful) {
                             // 尝试解析错误信息，如果解析失败则抛出 HTTP 状态码
                             val errorMsg = try {
@@ -75,7 +89,22 @@ class ErrorActivityViewModel : ViewModel() {
                             }
                             throw Exception(errorMsg ?: "HTTP ${resp.code}")
                         }
-                        json.decodeFromString<MclogsResponse>(body)
+                        
+                        val mclogsResponse = json.decodeFromString<MclogsResponse>(body)
+                        
+                        // 补全 URL：处理国内站返回相对路径的问题
+                        if (mclogsResponse.success && mclogsResponse.url != null) {
+                            if (mclogsResponse.url.startsWith("/")) {
+                                val baseUrl = if (isChinese) "https://mclogs.lemwood.icu" else "https://mclo.gs"
+                                // 移除重复的斜杠并拼接
+                                val fixedUrl = mclogsResponse.url.replace("/#/", "/")
+                                mclogsResponse.copy(url = baseUrl + fixedUrl)
+                            } else {
+                                mclogsResponse
+                            }
+                        } else {
+                            mclogsResponse
+                        }
                     }
                 }
 
