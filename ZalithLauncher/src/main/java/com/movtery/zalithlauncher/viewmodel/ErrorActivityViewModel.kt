@@ -92,16 +92,18 @@ class ErrorActivityViewModel : ViewModel() {
                         
                         val mclogsResponse = json.decodeFromString<MclogsResponse>(body)
                         
-                        // 补全 URL：处理国内站返回相对路径的问题
-                        if (mclogsResponse.success && mclogsResponse.url != null) {
-                            if (mclogsResponse.url.startsWith("/")) {
-                                val baseUrl = if (isChinese) "https://mclogs.lemwood.icu" else "https://mclo.gs"
-                                // 移除重复的斜杠并拼接
-                                val fixedUrl = mclogsResponse.url.replace("/#/", "/")
-                                mclogsResponse.copy(url = baseUrl + fixedUrl)
+                        // 补全 URL：统一处理 mclogs.lemwood.icu 和 mclo.gs 的返回格式
+                        if (mclogsResponse.success && (mclogsResponse.url != null || mclogsResponse.id != null)) {
+                            val baseUrl = if (isChinese) "https://mclogs.lemwood.icu" else "https://mclo.gs"
+                            val id = mclogsResponse.id ?: mclogsResponse.url?.substringAfterLast("/") ?: ""
+                            
+                            // 统一构造符合 Hash Mode 的 URL (国内站必须带 /#/)
+                            val finalUrl = if (isChinese) {
+                                "$baseUrl/#/$id"
                             } else {
-                                mclogsResponse
+                                "$baseUrl/$id"
                             }
+                            mclogsResponse.copy(url = finalUrl)
                         } else {
                             mclogsResponse
                         }
