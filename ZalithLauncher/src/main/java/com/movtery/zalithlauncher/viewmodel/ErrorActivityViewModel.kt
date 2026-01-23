@@ -54,72 +54,107 @@ class ErrorActivityViewModel : ViewModel() {
             try {
                 val logContent = withContext(Dispatchers.IO) { logFile.readText() }
                 val isChinese = isChinese(context)
-                val apiUrl = if (isChinese) "https://api.mclogs.lemwood.icu/1/log" else "https://api.mclo.gs/1/log"
+                
+                // 定义主备 API 列表
+                val apiConfigs = if (isChinese) {
+                    listOf(
+                        ApiConfig("https://api.mclogs.lemwood.icu/1/log", "https://mclogs.lemwood.icu", true),
+                        ApiConfig("https://api.mclo.gs/1/log", "https://mclo.gs", false)
+                    )
+                } else {
+                    listOf(
+                        ApiConfig("https://api.mclo.gs/1/log", "https://mclo.gs", false),
+                        ApiConfig("https://api.mclogs.lemwood.icu/1/log", "https://mclogs.lemwood.icu", true)
+                    )
+                }
 
-                val formBody = FormBody.Builder()
-                    .add("content", logContent)
-                    .build()
+                var lastException: Exception? = null
+                var successResponse: MclogsResponse? = null
 
-                val request = createRequestBuilder(apiUrl, formBody).build()
                 val client = createOkHttpClient()
 
-                val response = withContext(Dispatchers.IO) {
-                    client.newCall(request).execute().use { resp ->
-                        val rawBody = resp.body?.string() ?: throw Exception("Empty body")
-                        
-                        // 清洗响应内容：提取第一个 { 和最后一个 } 之间的 JSON 部分
-                        val body = try {
-                            val startIndex = rawBody.indexOf('{')
-                            val endIndex = rawBody.lastIndexOf('}')
-                            if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
-                                rawBody.substring(startIndex, endIndex + 1)
-                            } else {
-                                rawBody
+                // 遍历尝试 API
+                for (config in apiConfigs) {
+                    try {
+                        val formBody = FormBody.Builder()
+                            .add("content", logContent)
+                            .build()
+
+                        val request = createRequestBuilder(config.apiUrl, formBody).build()
+
+                        val response = withContext(Dispatchers.IO) {
+                            client.newCall(request).execute().use { resp ->
+                                val rawBody = resp.body?.string() ?: throw Exception("Empty body")
+                                
+                                // 清洗响应内容：提取第一个 { 和最后一个 } 之间的 JSON 部分
+                                val body = try {
+                                    val startIndex = rawBody.indexOf('{')
+                                    val endIndex = rawBody.lastIndexOf('}')
+                                    if (startIndex != -1 && endIndex != -1 && endIndex > startIndex) {
+                                        rawBody.substring(startIndex, endIndex + 1)
+                                    } else {
+                                        rawBody
+                                    }
+                                } catch (_: Exception) {
+                                    rawBody
+                                }
+
+                                if (!resp.isSuccessful) {
+                                    val errorMsg = try {
+                                        json.decodeFromString<MclogsResponse>(body).error
+                                    } catch (_: Exception) {
+                                        null
+                                    }
+                                    throw Exception(errorMsg ?: "HTTP ${resp.code}")
+                                }
+                                
+                                val mclogsResponse = json.decodeFromString<MclogsResponse>(body)
+                                
+                                // 补齐 URL：统一处理 mclogs.lemwood.icu 和 mclo.gs 的返回格式
+                                if (mclogsResponse.success && (mclogsResponse.url != null || mclogsResponse.id != null)) {
+                                    val id = mclogsResponse.id ?: mclogsResponse.url?.substringAfterLast("/") ?: ""
+                                    
+                                    // 统一构造符合 Hash Mode 的 URL (国内站必须带 /#/)
+                                    val finalUrl = if (config.isHashMode) {
+                                        "${config.baseUrl}/#/$id"
+                                    } else {
+                                        "${config.baseUrl}/$id"
+                                    }
+                                    mclogsResponse.copy(url = finalUrl)
+                                } else {
+                                    mclogsResponse
+                                }
                             }
-                        } catch (_: Exception) {
-                            rawBody
                         }
 
-                        if (!resp.isSuccessful) {
-                            // 尝试解析错误信息，如果解析失败则抛出 HTTP 状态码
-                            val errorMsg = try {
-                                json.decodeFromString<MclogsResponse>(body).error
-                            } catch (_: Exception) {
-                                null
-                            }
-                            throw Exception(errorMsg ?: "HTTP ${resp.code}")
-                        }
-                        
-                        val mclogsResponse = json.decodeFromString<MclogsResponse>(body)
-                        
-                        // 补全 URL：统一处理 mclogs.lemwood.icu 和 mclo.gs 的返回格式
-                        if (mclogsResponse.success && (mclogsResponse.url != null || mclogsResponse.id != null)) {
-                            val baseUrl = if (isChinese) "https://mclogs.lemwood.icu" else "https://mclo.gs"
-                            val id = mclogsResponse.id ?: mclogsResponse.url?.substringAfterLast("/") ?: ""
-                            
-                            // 统一构造符合 Hash Mode 的 URL (国内站必须带 /#/)
-                            val finalUrl = if (isChinese) {
-                                "$baseUrl/#/$id"
-                            } else {
-                                "$baseUrl/$id"
-                            }
-                            mclogsResponse.copy(url = finalUrl)
+                        if (response.success && response.url != null) {
+                            successResponse = response
+                            break // 成功则跳出循环
                         } else {
-                            mclogsResponse
+                            throw Exception(response.error ?: "Unknown error")
                         }
+                    } catch (e: Exception) {
+                        lastException = e
+                        continue // 失败则尝试下一个 API
                     }
                 }
 
-                if (response.success && response.url != null) {
-                    operation = ErrorOperation.UploadSuccess(response.url)
+                if (successResponse != null) {
+                    operation = ErrorOperation.UploadSuccess(successResponse.url!!)
                 } else {
-                    operation = ErrorOperation.UploadFailed(response.error ?: "Unknown error")
+                    operation = ErrorOperation.UploadFailed(lastException?.message ?: "All APIs failed")
                 }
             } catch (e: Exception) {
                 operation = ErrorOperation.UploadFailed(e.message ?: "Unknown error")
             }
         }
     }
+
+    private data class ApiConfig(
+        val apiUrl: String,
+        val baseUrl: String,
+        val isHashMode: Boolean
+    )
 
     fun resetOperation() {
         operation = ErrorOperation.None
@@ -129,6 +164,7 @@ class ErrorActivityViewModel : ViewModel() {
     private data class MclogsResponse(
         val success: Boolean,
         val url: String? = null,
+        val id: String? = null,
         val error: String? = null
     )
 }
