@@ -357,6 +357,9 @@
     <string name="game_button_log_output">Log Output</string>
     <string name="game_button_mouse_left">Left Click</string>
     <string name="game_button_mouse_right">Right Click</string>
+    <string name="game_input_proxy_mode_default">Real-time Mode</string>
+    <string name="game_input_proxy_mode_simple">Simple Mode</string>
+    <string name="game_input_proxy_mode_send">Send Mode</string>
     <string name="game_dialog_force_close_message">Are you sure you want to force close and return to the main screen?</string>
     <string name="game_loading">The game is running, waiting for the game screen to appear</string>
     <string name="game_loading_version_name">Game Version: %s</string>

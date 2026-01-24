@@ -319,6 +319,9 @@
     <string name="game_button_log_output">日誌輸出</string>
     <string name="game_button_mouse_left">滑鼠左鍵</string>
     <string name="game_button_mouse_right">滑鼠右鍵</string>
+    <string name="game_input_proxy_mode_default">即時模式</string>
+    <string name="game_input_proxy_mode_simple">簡單模式</string>
+    <string name="game_input_proxy_mode_send">傳送模式</string>
     <string name="game_dialog_force_close_message">您確定要強制關閉並返回主介面嗎？</string>
     <string name="game_loading">遊戲正在執行，等待遊戲畫面出現中</string>
     <string name="game_loading_version_name">遊戲版本：%s</string>

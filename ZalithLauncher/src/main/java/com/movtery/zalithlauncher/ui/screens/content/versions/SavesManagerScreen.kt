@@ -268,17 +268,25 @@ fun SavesManagerScreen(
         return
     }
 
+    val savesDir = remember(version) {
+        File(version.getGameDir(), VersionFolders.SAVES.folderName)
+    }
+    val versionInfo = remember(version) {
+        version.getVersionInfo()!!
+    }
+    val minecraftVersion = remember(versionInfo) {
+        versionInfo.minecraftVersion
+    }
+    val quickPlay = remember(versionInfo) {
+        versionInfo.quickPlay
+    }
+
     BaseScreen(
         levels1 = listOf(
             Pair(NestedNavKey.VersionSettings::class.java, mainScreenKey)
         ),
         Triple(NormalNavKey.Versions.SavesManager, versionsScreenKey, false),
     ) { isVisible ->
-        val versionInfo = version.getVersionInfo()!!
-        val minecraftVersion = versionInfo.minecraftVersion
-        val quickPlay = versionInfo.quickPlay
-        val savesDir = File(version.getGameDir(), VersionFolders.SAVES.folderName)
-
         val viewModel = rememberSavesManageViewModel(minecraftVersion, savesDir, version)
 
         val yOffset by swapAnimateDpAsState(

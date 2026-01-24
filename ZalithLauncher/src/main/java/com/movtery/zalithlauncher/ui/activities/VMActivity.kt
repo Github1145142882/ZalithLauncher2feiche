@@ -84,6 +84,7 @@ import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
 import com.movtery.zalithlauncher.ui.base.WindowMode
 import com.movtery.zalithlauncher.ui.components.rememberBoxSize
 import com.movtery.zalithlauncher.ui.control.input.TextInputMode
+import com.movtery.zalithlauncher.ui.screens.game.elements.InputMode
 import com.movtery.zalithlauncher.ui.screens.game.elements.TextInputBar
 import com.movtery.zalithlauncher.ui.screens.game.elements.TextInputBarArea
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
@@ -256,6 +257,34 @@ class VMViewModel : ViewModel() {
         }
     }
 
+    fun sendInputText(text: String) {
+        viewModelScope.launch {
+            inputMutex.withLock {
+                if (!isInputCleaning) {
+                    withContext(Dispatchers.Main) {
+                        with(inputProxy) {
+                            text.sendText()
+                        }
+
+                        clearInputSuspend()
+                    }
+                }
+            }
+        }
+    }
+
+    private suspend fun clearInputSuspend() {
+        withContext(Dispatchers.Main) {
+            inputTextFieldState.edit {
+                replace(0, inputTextFieldState.text.length, "")
+                selection = TextRange.Zero
+            }
+        }
+
+        lastInputText = ""
+        lastInputSelection = TextRange.Zero
+    }
+
     /**
      * 清空输入栏的状态
      */
@@ -263,16 +292,7 @@ class VMViewModel : ViewModel() {
         viewModelScope.launch {
             inputMutex.withLock {
                 isInputCleaning = true
-
-                withContext(Dispatchers.Main) {
-                    inputTextFieldState.edit {
-                        replace(0, inputTextFieldState.text.length, "")
-                        selection = TextRange.Zero
-                    }
-                }
-
-                lastInputText = ""
-                lastInputSelection = TextRange.Zero
+                clearInputSuspend()
                 isInputCleaning = false
             }
         }
@@ -397,6 +417,8 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
                         TextInputBar(
                             modifier = innerModifier,
                             mode = mode,
+                            inputMode = AllSettings.textInputMode.state,
+                            onInputModeChange = { AllSettings.textInputMode.save(it) },
                             textFieldState = vmViewModel.inputTextFieldState,
                             show = vmViewModel.textInputMode == TextInputMode.ENABLE,
                             enabledActionBar = enabledActionBar,
@@ -404,6 +426,9 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
                             onClose = { vmViewModel.disableInputMode() },
                             onHandle = { text, selection ->
                                 vmViewModel.handleInputText(text, selection)
+                            },
+                            onSend = { text ->
+                                vmViewModel.sendInputText(text)
                             },
                             onClear = {
                                 vmViewModel.clearInput()
@@ -545,17 +570,33 @@ class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
             }
 
             //代理输入时同时允许处理事件
-            if (
-                isPressed &&
-                //光是检测文本的变化来判断是否退格或者方向移动是不够的
-                //如果文本为空，此处应该特殊处理，仍然对游戏发出退格按键
-                !vmViewModel.inputProxy.handleSpecialKey(event, vmViewModel.inputTextFieldState.text)
-            ) {
-                //无特殊处理的情况
-                vmViewModel.inputProxy.handleSpecialKey(event) {
-                    vmViewModel.clearInput()
+            when (AllSettings.textInputMode.getValue()) {
+                InputMode.Default -> {
+                    if (
+                        isPressed &&
+                        //光是检测文本的变化来判断是否退格或者方向移动是不够的
+                        //如果文本为空，此处应该特殊处理，仍然对游戏发出退格按键
+                        !vmViewModel.inputProxy.handleSpecialKey(event, vmViewModel.inputTextFieldState.text)
+                    ) {
+                        //无特殊处理的情况
+                        vmViewModel.inputProxy.handleSpecialKey(event) {
+                            vmViewModel.clearInput()
+                        }
+                    }
+                }
+                InputMode.Simple -> {
+                    if (isPressed) {
+                        vmViewModel.inputProxy.handleSpecialKey(event)
+                    }
+                }
+                InputMode.Send -> {
+                    if (isPressed) {
+                        //发送模式需要在文本为空时，仍然对游戏发出退格按键事件
+                        vmViewModel.inputProxy.handleSpecialKey(event, vmViewModel.inputTextFieldState.text)
+                    }
                 }
             }
+
             if (event.keyCode == KeyEvent.KEYCODE_TAB) {
                 //对于Tab键，为了避免选中其他的组件，这里应该直接拦截
                 return true
