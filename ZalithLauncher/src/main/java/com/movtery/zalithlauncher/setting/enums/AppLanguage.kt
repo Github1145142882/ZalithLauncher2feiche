@@ -12,7 +12,19 @@ enum class AppLanguage(
     FOLLOW_SYSTEM("", R.string.language_follow_system),
     ENGLISH("en", R.string.language_english),
     SIMPLIFIED_CHINESE("zh-CN", R.string.language_simplified_chinese),
-    TRADITIONAL_CHINESE("zh-TW", R.string.language_traditional_chinese)
+    TRADITIONAL_CHINESE("zh-TW", R.string.language_traditional_chinese),
+    JAPANESE("ja", R.string.language_japanese),
+    RUSSIAN("ru", R.string.language_russian),
+    VIETNAMESE("vi", R.string.language_vietnamese),
+    INDONESIAN("id", R.string.language_indonesian),
+    TURKISH("tr", R.string.language_turkish),
+    SPANISH("es", R.string.language_spanish),
+    PORTUGUESE("pt", R.string.language_portuguese),
+    ARABIC("ar", R.string.language_arabic),
+    ITALIAN("it", R.string.language_italian),
+    GERMAN("de", R.string.language_german),
+    HUNGARIAN("hu", R.string.language_hungarian),
+    BRAZILIAN_PORTUGUESE("pt-BR", R.string.language_brazilian_portuguese)
 }
 
 fun applyLanguage(tag: String) {

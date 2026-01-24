@@ -813,6 +813,7 @@
     <string name="settings_launcher_color_theme_title">顏色主題</string>
     <string name="settings_launcher_color_theme_summary">變更啟動器的整體顏色主題</string>
     <string name="settings_launcher_dark_mode_title">深色模式</string>
+    <string name="settings_launcher_language">語言</string>
     <string name="settings_launcher_full_screen_title">頁面全螢幕化</string>
     <string name="settings_launcher_full_screen_summary">使啟動器的頁面全螢幕化，忽略瀏海螢幕、挖孔螢幕等螢幕的安全區域</string>
     <string name="settings_launcher_animate_speed_title">動畫倍速</string>
@@ -1080,4 +1081,6 @@
     <string name="control_editor_special_joystick_style_joystick_size">搖桿大小</string>
     <string name="control_editor_exit_message">您確定要直接退出嗎？這將導致您的任何變更都無法被儲存。若需要儲存，請檢查編輯器選單。</string>
     <string name="control_editor_exit_confirm">直接退出</string>
+    <!-- Language -->
+    <string name="language_follow_system">跟隨系統</string>
 </resources>
