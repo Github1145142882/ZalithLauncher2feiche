@@ -1050,4 +1050,7 @@
     <string name="settings_launcher_mirror_assets_search_title">アセットプラットフォームの検索ソース</string>
     <string name="settings_launcher_mirror_assets_download_title">アセットプラットフォームのダウンロードソース</string>
     <string name="about_acknowledgements_mcim_text">%s はMCIMミラーソースを使っています</string>
+    <string name="game_input_proxy_mode_default">リアルタイムモード</string>
+    <string name="game_input_proxy_mode_simple">シンプルモード</string>
+    <string name="game_input_proxy_mode_send">送信モード</string>
 </resources>
