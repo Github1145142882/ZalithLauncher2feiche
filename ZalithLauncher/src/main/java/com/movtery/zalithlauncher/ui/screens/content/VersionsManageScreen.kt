@@ -40,7 +40,6 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -64,7 +63,6 @@ import com.movtery.zalithlauncher.game.version.installed.VersionComparator
 import com.movtery.zalithlauncher.game.version.installed.VersionType
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.game.version.installed.cleanup.GameAssetCleaner
-import com.movtery.zalithlauncher.state.MutableStates
 import com.movtery.zalithlauncher.ui.activities.MainActivity
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
@@ -103,6 +101,9 @@ private class VersionsScreenViewModel() : ViewModel() {
     /** 版本类别分类 */
     var versionCategory by mutableStateOf(VersionCategory.ALL)
         private set
+
+    /** 游戏路径相关操作 */
+    var gamePathOperation by mutableStateOf<GamePathOperation>(GamePathOperation.None)
 
     private val _versions = MutableStateFlow<List<Version>>(emptyList())
     val versions = _versions.asStateFlow()
@@ -265,6 +266,12 @@ fun VersionsManageScreen(
     val currentVersion by VersionsManager.currentVersion.collectAsStateWithLifecycle()
     val isRefreshing by VersionsManager.isRefreshing.collectAsStateWithLifecycle()
 
+    GamePathOperation(
+        gamePathOperation = viewModel.gamePathOperation,
+        changeState = { viewModel.gamePathOperation = it },
+        submitError = submitError
+    )
+
     BaseScreen(
         screenKey = NormalNavKey.VersionsManager,
         currentKey = backScreenViewModel.mainScreen.currentKey
@@ -278,14 +285,18 @@ fun VersionsManageScreen(
                         startPath = path,
                         selectFile = false,
                         saveKey = NormalNavKey.VersionsManager
-                    )
+                    ) { path ->
+                        viewModel.gamePathOperation = GamePathOperation.AddNewPath(path)
+                    }
                 },
                 onCleanupGameFiles = {
                     if (viewModel.cleanupOperation == CleanupOperation.None) {
                         viewModel.cleanupOperation = CleanupOperation.Tip
                     }
                 },
-                submitError = submitError,
+                changePathOperation = {
+                    viewModel.gamePathOperation = it
+                },
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(2.5f)
@@ -350,28 +361,13 @@ private fun LeftMenu(
     isRefreshing: Boolean,
     swapToFileSelector: (path: String) -> Unit,
     onCleanupGameFiles: () -> Unit,
-    submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
+    changePathOperation: (GamePathOperation) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val surfaceXOffset by swapAnimateDpAsState(
         targetValue = (-40).dp,
         swapIn = isVisible,
         isHorizontal = true
-    )
-
-    var gamePathOperation by remember { mutableStateOf<GamePathOperation>(GamePathOperation.None) }
-    LaunchedEffect(MutableStates.filePathSelector) {
-        MutableStates.filePathSelector?.let {
-            if (it.saveKey == NormalNavKey.VersionsManager) {
-                gamePathOperation = GamePathOperation.AddNewPath(it.path)
-                MutableStates.filePathSelector = null
-            }
-        }
-    }
-    GamePathOperation(
-        gamePathOperation = gamePathOperation,
-        changeState = { gamePathOperation = it },
-        submitError = submitError
     )
 
     Column(
@@ -410,10 +406,10 @@ private fun LeftMenu(
                         }
                     },
                     onDelete = {
-                        gamePathOperation = GamePathOperation.DeletePath(pathItem)
+                        changePathOperation(GamePathOperation.DeletePath(pathItem))
                     },
                     onRename = {
-                        gamePathOperation = GamePathOperation.RenamePath(pathItem)
+                        changePathOperation(GamePathOperation.RenamePath(pathItem))
                     }
                 )
             }
