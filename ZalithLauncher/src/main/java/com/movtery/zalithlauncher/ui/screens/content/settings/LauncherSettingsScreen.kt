@@ -173,7 +173,7 @@ fun LauncherSettingsScreen(
                         title = stringResource(R.string.settings_launcher_language),
                         getItemText = { stringResource(it.textRes) },
                         onValueChange = {
-                            applyLanguage(it.tag)
+                            applyLanguage(it)
                         }
                     )
 

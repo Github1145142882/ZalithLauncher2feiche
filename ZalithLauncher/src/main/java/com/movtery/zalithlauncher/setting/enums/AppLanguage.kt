@@ -27,9 +27,9 @@ enum class AppLanguage(
     BRAZILIAN_PORTUGUESE("pt-BR", R.string.language_brazilian_portuguese)
 }
 
-fun applyLanguage(tag: String) {
-    val appLocale = if (!tag.isEmpty()) {
-        LocaleListCompat.forLanguageTags(tag)
+fun applyLanguage(language: AppLanguage) {
+    val appLocale = if (language != AppLanguage.FOLLOW_SYSTEM) {
+        LocaleListCompat.forLanguageTags(language.tag)
     } else {
         LocaleListCompat.getEmptyLocaleList()
     }
