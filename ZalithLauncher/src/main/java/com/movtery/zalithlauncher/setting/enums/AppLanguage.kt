@@ -9,7 +9,7 @@ enum class AppLanguage(
     val tag: String,
     @param:StringRes val textRes: Int
 ) {
-    FOLLOW_SYSTEM("", R.string.language_follow_system),
+    FOLLOW_SYSTEM("", R.string.theme_dark_mode_follow_system),
     ENGLISH("en", R.string.language_english),
     SIMPLIFIED_CHINESE("zh-CN", R.string.language_simplified_chinese),
     TRADITIONAL_CHINESE("zh-TW", R.string.language_traditional_chinese),

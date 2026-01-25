@@ -1084,6 +1084,4 @@
     <!--  Url  -->
     <string name="url_wiki_minecraft_game_release">https://zh.minecraft.wiki/w/Java%%E7%%89%%88%s?variant=zh-cn</string>
     <string name="url_wiki_minecraft_game_snapshot">https://zh.minecraft.wiki/w/%s?variant=zh-cn</string>
-    <!-- Language -->
-    <string name="language_follow_system">跟随系统</string>
 </resources>

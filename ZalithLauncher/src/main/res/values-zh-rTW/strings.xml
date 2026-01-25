@@ -1081,6 +1081,4 @@
     <string name="control_editor_special_joystick_style_joystick_size">搖桿大小</string>
     <string name="control_editor_exit_message">您確定要直接退出嗎？這將導致您的任何變更都無法被儲存。若需要儲存，請檢查編輯器選單。</string>
     <string name="control_editor_exit_confirm">直接退出</string>
-    <!-- Language -->
-    <string name="language_follow_system">跟隨系統</string>
 </resources>
