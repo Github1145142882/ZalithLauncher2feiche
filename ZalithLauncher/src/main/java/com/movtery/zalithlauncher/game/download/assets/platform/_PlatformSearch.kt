@@ -99,7 +99,7 @@ suspend fun <E: AbstractPlatformSearcher, T> mirroredPlatformSearcher(
 fun mirroredCurseForgeSource(
     enabledMirror: Boolean = isChinese()
 ): List<CurseForgeSearcher> {
-    val source = AllSettings.fileDownloadSource.getValue()
+    val source = AllSettings.assetSearchSource.getValue()
     val mirrorSource = mirrorCurseForgeSearcher.takeIf { enabledMirror }
     return when (source) {
         MirrorSourceType.OFFICIAL_FIRST ->
@@ -115,7 +115,7 @@ fun mirroredCurseForgeSource(
 fun mirroredModrinthSource(
     enabledMirror: Boolean = isChinese()
 ): List<ModrinthSearcher> {
-    val source = AllSettings.fileDownloadSource.getValue()
+    val source = AllSettings.assetSearchSource.getValue()
     val mirrorSource = mirrorModrinthSearcher.takeIf { enabledMirror }
     return when (source) {
         MirrorSourceType.OFFICIAL_FIRST ->

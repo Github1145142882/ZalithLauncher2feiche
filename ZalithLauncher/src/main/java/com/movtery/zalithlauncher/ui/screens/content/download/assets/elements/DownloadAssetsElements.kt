@@ -145,6 +145,9 @@ suspend fun List<PlatformVersion>.initAll(
         version.also {
             also(it)
         }
+    }.sortedByDescending {
+        //排序：最新的版本在前
+        it.platformDatePublished()
     }
 }
 
