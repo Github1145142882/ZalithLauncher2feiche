@@ -80,7 +80,7 @@ import com.movtery.zalithlauncher.game.multirt.RuntimesManager
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
-import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
+import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.base.WindowMode
 import com.movtery.zalithlauncher.ui.components.rememberBoxSize
 import com.movtery.zalithlauncher.ui.control.input.TextInputMode
@@ -299,7 +299,7 @@ class VMViewModel : ViewModel() {
     }
 }
 
-class VMActivity : BaseComponentActivity(), SurfaceTextureListener {
+class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
     private val errorViewModel: ErrorViewModel by viewModels()
 
     private val eventViewModel: EventViewModel by viewModels()

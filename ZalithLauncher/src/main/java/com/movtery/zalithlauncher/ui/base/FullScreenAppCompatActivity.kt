@@ -29,7 +29,7 @@ enum class WindowMode {
     FULL_IMMERSIVE
 }
 
-abstract class FullScreenComponentActivity : AbstractComponentActivity() {
+abstract class FullScreenAppCompatActivity : AbstractAppCompatActivity() {
     @CallSuper
     override fun onCreate(savedInstanceState: Bundle?) {
         applyFullscreen(getWindowMode())
