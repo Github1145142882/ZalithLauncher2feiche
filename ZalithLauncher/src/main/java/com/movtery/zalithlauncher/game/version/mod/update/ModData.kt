@@ -81,8 +81,6 @@ data class ModData(
                         //是否比当前版本更新
                         version.platformDatePublished() > datePublished
                     }
-                    //排序：最新的版本在前
-                    .sortedByDescending { it.platformDatePublished() }
 
                 //获取最新的版本
                 versions.firstOrNull()?.also { version ->

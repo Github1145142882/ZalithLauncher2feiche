@@ -35,10 +35,10 @@ import com.movtery.zalithlauncher.utils.checkStoragePermissionsForInit
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
 import kotlin.math.min
 
-open class BaseComponentActivity(
+open class BaseAppCompatActivity(
     /** 是否刷新数据 */
     private val refreshData: Boolean = true
-) : FullScreenComponentActivity() {
+) : FullScreenAppCompatActivity() {
     private var notchSize = -1
 
     @CallSuper

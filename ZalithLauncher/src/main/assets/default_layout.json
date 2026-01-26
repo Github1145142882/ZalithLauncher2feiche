@@ -539,6 +539,7 @@
             "name": "move",
             "uuid": "befebb63d5bf",
             "hide": false,
+            "hideWhenJoystick": true,
             "visibilityType": "in_game",
             "normalButtons": [
                 {
@@ -1259,5 +1260,5 @@
             }
         }
     ],
-    "editorVersion": 4
+    "editorVersion": 10
 }

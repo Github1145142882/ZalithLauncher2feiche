@@ -155,6 +155,8 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.file.formatFileSize
 import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
+import com.movtery.zalithlauncher.viewmodel.sendKeepScreen
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -392,7 +394,9 @@ private class ModsUpdaterViewModel(
     fun update(
         context: Context,
         mods: List<RemoteMod>,
-        refreshMods: () -> Unit
+        refreshMods: () -> Unit,
+        onStart: () -> Unit = {},
+        onStop: () -> Unit = {}
     ) {
         val minecraftVer = version.getVersionInfo()!!.minecraftVersion
         val modLoader = version.getVersionInfo()!!.loaderInfo!!.loader
@@ -412,6 +416,7 @@ private class ModsUpdaterViewModel(
                     modsUpdater = null
                     refreshMods()
                     modsUpdateOperation = ModsUpdateOperation.Success
+                    onStop()
                 },
                 onNoModUpdates = {
                     viewModelScope.launch(Dispatchers.Main) {
@@ -419,18 +424,22 @@ private class ModsUpdaterViewModel(
                     }
                     modsUpdater = null
                     modsUpdateOperation = ModsUpdateOperation.None
+                    onStop()
                 },
                 onCancelled = {
                     modsUpdater = null
                     modsUpdateOperation = ModsUpdateOperation.None
+                    onStop()
                 },
                 onError = { th ->
                     modsUpdater = null
                     refreshMods()
                     modsUpdateOperation = ModsUpdateOperation.Error(th)
+                    onStop()
                 }
             )
         }
+        onStart()
     }
 
     fun cancel() {
@@ -476,6 +485,7 @@ fun ModsManagerScreen(
     backToMainScreen: () -> Unit,
     swapToDownload: () -> Unit,
     onSwapMoreInfo: (id: String, Platform) -> Unit,
+    eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val context = LocalContext.current
@@ -514,13 +524,24 @@ fun ModsManagerScreen(
             changeOperation = { updaterViewModel.modsUpdateOperation = it },
             modsUpdater = updaterViewModel.modsUpdater,
             onUpdate = { mods ->
-                updaterViewModel.update(context, mods) {
-                    //刷新模组
-                    viewModel.refresh(context)
-                }
+                updaterViewModel.update(
+                    context = context,
+                    mods = mods,
+                    refreshMods = {
+                        //刷新模组
+                        viewModel.refresh(context)
+                    },
+                    onStart = {
+                        eventViewModel.sendKeepScreen(true)
+                    },
+                    onStop = {
+                        eventViewModel.sendKeepScreen(false)
+                    }
+                )
             },
             onCancel = {
                 updaterViewModel.cancel()
+                eventViewModel.sendKeepScreen(false)
             }
         )
 

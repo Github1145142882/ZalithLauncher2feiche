@@ -30,7 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.movtery.layer_controller.layout.ControlLayout
 import com.movtery.layer_controller.layout.loadLayoutFromFile
-import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
+import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.ControlEditor
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.viewmodel.EditorViewModel
@@ -38,7 +38,7 @@ import java.io.File
 
 private const val BUNDLE_CONTROL = "BUNDLE_CONTROL"
 
-class ControlEditorActivity : BaseComponentActivity() {
+class ControlEditorActivity : BaseAppCompatActivity() {
     /** 编辑器 */
     private val editorViewModel: EditorViewModel by viewModels()
 

@@ -615,6 +615,7 @@ fun GameScreen(
                 checkOccupiedPointers = { viewModel.occupiedPointers.contains(it) },
                 opacity = (AllSettings.controlsOpacity.state.toFloat() / 100f).coerceIn(0f, 1f),
                 markPointerAsMoveOnly = { viewModel.moveOnlyPointers.add(it) },
+                isUsingJoystick = isGrabbing && AllSettings.enableJoystickControl.state,
                 isCursorGrabbing = isGrabbing,
                 hideLayerWhen = viewModel.controlLayerHideState,
                 isDark = isLauncherInDarkTheme()

@@ -25,6 +25,7 @@ import com.movtery.layer_controller.data.POSITION_RANGE
 import com.movtery.layer_controller.utils.snap.SnapMode
 import com.movtery.zalithlauncher.game.path.GamePathManager
 import com.movtery.zalithlauncher.info.InfoDistributor
+import com.movtery.zalithlauncher.setting.enums.AppLanguage
 import com.movtery.zalithlauncher.setting.enums.DarkMode
 import com.movtery.zalithlauncher.setting.enums.GestureActionType
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
@@ -322,6 +323,11 @@ object AllSettings : SettingsRegistry() {
      * 启动器UI深色主题
      */
     val launcherDarkMode = enumSetting("launcherDarkMode", DarkMode.FollowSystem)
+
+    /**
+     * 启动器语言
+     */
+    val launcherLanguage = enumSetting("launcherLanguage", AppLanguage.FOLLOW_SYSTEM)
 
     /**
      * 启动器部分屏幕全屏

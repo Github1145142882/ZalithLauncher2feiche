@@ -24,7 +24,7 @@ import com.movtery.layer_controller.layout.ControlLayout
 /**
  * 控件编辑器的版本号
  */
-internal const val EDITOR_VERSION = 9
+internal const val EDITOR_VERSION = 10
 
 /**
  * 自动处理并逐步更新控制布局到新版编辑器
@@ -36,7 +36,7 @@ internal fun updateLayoutToNew(
         1 -> updateLayoutToNew(update1To2(layout))
         2 -> updateLayoutToNew(update2To3(layout))
         3 -> updateLayoutToNew(update3To4(layout))
-        4, 5, 6, 7, 8 -> updateLayoutToNew(update4To9(layout))
+        4, 5, 6, 7, 8, 9 -> updateLayoutToNew(update4To10(layout))
         else -> layout
     }
 }
@@ -128,11 +128,12 @@ private fun update3To4(
  * 6 -> 7: 支持设置文本大小
  * 7 -> 8: 支持扩展设定: 可设定启动器层的摇杆的样式
  * 8 -> 9: 按钮大小最小可调至 1%
+ * 9 -> 10: 在使用摇杆时，支持隐藏控件层
  *
  * 不需要变更控制布局文件，仅提升版本号
  */
-private fun update4To9(
+private fun update4To10(
     layout: ControlLayout
 ): ControlLayout = layout.copy(
-    editorVersion = 9
+    editorVersion = 10
 )

@@ -54,8 +54,10 @@ import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.enums.AppLanguage
 import com.movtery.zalithlauncher.setting.enums.DarkMode
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
+import com.movtery.zalithlauncher.setting.enums.applyLanguage
 import com.movtery.zalithlauncher.setting.unit.floatRange
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.AnimatedColumn
@@ -161,6 +163,18 @@ fun LauncherSettingsScreen(
                         items = DarkMode.entries,
                         title = stringResource(R.string.settings_launcher_dark_mode_title),
                         getItemText = { stringResource(it.textRes) }
+                    )
+
+                    ListSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = CardPosition.Middle,
+                        unit = AllSettings.launcherLanguage,
+                        items = AppLanguage.entries,
+                        title = stringResource(R.string.settings_launcher_language),
+                        getItemText = { stringResource(it.textRes) },
+                        onValueChange = {
+                            applyLanguage(it)
+                        }
                     )
 
                     SwitchSettingsCard(

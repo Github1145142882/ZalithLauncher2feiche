@@ -39,6 +39,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,15 +49,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.state.FilePathSelectorData
-import com.movtery.zalithlauncher.state.MutableStates
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
@@ -74,11 +69,8 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.file.sortWithFileName
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
@@ -87,9 +79,15 @@ import java.io.File
 fun NavBackStack<NavKey>.navigateToFileSelector(
     startPath: String,
     selectFile: Boolean,
-    saveKey: NavKey
+    saveKey: NavKey,
+    onSelected: (path: String) -> Unit
 ) = this.navigateTo(
-    screenKey = NormalNavKey.FileSelector(startPath, selectFile, saveKey),
+    screenKey = NormalNavKey.FileSelector(
+        startPath = startPath,
+        selectFile = selectFile,
+        saveKey = saveKey,
+        onSelected = onSelected
+    ),
     useClassEquality = true
 )
 
@@ -97,67 +95,6 @@ private sealed interface SelectorOperation {
     data object None : SelectorOperation
     /** 创建文件夹时 */
     data object CreateDir : SelectorOperation
-}
-
-private class FileSelectorViewModel(
-    val startPath: String,
-    val selectFile: Boolean
-): ViewModel() {
-    var currentPath by mutableStateOf(startPath)
-    var operation by mutableStateOf<SelectorOperation>(SelectorOperation.None)
-
-    private val _files = MutableStateFlow(emptyList<File>())
-    val files = _files.asStateFlow()
-
-    fun createDir(
-        newDir: File,
-        onCreated: () -> Unit,
-        onEnd: () -> Unit
-    ) {
-        viewModelScope.launch(Dispatchers.IO) {
-            if (newDir.mkdirs()) onCreated()
-            onEnd()
-        }
-    }
-
-    fun parent() {
-        File(currentPath).parentFile?.let {
-            currentPath = it.absolutePath
-            refreshList()
-        }
-    }
-
-    private var currentJob: Job? = null
-    fun refreshList() {
-        currentJob?.cancel()
-        currentJob = viewModelScope.launch(Dispatchers.IO) {
-            val path = File(currentPath)
-            val tempFiles = path.listFiles()?.toList()?.filter {
-                //如果为非选择文件模式，则仅展示文件夹目录
-                if (!selectFile) it.isDirectory else true
-            }?.sortedWith { o1, o2 ->
-                sortWithFileName(o1, o2)
-            }
-
-            _files.update { tempFiles ?: emptyList() }
-        }
-    }
-
-    init {
-        refreshList()
-    }
-
-    override fun onCleared() {
-        currentJob?.cancel()
-        currentJob = null
-    }
-}
-
-@Composable
-private fun rememberFileSelectorViewModel(
-    key: NormalNavKey.FileSelector
-) = viewModel(key = key.startPath + "_" + "selectFile=" + key.selectFile) {
-    FileSelectorViewModel(key.startPath, key.selectFile)
 }
 
 @Composable
@@ -186,23 +123,45 @@ fun FileSelectorScreen(
     backScreenViewModel: ScreenBackStackViewModel,
     back: () -> Unit
 ) {
-    val viewModel = rememberFileSelectorViewModel(key = key)
+    //特殊情况：文件选择器仅作为临时使用的页面
+    //不需要长期存储数据，所以，此处不应该使用 ViewModel
+
+    var currentPath by remember(key.startPath) {
+        mutableStateOf(key.startPath)
+    }
+    var files by remember { mutableStateOf<List<File>>(emptyList()) }
+    var operation by remember { mutableStateOf<SelectorOperation>(SelectorOperation.None) }
+
+    LaunchedEffect(currentPath, key.selectFile) {
+        val loadedFiles = withContext(Dispatchers.IO) {
+            val path = File(currentPath)
+            path.listFiles()?.toList()?.filter {
+                if (!key.selectFile) it.isDirectory else true
+            }?.sortedWith { o1, o2 ->
+                sortWithFileName(o1, o2)
+            } ?: emptyList()
+        }
+        files = loadedFiles
+    }
+
+    val scope = rememberCoroutineScope()
+    val createDir = { dirName: String ->
+        scope.launch(Dispatchers.IO) {
+            val newDir = File(currentPath, dirName)
+            if (newDir.mkdirs()) {
+                withContext(Dispatchers.Main) {
+                    currentPath = newDir.absolutePath
+                }
+            }
+        }
+    }
 
     SelectorOperation(
-        operation = viewModel.operation,
-        onChange = { viewModel.operation = it },
-        currentPath = viewModel.currentPath,
+        operation = operation,
+        onChange = { operation = it },
+        currentPath = currentPath,
         onCreatePath = { newDir ->
-            viewModel.createDir(
-                newDir = newDir,
-                onCreated = {
-                    viewModel.currentPath = newDir.absolutePath
-                    viewModel.refreshList()
-                },
-                onEnd = {
-                    viewModel.operation = SelectorOperation.None
-                }
-            )
+            createDir(newDir.name)
         }
     )
 
@@ -218,17 +177,16 @@ fun FileSelectorScreen(
         ) {
             LeftActionMenu(
                 isVisible = isVisible,
-                backEnabled =
-                    viewModel.currentPath != viewModel.startPath,
+                backEnabled = currentPath != key.startPath,
                 backToParent = {
-                    viewModel.parent()
+                    File(currentPath).parentFile?.let {
+                        currentPath = it.absolutePath
+                    }
                 },
-                createDir = { viewModel.operation = SelectorOperation.CreateDir },
+                createDir = { operation = SelectorOperation.CreateDir },
                 selectDir = {
-                    MutableStates.filePathSelector = FilePathSelectorData(
-                        saveKey = key.saveKey,
-                        path = viewModel.currentPath
-                    )
+                    val path = currentPath
+                    key.onSelected(path)
                     back()
                 },
                 modifier = Modifier
@@ -236,14 +194,11 @@ fun FileSelectorScreen(
                     .weight(2.5f)
             )
 
-            val files by viewModel.files.collectAsStateWithLifecycle()
-
             FilesLayout(
                 isVisible = isVisible,
-                currentPath = viewModel.currentPath,
+                currentPath = currentPath,
                 updatePath = { path ->
-                    viewModel.currentPath = path
-                    viewModel.refreshList()
+                    currentPath = path
                 },
                 files = files,
                 selectFile = key.selectFile,

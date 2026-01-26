@@ -77,6 +77,7 @@ import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
+import com.movtery.zalithlauncher.viewmodel.sendKeepScreen
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.SerializationException
@@ -140,7 +141,9 @@ private class ModPackViewModel: ViewModel() {
     fun install(
         context: Context,
         version: PlatformVersion,
-        iconUrl: String?
+        iconUrl: String?,
+        onStart: () -> Unit = {},
+        onStop: () -> Unit = {},
     ) {
         installOperation = ModPackInstallOperation.Install
         installer = ModPackInstaller(
@@ -155,13 +158,16 @@ private class ModPackViewModel: ViewModel() {
                     installer = null
                     VersionsManager.refresh("[Modpack] ModPackInstaller.onInstalled", version)
                     installOperation = ModPackInstallOperation.Success
+                    onStop()
                 },
                 onError = { th ->
                     installer = null
                     installOperation = ModPackInstallOperation.Error(th)
+                    onStop()
                 }
             )
         }
+        onStart()
     }
 
     fun cancel() {
@@ -210,10 +216,21 @@ fun DownloadModPackScreen(
         updateOperation = { viewModel.installOperation = it },
         installer = viewModel.installer,
         onInstall = { version, iconUrl ->
-            viewModel.install(context, version, iconUrl)
+            viewModel.install(
+                context = context,
+                version = version,
+                iconUrl = iconUrl,
+                onStart = {
+                    eventViewModel.sendKeepScreen(true)
+                },
+                onStop = {
+                    eventViewModel.sendKeepScreen(false)
+                }
+            )
         },
         onCancel = {
             viewModel.cancel()
+            eventViewModel.sendKeepScreen(false)
         }
     )
 
@@ -245,7 +262,8 @@ fun DownloadModPackScreen(
                         downloadScreenKey = downloadScreenKey,
                         downloadModPackScreenKey = key,
                         downloadModPackScreenCurrentKey = downloadModPackScreenKey,
-                        viewModel = importerViewModel
+                        viewModel = importerViewModel,
+                        eventViewModel = eventViewModel
                     ) { platform, projectId, iconUrl ->
                         backStack.navigateTo(
                             NormalNavKey.DownloadAssets(platform, projectId, PlatformClasses.MOD_PACK, iconUrl)

@@ -153,6 +153,14 @@ fun EditControlLayerDialog(
                             onValueChange = { layer.hideWhenGamepad = it.not() }
                         )
 
+                        //在摇杆组件启用时不隐藏
+                        InfoLayoutSwitchItem(
+                            modifier = Modifier.fillMaxWidth(),
+                            title = stringResource(R.string.control_editor_layers_attribute_hide_when_joystick),
+                            value = layer.hideWhenJoystick.not(),
+                            onValueChange = { layer.hideWhenJoystick = it.not() }
+                        )
+
                         //合并控件至下层
                         InfoLayoutTextItem(
                             modifier = Modifier.fillMaxWidth(),

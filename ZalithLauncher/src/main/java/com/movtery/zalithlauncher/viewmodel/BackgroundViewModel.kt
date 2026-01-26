@@ -76,8 +76,15 @@ class BackgroundViewModel(): ViewModel() {
             isImage = isImage0
             isVideo = isVideo0
             isValid = backgroundFile.exists() && (isImage0 || isVideo0)
-            refreshTrigger = !refreshTrigger
+            refreshUI()
         }
+    }
+
+    /**
+     * 仅刷新 refreshTrigger
+     */
+    fun refreshUI() {
+        refreshTrigger = !refreshTrigger
     }
 
     init {

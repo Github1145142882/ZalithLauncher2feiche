@@ -23,6 +23,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.KeyEvent
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -36,7 +37,7 @@ import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.control.ControlManager
 import com.movtery.zalithlauncher.notification.NotificationManager
 import com.movtery.zalithlauncher.setting.AllSettings
-import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
+import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.elements.Background
@@ -60,7 +61,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : BaseComponentActivity() {
+class MainActivity : BaseAppCompatActivity() {
     /**
      * 屏幕堆栈管理ViewModel
      */
@@ -179,6 +180,9 @@ class MainActivity : BaseComponentActivity() {
                             }
                         }
                     }
+                    is EventViewModel.Event.KeepScreen -> {
+                        keepScreen(event.on)
+                    }
                     else -> {
                         //忽略
                     }
@@ -235,6 +239,7 @@ class MainActivity : BaseComponentActivity() {
                     importer = modpackImportViewModel.importer,
                     onCancel = {
                         modpackImportViewModel.cancel()
+                        keepScreen(false)
                     }
                 )
 
@@ -265,6 +270,19 @@ class MainActivity : BaseComponentActivity() {
     }
 
     /**
+     * 是否保持屏幕不熄屏
+     */
+    private fun keepScreen(on: Boolean) {
+        window?.apply {
+            if (on) {
+                addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            } else {
+                clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            }
+        }
+    }
+
+    /**
      * 处理外部导入
      * @return 是否有导入任务正在进行中
      */
@@ -288,7 +306,16 @@ class MainActivity : BaseComponentActivity() {
     private fun handleModpackImport(intent: Intent): Boolean {
         val uri: Uri? = intent.getParcelableExtra(EXTRA_IMPORT_URI)
         if (uri != null) {
-            modpackImportViewModel.import(this@MainActivity, uri)
+            modpackImportViewModel.import(
+                context = this@MainActivity,
+                uri = uri,
+                onStart = {
+                    keepScreen(true)
+                },
+                onStop = {
+                    keepScreen(false)
+                }
+            )
         }
         return uri != null
     }

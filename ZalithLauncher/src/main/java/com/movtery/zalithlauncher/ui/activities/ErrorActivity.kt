@@ -28,7 +28,7 @@ import com.jakewharton.processphoenix.ProcessPhoenix
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.launch.LogName
 import com.movtery.zalithlauncher.path.PathManager
-import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
+import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.screens.main.ErrorScreen
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.file.shareFile
@@ -58,7 +58,7 @@ fun showExitMessage(context: Context, code: Int, isSignal: Boolean) {
 @Parcelize
 private data class JvmCrash(val code: Int, val isSignal: Boolean): Parcelable
 
-class ErrorActivity : BaseComponentActivity(refreshData = false) {
+class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

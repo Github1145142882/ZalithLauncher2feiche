@@ -41,7 +41,8 @@ sealed interface NormalNavKey : NavKey {
     @Serializable data class FileSelector(
         val startPath: String,
         val selectFile: Boolean,
-        val saveKey: NavKey
+        val saveKey: NavKey,
+        val onSelected: (path: String) -> Unit
     ) : NormalNavKey
     /** 多人联机屏幕 */
     @Serializable data object Multiplayer: NormalNavKey
