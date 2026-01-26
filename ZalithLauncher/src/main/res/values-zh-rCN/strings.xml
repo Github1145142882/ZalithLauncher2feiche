@@ -952,6 +952,7 @@
     <string name="control_editor_layers_attribute_hide">默认隐藏控件层</string>
     <string name="control_editor_layers_attribute_hide_when_mouse">在实体鼠标操作时不隐藏</string>
     <string name="control_editor_layers_attribute_hide_when_gamepad">在手柄操作时不隐藏</string>
+    <string name="control_editor_layers_attribute_hide_when_joystick">在摇杆组件启用时不隐藏</string>
     <string name="control_editor_layers_merge_downward">合并控件至下层</string>
     <string name="control_editor_edit_dialog_open_preview">开启预览</string>
     <string name="control_editor_edit_dialog_close_preview">关闭预览</string>

@@ -986,6 +986,7 @@
     <string name="control_editor_layers_attribute_hide">預設隱藏控制項圖層</string>
     <string name="control_editor_layers_attribute_hide_when_mouse">在實體滑鼠操作時不隱藏</string>
     <string name="control_editor_layers_attribute_hide_when_gamepad">在手把操作時不隱藏</string>
+    <string name="control_editor_layers_attribute_hide_when_joystick">啟用搖桿元件時不隱藏</string>
     <string name="control_editor_layers_merge_downward">合併控制項至下層</string>
     <string name="control_editor_edit_dialog_open_preview">開啟預覽</string>
     <string name="control_editor_edit_dialog_close_preview">關閉預覽</string>
