@@ -51,6 +51,7 @@
     <string name="generic_save">保存</string>
     <string name="generic_saved">已保存</string>
     <string name="generic_share">分享</string>
+    <string name="generic_copied">已复制</string>
     <string name="generic_no_matching_items">没有符合条件的项目</string>
     <!--  单位  -->
     <string name="unit_day">天</string>
@@ -99,6 +100,11 @@
     <string name="crash_share_logs">分享日志</string>
     <string name="crash_restart">重启应用</string>
     <string name="crash_exit">退出应用</string>
+    <string name="crash_link_share_button">分享链接</string>
+    <string name="crash_link_share_tip">启动器会上传游戏日志到公共平台，您可获得一个链接，用于便捷地分享给他人进行诊断。</string>
+    <string name="crash_link_share_uploading">正在上传日志到 %s</string>
+    <string name="crash_link_share_failed">上传失败</string>
+    <string name="crash_link_share_failed_link_not_found">未找到可用的链接，请稍后重试</string>
     <string name="crash_launch_crash_title">应用启动失败</string>
     <string name="crash_launch_crash_message">启动器在启动的过程中遇到了严重的问题崩溃了</string>
     <!--  错误  -->

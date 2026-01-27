@@ -51,6 +51,7 @@
     <string name="generic_save">Save</string>
     <string name="generic_saved">Saved</string>
     <string name="generic_share">Share</string>
+    <string name="generic_copied">Copied</string>
     <string name="generic_no_matching_items">No matching items</string>
     <!-- Unit -->
     <string name="unit_day">day</string>
@@ -100,6 +101,11 @@
     <string name="crash_share_logs">Share Logs</string>
     <string name="crash_restart">Restart</string>
     <string name="crash_exit">Exit</string>
+    <string name="crash_link_share_button">Share Link</string>
+    <string name="crash_link_share_tip">The launcher will upload game logs to a public platform. You will receive a link that can be conveniently shared with others for diagnosis.</string>
+    <string name="crash_link_share_uploading">Uploading logs to %s</string>
+    <string name="crash_link_share_failed">Upload Failed</string>
+    <string name="crash_link_share_failed_link_not_found">No available link found. Please try again later.</string>
     <string name="crash_launch_crash_title">App Launch Failed</string>
     <string name="crash_launch_crash_message">The launcher encountered a serious problem and crashed during startup</string>
     <!-- Errors -->
