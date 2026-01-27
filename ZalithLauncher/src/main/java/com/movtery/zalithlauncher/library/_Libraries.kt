@@ -40,6 +40,7 @@ private const val LICENSE_BSD_3_CLAUSE = "BSD 3-Clause License"
 private const val URL_KTOR = "https://ktor.io"
 
 val libraryData = listOf(
+    LibraryInfo("ANGLE", "Copyright 2018 The ANGLE Project Authors", License(LICENSE_BSD_3_CLAUSE, R.raw.angle_license), "http://angleproject.org/"),
     LibraryInfo("androidx-constraintlayout-compose", COPYRIGHT_AOSP, LICENSE_APACHE_2, "https://developer.android.com/develop/ui/compose/layouts/constraintlayout"),
     LibraryInfo("androidx-material-icons-core", COPYRIGHT_AOSP, LICENSE_APACHE_2, "https://developer.android.com/jetpack/androidx/releases/compose-material"),
     LibraryInfo("androidx-material-icons-extended", COPYRIGHT_AOSP, LICENSE_APACHE_2, "https://developer.android.com/jetpack/androidx/releases/compose-material"),

@@ -60,4 +60,6 @@
     <string name="error_network_unreachable">Nincs internethozzáférés</string>
     <string name="error_connection_failed">Szerverre csatlakozás sikertelen</string>
     <string name="main_launch_game">Indítás</string>
+    <string name="generic_expand">Kibővít</string>
+    <string name="generic_clear">Tisztítás</string>
 </resources>

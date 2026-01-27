@@ -17,7 +17,18 @@
     <string name="terracotta_menu">Többjátékos Menü</string>
     <string name="terracotta_status_waiting_guest_prompt_invalid">Érvénytelen meghívó</string>
     <string name="terracotta_status_host_scanning">LAN világok beolvasása</string>
-    <string name="terracotta_status_host_scanning_desc">Lépjen be egy világba, nyomjon ESC gombot, válassza az Open to LAN-t, majd nyomja meg a Start LAN World gombot.</string>
+    <string name="terracotta_status_host_scanning_desc">Lépj be egy világba, nyomj ESC gombot, válaszd az Open to LAN-t, majd nyomd meg a Start LAN World gombot.</string>
     <string name="terracotta_status_host_starting">Szoba Létrehozása</string>
     <string name="terracotta_status_host_ok">Szoba létrehozva</string>
+    <string name="terracotta_metadata_ver">Terracotta Verzió: %s</string>
+    <string name="terracotta_difficulty_medium">Átlagos hálózat: tartalék útvonalak engedélyezése, kapcsolat megszakadása esélyes</string>
+    <string name="terracotta_difficulty_tough">Gyenge hálózat: tartalék útoonalak engedélyezése, a kapcsolat megszakadása esélyes</string>
+    <string name="terracotta_difficulty_estimate_only">A sikerarány a host és a client NAT-típusain alapuló becslés, csak tájékoztató jellegű!</string>
+    <string name="terracotta_status_uninitialized_desc">Te jogilag megígéred hogy a többjátékos folyamat során szigorúan betartod az országodnak vagy régiódnak összes törvényét és szabályozását.</string>
+    <string name="terracotta_confirm_title">Felhasználói Figyelmeztetés</string>
+    <string name="terracotta_confirm_software">A Terracotta egy harmadik-féltől származó nyitott forráskodú ingyenes szoftver. Kérlek, hogy a használat során felmerülő problémákról a megfelelő csatornákon keresztül jelezd visszajelzésed.</string>
+    <string name="terracotta_confirm_p2p">A Terracotta P2P technológiát használ. Sikeres csatlakozás során, a játékosok a szobában csatlakozni fognak helyileg egymáshoz, egyetlen harmadik-fél sem továbbítja így az adataid. A végső többjátékos élmény erősen rajtad, és a többieken múlik.</string>
+    <string name="terracotta_confirm_law">A többjátékos folyamat során szigorúan be kell tartani az országodban és régiódban érvényes törvényeket és szabályozásokat.</string>
+    <string name="terracotta_notification_title">Terracotta már fut</string>
+    <string name="terracotta_status_host_scanning_back">Ez megállítja a LAN világok szkennelését is.</string>
 </resources>
