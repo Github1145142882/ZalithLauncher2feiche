@@ -25,6 +25,7 @@ import com.movtery.layer_controller.data.POSITION_RANGE
 import com.movtery.layer_controller.utils.snap.SnapMode
 import com.movtery.zalithlauncher.game.path.GamePathManager
 import com.movtery.zalithlauncher.info.InfoDistributor
+import com.movtery.zalithlauncher.setting.enums.AppLanguage
 import com.movtery.zalithlauncher.setting.enums.DarkMode
 import com.movtery.zalithlauncher.setting.enums.GestureActionType
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
@@ -34,6 +35,7 @@ import com.movtery.zalithlauncher.ui.control.gamepad.JoystickMode
 import com.movtery.zalithlauncher.ui.control.mouse.CENTER_HOTSPOT
 import com.movtery.zalithlauncher.ui.control.mouse.CursorHotspot
 import com.movtery.zalithlauncher.ui.control.mouse.LEFT_TOP_HOTSPOT
+import com.movtery.zalithlauncher.ui.screens.game.elements.InputMode
 import com.movtery.zalithlauncher.ui.theme.ColorThemeType
 import com.movtery.zalithlauncher.utils.animation.TransitionAnimationType
 
@@ -323,6 +325,11 @@ object AllSettings : SettingsRegistry() {
     val launcherDarkMode = enumSetting("launcherDarkMode", DarkMode.FollowSystem)
 
     /**
+     * 启动器语言
+     */
+    val launcherLanguage = enumSetting("launcherLanguage", AppLanguage.FOLLOW_SYSTEM)
+
+    /**
      * 启动器部分屏幕全屏
      */
     val launcherFullScreen = boolSetting("launcherFullScreen", true)
@@ -371,6 +378,16 @@ object AllSettings : SettingsRegistry() {
      * 文件下载镜像源类型
      */
     val fileDownloadSource = enumSetting("fileDownloadSource", MirrorSourceType.OFFICIAL_FIRST)
+
+    /**
+     * 资源搜索镜像源类型
+     */
+    val assetSearchSource = enumSetting("assetSearchSource", MirrorSourceType.OFFICIAL_FIRST)
+
+    /**
+     * 资源下载镜像源类型
+     */
+    val assetDownloadSource = enumSetting("assetDownloadSource", MirrorSourceType.OFFICIAL_FIRST)
 
     //Control
     /**
@@ -514,4 +531,9 @@ object AllSettings : SettingsRegistry() {
      * 上次检查更新的时间戳
      */
     val lastUpgradeCheck = longSetting("lastUpgradeCheck", 0L)
+
+    /**
+     * 游戏内文本输入模式，控制输入代理的输入行为
+     */
+    val textInputMode = enumSetting("textInputMode", InputMode.Default)
 }

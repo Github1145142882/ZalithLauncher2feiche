@@ -24,7 +24,8 @@ import com.movtery.zalithlauncher.game.download.assets.platform.PlatformDisplayL
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformReleaseType
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformVersion
 import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.models.CurseForgeFile.Hash
-import com.movtery.zalithlauncher.game.download.assets.platform.getVersionFromCurseForge
+import com.movtery.zalithlauncher.game.download.assets.platform.mirroredCurseForgeSource
+import com.movtery.zalithlauncher.game.download.assets.platform.mirroredPlatformSearcher
 import com.movtery.zalithlauncher.game.versioninfo.filterRelease
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.utils.string.parseInstant
@@ -242,10 +243,14 @@ class CurseForgeFile(
             ?: run {
                 val fileId = id.toString()
                 runCatching {
-                    getVersionFromCurseForge(
-                        projectID = currentProjectId,
-                        fileID = fileId
-                    ).data
+                    mirroredPlatformSearcher(
+                        searchers = mirroredCurseForgeSource()
+                    ) { searcher ->
+                        searcher.getVersion(
+                            projectID = currentProjectId,
+                            fileID = fileId
+                        )
+                    }.data
                 }.onFailure { e ->
                     when (e) {
                         is FileNotFoundException -> lWarning("Could not query api.curseforge.com for deleted mods: $currentProjectId, $fileId", e)

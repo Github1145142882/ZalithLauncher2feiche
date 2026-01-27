@@ -76,7 +76,7 @@
     <string name="terracotta_tutorial_step_open_multiplayer_menu">- 启动游戏，在游戏内的菜单中找到联机菜单并打开</string>
     <string name="terracotta_tutorial_step_vpn_permission">- 若弹出提示要求申请 VPN 权限，请授予，否则无法正常使用</string>
     <string name="terracotta_tutorial_step_offline_account_support">- 该软件支持离线账户</string>
-    <string name="terracotta_tutorial_step_interoperability">- 该软件支持与 FCL 和 HMCL 和 PCL CE (Terracotta) 互联</string>
+    <string name="terracotta_tutorial_step_interoperability">- 该软件支持与 FCL 和 HMCL 和 PCL CE (Terracotta) 等支持 Scaffolding 协议的软件互联</string>
     <string name="terracotta_tutorial_host_step_become_host">- 点击“我想当房主”，扫描游戏端口</string>
     <string name="terracotta_tutorial_host_step_open_lan">- 进入存档，在游戏暂停菜单中打开“对局域网开放”选项</string>
     <string name="terracotta_tutorial_host_step_copy_invite">- 稍等片刻将自动复制邀请码，若没有自动复制，也可以前往联机菜单复制</string>

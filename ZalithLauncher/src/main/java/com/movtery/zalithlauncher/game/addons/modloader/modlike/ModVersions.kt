@@ -18,7 +18,8 @@
 
 package com.movtery.zalithlauncher.game.addons.modloader.modlike
 
-import com.movtery.zalithlauncher.game.download.assets.platform.getVersionsFromModrinth
+import com.movtery.zalithlauncher.game.download.assets.platform.mirroredModrinthSource
+import com.movtery.zalithlauncher.game.download.assets.platform.mirroredPlatformSearcher
 import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.ModrinthVersion
 import com.movtery.zalithlauncher.game.download.assets.platform.modrinth.models.getPrimary
 import com.movtery.zalithlauncher.utils.logging.Logger
@@ -43,7 +44,13 @@ abstract class ModVersions(
         try {
             val versions = run {
                 if (!force && cacheVersions != null) return@run cacheVersions!!
-                getVersionsFromModrinth(modrinthID).also {
+                mirroredPlatformSearcher(
+                    searchers = mirroredModrinthSource()
+                ) { searcher ->
+                    searcher.getVersions(
+                        projectID = modrinthID
+                    )
+                }.also {
                     cacheVersions = it
                 }
             }

@@ -19,7 +19,7 @@
 package com.movtery.zalithlauncher.game.download.game.fabric
 
 import com.movtery.zalithlauncher.coroutine.Task
-import com.movtery.zalithlauncher.game.addons.mirror.mapMirrorableUrls
+import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.game.addons.modloader.fabriclike.FabricLikeVersion
 import com.movtery.zalithlauncher.utils.file.ensureParentDirectory
 import com.movtery.zalithlauncher.utils.network.fetchStringFromUrls
@@ -37,7 +37,7 @@ fun getFabricLikeDownloadTask(
         dispatcher = Dispatchers.IO,
         task = {
             //下载版本 Json
-            val loaderJson = fetchStringFromUrls(fabricLikeVersion.loaderJsonUrl.mapMirrorableUrls())
+            val loaderJson = fetchStringFromUrls(fabricLikeVersion.loaderJsonUrl.mapBMCLMirrorUrls())
             tempVersionJson
                 .ensureParentDirectory()
                 .writeText(loaderJson)

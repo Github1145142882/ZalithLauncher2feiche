@@ -575,7 +575,8 @@ fun CleanupOperation(
                     Spacer(Modifier.height(4.dp))
                     Text(stringResource(R.string.versions_manage_cleanup_warning))
                     Text("../assets/..")
-                    Text("../libraries/..")
+                    //不再清理依赖库，文件并不会太大，也有可能导致其他问题：#617
+//                    Text("../libraries/..")
                 },
                 onConfirm = onClean,
                 onCancel = { changeOperation(CleanupOperation.None) }

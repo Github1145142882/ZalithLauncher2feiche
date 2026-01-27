@@ -77,7 +77,7 @@
     <string name="terracotta_tutorial_step_open_multiplayer_menu">- Launch the game, find the multiplayer menu in the in-game FCL menu, and open it.</string>
     <string name="terracotta_tutorial_step_vpn_permission">- If a pop-up prompts you to request VPN permissions, please grant; otherwise, it will not work properly.</string>
     <string name="terracotta_tutorial_step_offline_account_support">- This software supports offline accounts.</string>
-    <string name="terracotta_tutorial_step_interoperability">- The software supports interconnection with FCL, HMCL, and PCL CE (Terracotta).</string>
+    <string name="terracotta_tutorial_step_interoperability">- This software supports interconnection with software that supports the Scaffolding protocol, such as FCL, HMCL, and PCL CE (Terracotta).</string>
     <string name="terracotta_tutorial_host_step_become_host">- Click "I want to host a session", to scan the game port.</string>
     <string name="terracotta_tutorial_host_step_open_lan">- Open the game and turn on the "Open to LAN" option in the game settings.</string>
     <string name="terracotta_tutorial_host_step_copy_invite">- Wait for a moment and the invite code will be automatically copied. If it is not automatically copied, you can also copy it manually in the multiplayer menu.</string>

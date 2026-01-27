@@ -69,6 +69,7 @@ import com.movtery.zalithlauncher.ui.screens.onBack
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
+import com.movtery.zalithlauncher.viewmodel.sendKeepScreen
 import io.ktor.client.plugins.HttpRequestTimeoutException
 import kotlinx.serialization.SerializationException
 import java.net.ConnectException
@@ -110,7 +111,9 @@ private class GameDownloadViewModel(): ViewModel() {
 
     fun install(
         context: Context,
-        info: GameDownloadInfo
+        info: GameDownloadInfo,
+        onStart: () -> Unit = {},
+        onStop: () -> Unit = {},
     ) {
         installOperation = GameInstallOperation.Install
         installer = GameInstaller(context, info, viewModelScope).also {
@@ -120,11 +123,13 @@ private class GameDownloadViewModel(): ViewModel() {
                     VersionsManager.refresh("[DownloadGame] GameInstaller.onInstalled", version)
                     installOperation = GameInstallOperation.Success
                     refreshVersionNameCheck()
+                    onStop()
                 },
                 onError = { th ->
                     installer = null
                     installOperation = GameInstallOperation.Error(th)
                     refreshVersionNameCheck()
+                    onStop()
                 },
                 onGameAlreadyInstalled = {
                     //很有可能发生在刚安装完成，再次点击安装按钮时
@@ -132,9 +137,11 @@ private class GameDownloadViewModel(): ViewModel() {
                     installOperation = GameInstallOperation.None
                     //保险起见，再次刷新版本名称错误检查
                     refreshVersionNameCheck()
+                    onStop()
                 }
             )
         }
+        onStart()
     }
 
     fun cancel() {
@@ -183,10 +190,20 @@ fun DownloadGameScreen(
         updateOperation = { viewModel.installOperation = it },
         installer = viewModel.installer,
         onInstall = { info ->
-            viewModel.install(context, info)
+            viewModel.install(
+                context = context,
+                info = info,
+                onStart = {
+                    eventViewModel.sendKeepScreen(true)
+                },
+                onStop = {
+                    eventViewModel.sendKeepScreen(false)
+                }
+            )
         },
         onCancel = {
             viewModel.cancel()
+            eventViewModel.sendKeepScreen(false)
         }
     )
 
@@ -233,7 +250,16 @@ fun DownloadGameScreen(
                             //警告通知权限
                             viewModel.installOperation = GameInstallOperation.WarningForNotification(info)
                         } else {
-                            viewModel.install(context, info)
+                            viewModel.install(
+                                context = context,
+                                info = info,
+                                onStart = {
+                                    eventViewModel.sendKeepScreen(true)
+                                },
+                                onStop = {
+                                    eventViewModel.sendKeepScreen(false)
+                                }
+                            )
                         }
                     }
                 }

@@ -121,7 +121,9 @@ class ModpackImportViewModel : ViewModel() {
      */
     fun import(
         context: Context,
-        uri: Uri
+        uri: Uri,
+        onStart: () -> Unit = {},
+        onStop: () -> Unit = {}
     ) {
         if (importOperation != ModpackImportOperation.None) {
             //当前有别的导入任务，拒绝这次导入
@@ -139,6 +141,7 @@ class ModpackImportViewModel : ViewModel() {
                     importer = null
                     VersionsManager.refresh("[Modpack] ModpackImporter.onFinished", version)
                     importOperation = ModpackImportOperation.Finished
+                    onStop()
                 },
                 onError = { th ->
                     importer = null
@@ -148,9 +151,11 @@ class ModpackImportViewModel : ViewModel() {
                     } else {
                         ModpackImportOperation.Error(th)
                     }
+                    onStop()
                 }
             )
         }
+        onStart()
     }
 
     fun cancel() {

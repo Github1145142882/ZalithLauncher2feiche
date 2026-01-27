@@ -59,7 +59,7 @@ private val REPLACE_MIRROR_HOLDERS = mapOf(
 /**
  * 替换为 BMCL API 镜像源链接，若如匹配的链接，则仅返回官方链接集合
  */
-fun String.mapMirrorableUrls(): List<String> {
+fun String.mapBMCLMirrorUrls(): List<String> {
     var isAssetsFile = false
 
     val mirrorUrl = REPLACE_MIRROR_HOLDERS.entries.find { (key, mirror) ->

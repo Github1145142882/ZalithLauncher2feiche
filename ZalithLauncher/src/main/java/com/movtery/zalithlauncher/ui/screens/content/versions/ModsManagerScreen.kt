@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -61,6 +62,7 @@ import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Update
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Block
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FilterAlt
@@ -153,6 +155,8 @@ import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.file.formatFileSize
 import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
+import com.movtery.zalithlauncher.viewmodel.sendKeepScreen
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -390,7 +394,9 @@ private class ModsUpdaterViewModel(
     fun update(
         context: Context,
         mods: List<RemoteMod>,
-        refreshMods: () -> Unit
+        refreshMods: () -> Unit,
+        onStart: () -> Unit = {},
+        onStop: () -> Unit = {}
     ) {
         val minecraftVer = version.getVersionInfo()!!.minecraftVersion
         val modLoader = version.getVersionInfo()!!.loaderInfo!!.loader
@@ -410,6 +416,7 @@ private class ModsUpdaterViewModel(
                     modsUpdater = null
                     refreshMods()
                     modsUpdateOperation = ModsUpdateOperation.Success
+                    onStop()
                 },
                 onNoModUpdates = {
                     viewModelScope.launch(Dispatchers.Main) {
@@ -417,18 +424,22 @@ private class ModsUpdaterViewModel(
                     }
                     modsUpdater = null
                     modsUpdateOperation = ModsUpdateOperation.None
+                    onStop()
                 },
                 onCancelled = {
                     modsUpdater = null
                     modsUpdateOperation = ModsUpdateOperation.None
+                    onStop()
                 },
                 onError = { th ->
                     modsUpdater = null
                     refreshMods()
                     modsUpdateOperation = ModsUpdateOperation.Error(th)
+                    onStop()
                 }
             )
         }
+        onStart()
     }
 
     fun cancel() {
@@ -474,6 +485,7 @@ fun ModsManagerScreen(
     backToMainScreen: () -> Unit,
     swapToDownload: () -> Unit,
     onSwapMoreInfo: (id: String, Platform) -> Unit,
+    eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val context = LocalContext.current
@@ -483,13 +495,20 @@ fun ModsManagerScreen(
         return
     }
 
+    //是否拥有模组加载器
+    val hasModLoader = remember(version) {
+        version.getVersionInfo()?.loaderInfo?.loader?.isLoader == true
+    }
+    val modsDir = remember(version) {
+        File(version.getGameDir(), VersionFolders.MOD.folderName)
+    }
+
     BaseScreen(
         levels1 = listOf(
             Pair(NestedNavKey.VersionSettings::class.java, mainScreenKey)
         ),
         Triple(NormalNavKey.Versions.ModsManager, versionsScreenKey, false)
     ) { isVisible ->
-        val modsDir = File(version.getGameDir(), VersionFolders.MOD.folderName)
         val viewModel = rememberModsManageViewModel(version, modsDir)
         val updaterViewModel = rememberModsUpdaterViewModel(version, modsDir)
 
@@ -505,13 +524,24 @@ fun ModsManagerScreen(
             changeOperation = { updaterViewModel.modsUpdateOperation = it },
             modsUpdater = updaterViewModel.modsUpdater,
             onUpdate = { mods ->
-                updaterViewModel.update(context, mods) {
-                    //刷新模组
-                    viewModel.refresh(context)
-                }
+                updaterViewModel.update(
+                    context = context,
+                    mods = mods,
+                    refreshMods = {
+                        //刷新模组
+                        viewModel.refresh(context)
+                    },
+                    onStart = {
+                        eventViewModel.sendKeepScreen(true)
+                    },
+                    onStop = {
+                        eventViewModel.sendKeepScreen(false)
+                    }
+                )
             },
             onCancel = {
                 updaterViewModel.cancel()
+                eventViewModel.sendKeepScreen(false)
             }
         )
 
@@ -572,7 +602,7 @@ fun ModsManagerScreen(
                             onSortByChanged = { viewModel.updateSortBy(it, context) },
                             isAscending = viewModel.isAscending,
                             onToggleSortOrder = { viewModel.updateSortOrder(context) },
-                            hasModLoader = version.getVersionInfo()?.loaderInfo?.loader?.isLoader == true,
+                            hasModLoader = hasModLoader,
                             onUpdateMods = {
                                 if (
                                     updaterViewModel.modsUpdateOperation == ModsUpdateOperation.None &&
@@ -606,6 +636,7 @@ fun ModsManagerScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
+                            hasModLoader = hasModLoader,
                             modsList = viewModel.filteredMods,
                             selectedMods = viewModel.selectedMods,
                             removeFromSelected = { mod ->
@@ -750,11 +781,7 @@ private fun ModsActionsHeader(
                     onValueChange = { onNameFilterChange(it) },
                     hint = {
                         Text(
-                            text = if (hasModLoader) {
-                                stringResource(R.string.generic_search)
-                            } else {
-                                stringResource(R.string.mods_manage_no_loader)
-                            },
+                            text = stringResource(R.string.generic_search),
                             style = TextStyle(color = LocalContentColor.current).copy(fontSize = 12.sp)
                         )
                     },
@@ -865,6 +892,7 @@ private fun ModsActionsHeader(
 @Composable
 private fun ModsList(
     modifier: Modifier = Modifier,
+    hasModLoader: Boolean,
     modsList: List<RemoteMod>?,
     selectedMods: List<RemoteMod>,
     removeFromSelected: (RemoteMod) -> Unit,
@@ -876,64 +904,75 @@ private fun ModsList(
     onSwapMoreInfo: (id: String, Platform) -> Unit,
     onDelete: (RemoteMod) -> Unit
 ) {
-    modsList?.let { list ->
-        if (list.isNotEmpty()) {
-            LazyColumn(
-                modifier = modifier,
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
-            ) {
-                items(list) { mod ->
-                    ModItemLayout(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
-                        mod = mod,
-                        onLoad = {
-                            onLoad(mod)
-                        },
-                        onForceRefresh = {
-                            onForceRefresh(mod)
-                        },
-                        onClick = {
-                            if (mod.isLoaded) {
-                                //仅加载了项目信息的模组允许被选择
-                                if (selectedMods.contains(mod)) {
-                                    removeFromSelected(mod)
-                                } else {
-                                    addToSelected(mod)
-                                }
-                            }
-                        },
-                        onEnable = {
-                            onEnable(mod)
-                        },
-                        onDisable = {
-                            onDisable(mod)
-                        },
-                        onSwapMoreInfo = onSwapMoreInfo,
-                        onDelete = {
-                            onDelete(mod)
-                        },
-                        selected = selectedMods.contains(mod)
-                    )
+    Box(
+        modifier = modifier,
+        contentAlignment = Alignment.Center
+    ) {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(all = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            if (!hasModLoader) {
+                item(key = "warning_no_modloader") {
+                    WarningItem(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            text = stringResource(R.string.mods_manage_no_loader),
+                            style = MaterialTheme.typography.titleSmall,
+                        )
+                    }
                 }
             }
-        } else {
-            //如果列表是空的，则是由搜索导致的
-            //展示“无匹配项”文本
-            Box(modifier = Modifier.fillMaxSize()) {
-                ScalingLabel(
-                    modifier = Modifier.align(Alignment.Center),
-                    text = stringResource(R.string.generic_no_matching_items)
+
+            val list = modsList ?: emptyList()
+            items(list) { mod ->
+                ModItemLayout(
+                    modifier = Modifier.fillMaxWidth(),
+                    mod = mod,
+                    onLoad = {
+                        onLoad(mod)
+                    },
+                    onForceRefresh = {
+                        onForceRefresh(mod)
+                    },
+                    onClick = {
+                        if (mod.isLoaded) {
+                            //仅加载了项目信息的模组允许被选择
+                            if (selectedMods.contains(mod)) {
+                                removeFromSelected(mod)
+                            } else {
+                                addToSelected(mod)
+                            }
+                        }
+                    },
+                    onEnable = {
+                        onEnable(mod)
+                    },
+                    onDisable = {
+                        onDisable(mod)
+                    },
+                    onSwapMoreInfo = onSwapMoreInfo,
+                    onDelete = {
+                        onDelete(mod)
+                    },
+                    selected = selectedMods.contains(mod)
                 )
             }
         }
-    } ?: run {
-        //如果为null，则代表本身就没有模组可以展示
-        Box(modifier = Modifier.fillMaxSize()) {
+
+        //一些重要的标签
+        if (modsList == null) {
+            //如果为null，则代表本身就没有模组可以展示
             ScalingLabel(
-                modifier = Modifier.align(Alignment.Center),
                 text = stringResource(R.string.mods_manage_no_mods)
+            )
+        } else if (modsList.isEmpty()) {
+            //如果列表是空的，则是由搜索导致的
+            //展示“无匹配项”文本
+            ScalingLabel(
+                text = stringResource(R.string.generic_no_matching_items)
             )
         }
     }
@@ -1203,6 +1242,60 @@ private fun ModIcon(
                     contentDescription = null
                 )
             }
+        }
+    }
+}
+
+/**
+ * 在模组列表中穿插的警告文本项
+ */
+@Composable
+private fun WarningItem(
+    modifier: Modifier = Modifier,
+    itemColor: Color = itemLayoutColor(),
+    itemContentColor: Color = MaterialTheme.colorScheme.onSurface,
+    shape: Shape = MaterialTheme.shapes.large,
+    shadowElevation: Dp = itemLayoutShadowElevation(),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val scale = remember { Animatable(initialValue = 0.95f) }
+    LaunchedEffect(Unit) {
+        scale.animateTo(targetValue = 1f, animationSpec = getAnimateTween())
+    }
+
+    Surface(
+        modifier = modifier
+            .graphicsLayer(scaleY = scale.value, scaleX = scale.value),
+        onClick = {},
+        shape = shape,
+        color = itemColor,
+        contentColor = itemContentColor,
+        shadowElevation = shadowElevation
+    ) {
+        Row(
+            modifier = Modifier.padding(all = 8.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.size(48.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(all = 8.dp),
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = stringResource(R.string.generic_warning),
+                    tint = MaterialTheme.colorScheme.tertiary
+                )
+            }
+
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                content = content
+            )
         }
     }
 }

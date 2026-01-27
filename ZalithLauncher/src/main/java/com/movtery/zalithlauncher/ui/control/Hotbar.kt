@@ -139,9 +139,10 @@ fun BoxScope.MinecraftHotbar(
 
     when (rule) {
         HotbarRule.Auto -> {
+            val optionsChangeKey by MCOptions.refreshKey.collectAsStateWithLifecycle()
             val windowChangeKey by ZLBridgeStates.windowChangeKey.collectAsStateWithLifecycle()
             LaunchedEffect(
-                isGrabbing, MCOptions.refreshKey, screenSize, density,
+                isGrabbing, optionsChangeKey, screenSize, density,
                 resolutionRatio, windowChangeKey
             ) {
                 val guiScale = getMCGuiScale(

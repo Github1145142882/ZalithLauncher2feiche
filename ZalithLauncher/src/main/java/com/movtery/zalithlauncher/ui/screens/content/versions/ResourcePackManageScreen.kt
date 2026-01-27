@@ -267,13 +267,16 @@ fun ResourcePackManageScreen(
         return
     }
 
+    val resourcePackDir = remember(version) {
+        File(version.getGameDir(), VersionFolders.RESOURCE_PACK.folderName)
+    }
+
     BaseScreen(
         levels1 = listOf(
             Pair(NestedNavKey.VersionSettings::class.java, mainScreenKey)
         ),
         Triple(NormalNavKey.Versions.ResourcePackManager, versionsScreenKey, false)
     ) { isVisible ->
-        val resourcePackDir = File(version.getGameDir(), VersionFolders.RESOURCE_PACK.folderName)
         val viewModel = rememberResourcePackManageViewModel(resourcePackDir, version)
 
         DeleteAllOperation(

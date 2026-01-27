@@ -69,16 +69,16 @@ fun VideoPlayer(
                 .build()
             setAudioAttributes(audioAttr, false)
 
-            repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
-            this@apply.volume = volume
+            this.repeatMode = if (loop) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
+            this.volume = volume
         }
     }
 
     val playerView = remember {
         PlayerView(context).apply {
             this.player = player
-            this@apply.resizeMode = resizeMode
-            useController = false
+            this.resizeMode = resizeMode
+            this.useController = false
         }
     }
 

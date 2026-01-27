@@ -57,8 +57,10 @@ import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.download.assets.elements.BaseFilterLayout
 import com.movtery.zalithlauncher.viewmodel.AllSupportPackDisplay
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackImportOperation
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
+import com.movtery.zalithlauncher.viewmodel.sendKeepScreen
 
 private sealed interface SelectUriOperation {
     data object None : SelectUriOperation
@@ -86,6 +88,7 @@ fun SearchModPackScreen(
     downloadModPackScreenKey: NavKey,
     downloadModPackScreenCurrentKey: NavKey?,
     viewModel: ModpackImportViewModel,
+    eventViewModel: EventViewModel,
     swapToDownload: (Platform, projectId: String, iconUrl: String?) -> Unit = { _, _, _ -> }
 ) {
     val context = LocalContext.current
@@ -95,7 +98,16 @@ fun SearchModPackScreen(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let { uri ->
-            viewModel.import(context, uri)
+            viewModel.import(
+                context = context,
+                uri = uri,
+                onStart = {
+                    eventViewModel.sendKeepScreen(true)
+                },
+                onStop = {
+                    eventViewModel.sendKeepScreen(false)
+                }
+            )
         }
     }
 

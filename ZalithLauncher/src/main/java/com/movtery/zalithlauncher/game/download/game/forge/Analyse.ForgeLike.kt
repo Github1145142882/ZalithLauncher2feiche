@@ -21,7 +21,7 @@ package com.movtery.zalithlauncher.game.download.game.forge
 import com.google.gson.JsonObject
 import com.google.gson.reflect.TypeToken
 import com.movtery.zalithlauncher.coroutine.Task
-import com.movtery.zalithlauncher.game.addons.mirror.mapMirrorableUrls
+import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.game.addons.modloader.forgelike.ForgeLikeVersion
 import com.movtery.zalithlauncher.game.download.game.GameLibDownloader
 import com.movtery.zalithlauncher.game.download.game.copyVanillaFiles
@@ -273,11 +273,11 @@ private suspend fun parseProcessors(
         versionManifest.versions.find { it.id == version }?.let { vanilla ->
             val manifest = withRetry(FORGE_LIKE_ANALYSE_ID, maxRetries = 1) {
                 fetchStringFromUrls(
-                    vanilla.url.mapMirrorableUrls()
+                    vanilla.url.mapBMCLMirrorUrls()
                 ).parseTo(GameManifest::class.java)
             }
             manifest.downloads?.clientMappings?.let { mappings ->
-                schedule(mappings.url.mapMirrorableUrls(), mappings.sha1, File(output), mappings.size)
+                schedule(mappings.url.mapBMCLMirrorUrls(), mappings.sha1, File(output), mappings.size)
                 lInfo("Mappings: ${mappings.url} (SHA1: ${mappings.sha1})")
             } ?: throw Exception("client_mappings download info not found")
         }

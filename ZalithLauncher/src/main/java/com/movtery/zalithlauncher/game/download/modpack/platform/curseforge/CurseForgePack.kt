@@ -25,8 +25,9 @@ import com.movtery.zalithlauncher.game.addons.modloader.ModLoader
 import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.models.fixedFileUrl
 import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.models.getPlatformClassesOrNull
 import com.movtery.zalithlauncher.game.download.assets.platform.curseforge.models.getSHA1
-import com.movtery.zalithlauncher.game.download.assets.platform.getProjectFromCurseForge
-import com.movtery.zalithlauncher.game.download.assets.platform.getVersionFromCurseForge
+import com.movtery.zalithlauncher.game.download.assets.platform.mcim.mapMCIMMirrorUrls
+import com.movtery.zalithlauncher.game.download.assets.platform.mirroredCurseForgeSource
+import com.movtery.zalithlauncher.game.download.assets.platform.mirroredPlatformSearcher
 import com.movtery.zalithlauncher.game.download.modpack.install.ModFile
 import com.movtery.zalithlauncher.game.download.modpack.install.ModPackInfo
 import com.movtery.zalithlauncher.game.download.modpack.install.ModPackInfoTask
@@ -66,17 +67,25 @@ class CurseForgePack(
                 ModFile(
                     getFile = {
                         runCatching {
-                            val version = getVersionFromCurseForge(
-                                projectID = manifestFile.projectID.toString(),
-                                fileID = manifestFile.fileID.toString()
-                            ).data
+                            val version = mirroredPlatformSearcher(
+                                searchers = mirroredCurseForgeSource()
+                            ) { searcher ->
+                                searcher.getVersion(
+                                    projectID = manifestFile.projectID.toString(),
+                                    fileID = manifestFile.fileID.toString()
+                                )
+                            }.data
                             val url = version.fixedFileUrl() ?: throw IOException("Can't get the file url")
                             val fileName = version.fileName ?: throw IOException("Can't get the file name")
 
                             //获取项目
-                            val project = getProjectFromCurseForge(
-                                projectID = manifestFile.projectID.toString()
-                            ).data
+                            val project = mirroredPlatformSearcher(
+                                searchers = mirroredCurseForgeSource()
+                            ) { searcher ->
+                                searcher.getProject(
+                                    projectID = manifestFile.projectID.toString()
+                                )
+                            }.data
                             //通过项目类型指定目标下载目录
                             val folder = project.getPlatformClassesOrNull()
                                 ?.versionFolder?.folderName
@@ -86,7 +95,7 @@ class CurseForgePack(
 
                             ModFile(
                                 outputFile = File(folder, fileName),
-                                downloadUrls = listOf(url),
+                                downloadUrls = url.mapMCIMMirrorUrls(),
                                 sha1 = version.getSHA1()
                             )
                         }.onFailure { e ->

@@ -49,7 +49,7 @@ import com.movtery.zalithlauncher.game.launch.LogName
 import com.movtery.zalithlauncher.path.PathManager
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
-import com.movtery.zalithlauncher.ui.base.BaseComponentActivity
+import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.ScalingActionButton
 import com.movtery.zalithlauncher.ui.screens.main.ErrorScreen
@@ -84,8 +84,7 @@ fun showExitMessage(context: Context, code: Int, isSignal: Boolean) {
 @Parcelize
 private data class JvmCrash(val code: Int, val isSignal: Boolean): Parcelable
 
-class ErrorActivity : BaseComponentActivity(refreshData = false) {
-    private val viewModel: ErrorActivityViewModel by viewModels()
+class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

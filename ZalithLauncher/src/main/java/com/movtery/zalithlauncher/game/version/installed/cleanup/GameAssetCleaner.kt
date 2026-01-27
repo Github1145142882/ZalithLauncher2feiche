@@ -30,7 +30,6 @@ import com.movtery.zalithlauncher.coroutine.TitledTask
 import com.movtery.zalithlauncher.coroutine.addTask
 import com.movtery.zalithlauncher.coroutine.buildPhase
 import com.movtery.zalithlauncher.game.path.getAssetsHome
-import com.movtery.zalithlauncher.game.path.getLibrariesHome
 import com.movtery.zalithlauncher.game.version.download.BaseMinecraftDownloader
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
 import com.movtery.zalithlauncher.game.version.installed.getGameManifest
@@ -117,7 +116,8 @@ class GameAssetCleaner(
     }
 
     private suspend fun getTaskPhases() = withContext(Dispatchers.IO) {
-        val libraryFolder = File(getLibrariesHome())
+        //不再清理依赖库，文件并不会太大，也有可能导致其他问题：#617
+//        val libraryFolder = File(getLibrariesHome())
         val assetsFolder = File(getAssetsHome())
 
         allFiles.clear()
@@ -136,7 +136,7 @@ class GameAssetCleaner(
                 ) { task ->
                     task.updateProgress(-1f)
 
-                    collectFiles(libraryFolder) { allFiles.add(it.alsoProgress(task)) }
+//                    collectFiles(libraryFolder) { allFiles.add(it.alsoProgress(task)) }
                     collectFiles(assetsFolder) { allFiles.add(it.alsoProgress(task)) }
                 }
 
@@ -166,9 +166,9 @@ class GameAssetCleaner(
                             }
                         }
 
-                        downloader.loadLibraryDownloads(gameManifest) { _, _, targetFile, _, _ ->
-                            addGameFile(targetFile)
-                        }
+//                        downloader.loadLibraryDownloads(gameManifest) { _, _, targetFile, _, _ ->
+//                            addGameFile(targetFile)
+//                        }
                         downloader.loadAssetsDownload(index) { _, _, targetFile, _ ->
                             addGameFile(targetFile)
                         }

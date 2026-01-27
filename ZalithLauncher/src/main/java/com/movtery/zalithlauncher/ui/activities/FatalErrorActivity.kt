@@ -24,7 +24,7 @@ import android.os.Bundle
 import android.util.Log
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.movtery.zalithlauncher.R
-import com.movtery.zalithlauncher.ui.base.AbstractComponentActivity
+import com.movtery.zalithlauncher.ui.base.AbstractAppCompatActivity
 import com.movtery.zalithlauncher.utils.copyText
 import com.movtery.zalithlauncher.utils.getSerializableSafely
 
@@ -37,7 +37,7 @@ private const val BUNDLE_THROWABLE = "BUNDLE_THROWABLE"
  *
  * 它被设计为与主启动器相互独立，以确保即使启动器本身出现严重问题，也能正常显示该界面
  */
-class FatalErrorActivity : AbstractComponentActivity() {
+class FatalErrorActivity : AbstractAppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

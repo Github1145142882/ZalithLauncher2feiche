@@ -140,7 +140,7 @@ class CurseForgeData(
      * 该项目的最新抢先体验文件的文件相关详细信息列表
      */
     @SerialName("latestEarlyAccessFilesIndexes")
-    val latestEarlyAccessFilesIndexes: Array<CurseForgeFileIndex>,
+    val latestEarlyAccessFilesIndexes: Array<CurseForgeFileIndex>? = null,
 
     /**
      * 项目的创建日期
@@ -299,7 +299,7 @@ class CurseForgeData(
         val url: String,
 
         @SerialName("avatarUrl")
-        val avatarUrl: String?
+        val avatarUrl: String? = null
     )
 
     @Serializable

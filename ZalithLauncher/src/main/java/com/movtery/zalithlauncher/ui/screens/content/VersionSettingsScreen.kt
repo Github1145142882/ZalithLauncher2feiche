@@ -106,6 +106,7 @@ import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.logging.Logger.lError
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 import io.ktor.client.plugins.HttpRequestTimeoutException
@@ -197,6 +198,7 @@ fun VersionSettingsScreen(
     backScreenViewModel: ScreenBackStackViewModel,
     backToMainScreen: () -> Unit,
     launchGameViewModel: LaunchGameViewModel,
+    eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val context = LocalContext.current
@@ -252,6 +254,7 @@ fun VersionSettingsScreen(
                 backToMainScreen = backToMainScreen,
                 launchGameViewModel = launchGameViewModel,
                 version = key.version,
+                eventViewModel = eventViewModel,
                 submitError = submitError
             )
         }
@@ -343,6 +346,7 @@ private fun NavigationUI(
     backToMainScreen: () -> Unit,
     launchGameViewModel: LaunchGameViewModel,
     version: Version,
+    eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val context = LocalContext.current
@@ -420,6 +424,7 @@ private fun NavigationUI(
                                 }
                             )
                         },
+                        eventViewModel = eventViewModel,
                         submitError = submitError
                     )
                 }

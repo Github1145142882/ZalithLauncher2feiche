@@ -366,6 +366,9 @@
     <string name="game_button_log_output">日志输出</string>
     <string name="game_button_mouse_left">鼠标左键</string>
     <string name="game_button_mouse_right">鼠标右键</string>
+    <string name="game_input_proxy_mode_default">实时模式</string>
+    <string name="game_input_proxy_mode_simple">简单模式</string>
+    <string name="game_input_proxy_mode_send">发送模式</string>
     <string name="game_dialog_force_close_message">您确定要强制关闭，并返回主界面吗？</string>
     <string name="game_loading">游戏正在运行，等待游戏画面出现中</string>
     <string name="game_loading_version_name">游戏版本：%s</string>
@@ -884,6 +887,7 @@
     <string name="settings_launcher_color_theme_title">颜色主题</string>
     <string name="settings_launcher_color_theme_summary">更改启动器的整体颜色主题</string>
     <string name="settings_launcher_dark_mode_title">深色模式</string>
+    <string name="settings_launcher_language">语言</string>
     <string name="settings_launcher_full_screen_title">页面全屏化</string>
     <string name="settings_launcher_full_screen_summary">使启动器的页面全屏化，忽略刘海屏、挖孔屏等屏幕的安全区</string>
     <string name="settings_launcher_animate_speed_title">动画倍速</string>
@@ -899,6 +903,8 @@
     <string name="settings_launcher_log_share_packing">打包启动器日志文件</string>
     <string name="settings_launcher_mirror_modloader_title">模组加载器版本获取源</string>
     <string name="settings_launcher_mirror_file_download_title">文件下载源</string>
+    <string name="settings_launcher_mirror_assets_search_title">资源平台搜索源</string>
+    <string name="settings_launcher_mirror_assets_download_title">资源平台文件下载源</string>
     <string name="settings_launcher_mirror_official_first">优先使用官方源</string>
     <string name="settings_launcher_mirror_mirror_first">优先使用镜像源</string>
     <string name="settings_launcher_background_title">启动器背景</string>
@@ -956,6 +962,7 @@
     <string name="control_editor_layers_attribute_hide">默认隐藏控件层</string>
     <string name="control_editor_layers_attribute_hide_when_mouse">在实体鼠标操作时不隐藏</string>
     <string name="control_editor_layers_attribute_hide_when_gamepad">在手柄操作时不隐藏</string>
+    <string name="control_editor_layers_attribute_hide_when_joystick">在摇杆组件启用时不隐藏</string>
     <string name="control_editor_layers_merge_downward">合并控件至下层</string>
     <string name="control_editor_edit_dialog_open_preview">开启预览</string>
     <string name="control_editor_edit_dialog_close_preview">关闭预览</string>
@@ -1066,6 +1073,7 @@
     <string name="about_acknowledgements_mcmod">MC 百科（mcmod.cn）</string>
     <string name="about_acknowledgements_mcmod_text">%s 使用了来自 MC 百科 的模组、整合包翻译</string>
     <string name="about_acknowledgements_bangbang93_text">%s 使用了 BMCL API 镜像源</string>
+    <string name="about_acknowledgements_mcim_text">%s 使用了 MCIM 镜像源</string>
     <string name="about_acknowledgements_github_community">GitHub 社区</string>
     <string name="about_acknowledgements_github_community_text">GitHub 社区的所有议题提出者和贡献者</string>
     <string name="about_acknowledgements_weblate_community">Weblate 社区</string>

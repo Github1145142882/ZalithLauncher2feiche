@@ -33,6 +33,7 @@ import kotlinx.serialization.Serializable
  * @param hide 是否隐藏层级
  * @param hideWhenMouse 是否在实体鼠标操控后隐藏
  * @param hideWhenGamepad 是否在手柄操控后隐藏
+ * @param hideWhenJoystick 是否在使用摇杆时隐藏
  * @param visibilityType 层级的可见场景
  * @param normalButtons 普通的按钮列表
  * @param textBoxes 文本显示框列表
@@ -49,6 +50,8 @@ data class ControlLayer(
     val hideWhenMouse: Boolean = true,
     @SerialName("hideWhenGamepad")
     val hideWhenGamepad: Boolean = true,
+    @SerialName("hideWhenJoystick")
+    val hideWhenJoystick: Boolean = false,
     @SerialName("visibilityType")
     val visibilityType: VisibilityType,
     @SerialName("normalButtons")
@@ -62,6 +65,7 @@ data class ControlLayer(
                 this.hide != other.hide ||
                 this.hideWhenMouse != other.hideWhenMouse ||
                 this.hideWhenGamepad != other.hideWhenGamepad ||
+                this.hideWhenJoystick != other.hideWhenJoystick ||
                 this.visibilityType != other.visibilityType ||
                 this.normalButtons.isModified(other.normalButtons) ||
                 this.textBoxes.isModified(other.textBoxes)

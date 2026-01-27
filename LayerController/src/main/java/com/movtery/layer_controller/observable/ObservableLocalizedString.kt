@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.movtery.layer_controller.data.lang.LocalizedString
+import com.movtery.layer_controller.utils.compareLangTag
 import java.util.Locale
 
 class ObservableLocalizedString(
@@ -51,5 +52,5 @@ class ObservableLocalizedString(
 fun ObservableLocalizedString.check(
     locale: Locale = Locale.getDefault()
 ): String? = value.takeIf {
-    locale.toLanguageTag() == languageTag
+    locale.compareLangTag(languageTag)
 }

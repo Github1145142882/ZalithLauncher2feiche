@@ -261,13 +261,16 @@ fun ShadersManagerScreen(
         return
     }
 
+    val shadersDir = remember(version) {
+        File(version.getGameDir(), VersionFolders.SHADERS.folderName)
+    }
+
     BaseScreen(
         levels1 = listOf(
             Pair(NestedNavKey.VersionSettings::class.java, mainScreenKey)
         ),
         Triple(NormalNavKey.Versions.ShadersManager, versionsScreenKey, false),
     ) { isVisible ->
-        val shadersDir = File(version.getGameDir(), VersionFolders.SHADERS.folderName)
         val viewModel = rememberShadersManageViewModel(shadersDir, version)
 
         DeleteAllOperation(

@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.movtery.layer_controller.observable.ObservableLocalizedString
 import com.movtery.layer_controller.observable.ObservableTranslatableString
+import com.movtery.layer_controller.utils.toSimpleLangTag
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.fadeEdge
@@ -122,7 +123,7 @@ fun EditTranslatableTextDialog(
                 val locale = LocalConfiguration.current.locales[0]
                 Text(
                     modifier = Modifier.fillMaxWidth(),
-                    text = stringResource(R.string.control_editor_edit_translatable_other_tip, locale.toLanguageTag()),
+                    text = stringResource(R.string.control_editor_edit_translatable_other_tip, locale.toSimpleLangTag()),
                     style = MaterialTheme.typography.labelMedium,
                     textAlign = TextAlign.Center
                 )

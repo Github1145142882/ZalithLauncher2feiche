@@ -114,6 +114,7 @@ import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
+import com.movtery.zalithlauncher.viewmodel.sendKeepScreen
 
 @Composable
 fun MainScreen(
@@ -124,6 +125,16 @@ fun MainScreen(
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val tasks by TaskSystem.tasksFlow.collectAsStateWithLifecycle()
+
+    //监控当前是否有任务正在进行
+    LaunchedEffect(tasks) {
+        if (tasks.isEmpty()) {
+            eventViewModel.sendKeepScreen(false)
+        } else {
+            //有任务正在进行，避免熄屏
+            eventViewModel.sendKeepScreen(true)
+        }
+    }
 
     val isTaskMenuExpanded = AllSettings.launcherTaskMenuExpanded.state
 
@@ -502,6 +513,7 @@ private fun NavigationUI(
                     VersionsManageScreen(
                         backScreenViewModel = screenBackStackModel,
                         navigateToVersions = navigateToVersions,
+                        eventViewModel = eventViewModel,
                         submitError = submitError
                     )
                 }
@@ -519,6 +531,7 @@ private fun NavigationUI(
                         backScreenViewModel = screenBackStackModel,
                         backToMainScreen = toMainScreen,
                         launchGameViewModel = launchGameViewModel,
+                        eventViewModel = eventViewModel,
                         submitError = submitError
                     )
                 }

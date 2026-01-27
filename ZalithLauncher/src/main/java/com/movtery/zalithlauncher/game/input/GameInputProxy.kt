@@ -53,10 +53,17 @@ class GameInputProxy(
         }
     }
 
-    private fun handleInsert(diff: TextDifference.Insert) {
-        diff.insertedText.forEach { char ->
+    /**
+     * 直接发送文本到游戏
+     */
+    fun String.sendText() {
+        forEach { char ->
             sender.sendChar(char)
         }
+    }
+
+    private fun handleInsert(diff: TextDifference.Insert) {
+        diff.insertedText.sendText()
     }
 
     private fun handleDelete(diff: TextDifference.Delete) {
@@ -72,9 +79,7 @@ class GameInputProxy(
         repeat(diff.deletedText.length) {
             sender.sendBackspace()
         }
-        diff.insertedText.forEach { char ->
-            sender.sendChar(char)
-        }
+        diff.insertedText.sendText()
     }
 
     /**
@@ -121,7 +126,7 @@ class GameInputProxy(
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 //已经在处理文本差异时尝试过发送按键了，但是可能需要考虑到这类情况
                 //文本框本身没有文本，但是游戏内的输入框还有文本
-                //所以应该继续发送退格键，但不应该在这里进行处理
+                //不过不应该在这里进行处理
                 return
             }
 
@@ -142,15 +147,22 @@ class GameInputProxy(
      */
     fun handleSpecialKey(keyEvent: KeyEvent, text: CharSequence): Boolean {
         if (text.isEmpty()) {
-            when (keyEvent.keyCode) {
-                KeyEvent.KEYCODE_DEL -> sender.sendBackspace()
-                KeyEvent.KEYCODE_DPAD_LEFT -> sender.sendLeft()
-                KeyEvent.KEYCODE_DPAD_RIGHT -> sender.sendRight()
-                else -> return false
-            }
-            return true
+            return handleSpecialKey(keyEvent)
         }
         return false
+    }
+
+    /**
+     * 仅处理特殊按键
+     */
+    fun handleSpecialKey(keyEvent: KeyEvent): Boolean {
+        when (keyEvent.keyCode) {
+            KeyEvent.KEYCODE_DEL -> sender.sendBackspace()
+            KeyEvent.KEYCODE_DPAD_LEFT -> sender.sendLeft()
+            KeyEvent.KEYCODE_DPAD_RIGHT -> sender.sendRight()
+            else -> return false
+        }
+        return true
     }
 }
 

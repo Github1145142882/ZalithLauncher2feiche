@@ -18,7 +18,7 @@
 
 package com.movtery.zalithlauncher.game.versioninfo
 
-import com.movtery.zalithlauncher.game.addons.mirror.mapMirrorableUrls
+import com.movtery.zalithlauncher.game.addons.mirror.mapBMCLMirrorUrls
 import com.movtery.zalithlauncher.game.versioninfo.models.VersionManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.filterType
 import com.movtery.zalithlauncher.path.PathManager
@@ -110,7 +110,7 @@ object MinecraftVersions {
     private suspend fun downloadVersionManifest(): VersionManifest {
         return withContext(Dispatchers.IO) {
             withRetry("MinecraftVersions", maxRetries = 1) {
-                val rawJson = fetchStringFromUrls(URL_MINECRAFT_VERSION_REPOS.mapMirrorableUrls())
+                val rawJson = fetchStringFromUrls(URL_MINECRAFT_VERSION_REPOS.mapBMCLMirrorUrls())
                 val versionManifest = GSON.fromJson(rawJson, VersionManifest::class.java)
                 PathManager.FILE_MINECRAFT_VERSIONS.writeText(rawJson)
                 versionManifest

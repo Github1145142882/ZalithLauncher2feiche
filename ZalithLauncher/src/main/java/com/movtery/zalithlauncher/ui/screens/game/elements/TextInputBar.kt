@@ -31,20 +31,24 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.input.TextFieldLineLimits
 import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -74,6 +78,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
@@ -101,6 +106,34 @@ enum class InputBarMode {
      * 可以将输入栏设置为填充模式，填充宽度，并将输入栏贴在输入法上方
      */
     Filling
+}
+
+/**
+ * 输入模式，控制如何进行输入
+ */
+enum class InputMode(val textRes: Int) {
+    /**
+     * 默认模式：拥有输入框，根据输入的内容进行智障发送（几乎实时）
+     */
+    Default(R.string.game_input_proxy_mode_default) {
+        override fun next(): InputMode = Simple
+    },
+
+    /**
+     * 简单模式：不显式拥有输入框，输入内容即发送（几乎实时）
+     */
+    Simple(R.string.game_input_proxy_mode_simple) {
+        override fun next(): InputMode = Send
+    },
+
+    /**
+     * 发送模式：拥有输入框，输入好内容，手动点击发送按钮发送（不实时）
+     */
+    Send(R.string.game_input_proxy_mode_send) {
+        override fun next(): InputMode = Default
+    };
+
+    abstract fun next(): InputMode
 }
 
 @Composable
@@ -151,19 +184,25 @@ fun TextInputBarArea(
  * 不是很能顶得住适配所有输入法 :(
  *
  * @param mode 控制输入条的显示模式，主要用于照顾全屏输入法（悬浮输入法或者关闭输入法时，可以使用 [InputBarMode.Floating]）
+ * @param inputMode 控制输入代理的输入模式，这里仅用于控制外观，以及回调方式，具体逻辑在回调中完成
  * @param show 控制是否显示输入条，主要用于淡出淡入的动画效果
  * @param enabledActionBar 是否启用操作栏
+ * @param onHandle 当输入模式为[InputMode.Default]时，会使用这个回调返回状态
+ * @param onSend 当输入模式为[InputMode.Send]或[InputMode.Simple]时，会使用这个回调返回状态
  */
 @Composable
 fun TextInputBar(
     modifier: Modifier = Modifier,
-    mode: InputBarMode = InputBarMode.Floating,
+    mode: InputBarMode,
+    inputMode: InputMode,
+    onInputModeChange: (InputMode) -> Unit,
     textFieldState: TextFieldState,
     show: Boolean,
     enabledActionBar: Boolean = true,
     onChangeActionBar: (Boolean) -> Unit = {},
     onClose: () -> Unit,
     onHandle: (text: String, selection: TextRange) -> Unit,
+    onSend: (text: String) -> Unit,
     onClear: () -> Unit,
 //    onSendText: (String) -> Unit,
     onShiftClick: (press: Boolean) -> Unit,
@@ -185,11 +224,25 @@ fun TextInputBar(
             targetOffsetY = { -it }
         ) + fadeOut(),
     ) {
-        val currentOnHandle by rememberUpdatedState(onHandle)
-        LaunchedEffect(textFieldState.text, textFieldState.selection) {
-            val currentText = textFieldState.text.toString()
-            val currentSelection = textFieldState.selection
-            currentOnHandle(currentText, currentSelection)
+        when (inputMode) {
+            InputMode.Default -> {
+                val currentOnHandle by rememberUpdatedState(onHandle)
+                LaunchedEffect(textFieldState.text, textFieldState.selection) {
+                    val currentText = textFieldState.text.toString()
+                    val currentSelection = textFieldState.selection
+                    currentOnHandle(currentText, currentSelection)
+                }
+            }
+            InputMode.Simple -> {
+                val currentOnSend by rememberUpdatedState(onSend)
+                LaunchedEffect(textFieldState.text) {
+                    val currentText = textFieldState.text.toString()
+                    currentOnSend(currentText)
+                }
+            }
+            InputMode.Send -> {
+                //发送模式不会自动发送，由用户手动发送
+            }
         }
 
         val currentOnClear by rememberUpdatedState(onClear)
@@ -204,185 +257,303 @@ fun TextInputBar(
             InputBarMode.Filling -> RectangleShape
         }
 
+        /**
+         * 可见输入框
+         */
+        @Composable
+        fun ShowableInputLayout(
+            modifier: Modifier = Modifier
+        ) {
+            val inputFocus = remember { FocusRequester() }
+            val focusManager = LocalFocusManager.current
+            val keyboardController = LocalSoftwareKeyboardController.current
+
+            OutlinedTextField(
+                modifier = modifier.focusRequester(inputFocus),
+                state = textFieldState,
+                leadingIcon = {
+                    //关闭按钮
+                    IconButton(
+                        onClick = onClose
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.generic_close)
+                        )
+                    }
+                },
+                trailingIcon = {
+                    //收起输入法
+                    IconButton(
+                        onClick = {
+                            focusManager.clearFocus(true)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowDown,
+                            contentDescription = stringResource(R.string.generic_close)
+                        )
+                    }
+                },
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Done
+                ),
+                onKeyboardAction = {
+                    focusManager.clearFocus(true)
+                    onEnterClick()
+                    onClear()
+                },
+                lineLimits = TextFieldLineLimits.SingleLine,
+                shape = MaterialTheme.shapes.large
+            )
+
+            //根据show来决定是否显示/隐藏输入法
+            LaunchedEffect(show) {
+                if (show) {
+                    inputFocus.requestFocus()
+                    keyboardController?.show()
+                } else {
+                    focusManager.clearFocus(true)
+                    keyboardController?.hide()
+                }
+            }
+        }
+
+        @Composable
+        fun HidableInputLayout(
+            modifier: Modifier = Modifier
+        ) {
+            val inputFocus = remember { FocusRequester() }
+            val focusManager = LocalFocusManager.current
+            val keyboardController = LocalSoftwareKeyboardController.current
+
+            BasicTextField(
+                modifier = modifier.focusRequester(inputFocus),
+                state = textFieldState,
+                cursorBrush = SolidColor(Color.Transparent),
+                decorator = {
+                    //不显示任何内容
+                }
+            )
+
+            //根据show来决定是否显示/隐藏输入法
+            LaunchedEffect(show) {
+                if (show) {
+                    inputFocus.requestFocus()
+                    keyboardController?.show()
+                } else {
+                    focusManager.clearFocus(true)
+                    keyboardController?.hide()
+                }
+            }
+        }
+
+        /**
+         * 控制输入的按钮栏
+         */
+        @Composable
+        fun ActionButtonsLayout(
+            modifier: Modifier = Modifier
+        ) {
+            Row(
+                modifier = modifier,
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                //退格按钮
+                SurfaceButton(
+                    icon = Icons.AutoMirrored.Default.Backspace,
+                    contentDescription = stringResource(R.string.generic_delete),
+                    onClick = onBackspaceClick,
+                    color = itemLayoutColorOnSurface(),
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                )
+
+                //简单模式不需要进行切换，默认显示操作栏
+                if (mode == InputBarMode.Floating && inputMode != InputMode.Simple) {
+                    //操作栏切换按钮
+                    SurfaceButton(
+                        onClick = {
+                            onChangeActionBar(!enabledActionBar)
+                        },
+                        color = itemLayoutColorOnSurface(),
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                        icon = {
+                            Crossfade(
+                                targetState = enabledActionBar
+                            ) { enabled ->
+                                Icon(
+                                    modifier = Modifier.size(18.dp),
+                                    imageVector = if (enabled) {
+                                        Icons.Default.ArrowDropUp
+                                    } else {
+                                        Icons.Default.MoreHoriz
+                                    },
+                                    contentDescription = stringResource(R.string.generic_more)
+                                )
+                            }
+                        },
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = inputMode == InputMode.Send
+                ) {
+                    //发送按钮
+                    SurfaceButton(
+                        icon = Icons.AutoMirrored.Default.Send,
+                        contentDescription = stringResource(R.string.control_editor_edit_event_launcher_send_text),
+                        enabled = inputMode == InputMode.Send,
+                        onClick = {
+                            val text0 = textFieldState.text.toString()
+                            //不应该发送空字符串
+                            if (text0.isNotEmpty()) {
+                                onSend(text0)
+                            }
+                        }
+                    )
+                }
+            }
+        }
+
+        /**
+         * 操作按钮栏
+         */
+        @Composable
+        fun ActionBarLayout(
+            modifier: Modifier = Modifier
+        ) {
+            Row(
+                modifier = modifier,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                //在悬浮模式下，显示更多的操作项
+                val scrollState = rememberScrollState()
+                ActionBar(
+                    modifier = Modifier
+                        .fadeEdge(state = scrollState, direction = EdgeDirection.Horizontal)
+                        .weight(1f)
+                        .horizontalScroll(scrollState),
+                    onShiftClick = { press ->
+                        onShiftClick(press)
+                        if (press) onClear()
+                    },
+                    onCtrlClick = { press ->
+                        onCtrlClick(press)
+                        if (press) onClear()
+                    },
+                    onTabClick = {
+                        onTabClick()
+                        onClear()
+                    },
+                    onEnterClick = {
+                        onEnterClick()
+                        onClear()
+                    },
+                    onUpClick = {
+                        onUpClick()
+                        onClear()
+                    },
+                    onDownClick = {
+                        onDownClick()
+                        onClear()
+                    },
+                    onLeftClick = {
+                        onLeftClick()
+                        onClear()
+                    },
+                    onRightClick = {
+                        onRightClick()
+                        onClear()
+                    }
+                )
+
+                //切换输入模式
+                Button(
+                    onClick = {
+                        onClear()
+                        onInputModeChange(inputMode.next())
+                    }
+                ) {
+                    Text(text = stringResource(inputMode.textRes))
+                }
+            }
+        }
+
         Surface(
-            modifier = modifier,
+            modifier = modifier.height(IntrinsicSize.Min),
             shape = surfaceShape,
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
-            Column(
+            Crossfade(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .then(
-                        if (mode == InputBarMode.Floating && enabledActionBar) {
-                            Modifier
-                                //特调操作按钮栏底部边距
-                                .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp)
-                        } else {
-                            Modifier.padding(all = 16.dp)
-                        }
-                    )
                     .animateContentSize(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                //基础输入法功能栏
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    val inputFocus = remember { FocusRequester() }
-                    val focusManager = LocalFocusManager.current
-                    val keyboardController = LocalSoftwareKeyboardController.current
-
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .weight(1f)
-                            .focusRequester(inputFocus),
-                        state = textFieldState,
-                        leadingIcon = {
-                            //关闭按钮
-                            IconButton(
-                                onClick = onClose
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Close,
-                                    contentDescription = stringResource(R.string.generic_close)
-                                )
-                            }
-                        },
-                        trailingIcon = {
-                            //收起输入法
-                            IconButton(
-                                onClick = {
-                                    focusManager.clearFocus(true)
-                                }
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.KeyboardArrowDown,
-                                    contentDescription = stringResource(R.string.generic_close)
-                                )
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            imeAction = ImeAction.Done
-                        ),
-                        onKeyboardAction = {
-                            focusManager.clearFocus(true)
-                            onEnterClick()
-                            onClear()
-                        },
-                        lineLimits = TextFieldLineLimits.SingleLine,
-                        shape = MaterialTheme.shapes.large
+                targetState = inputMode == InputMode.Simple
+            ) { isSimple ->
+                if (isSimple) {
+                    //隐藏的输入法
+                    HidableInputLayout(
+                        modifier = Modifier.fillMaxSize()
                     )
 
-                    //根据show来决定是否显示/隐藏输入法
-                    LaunchedEffect(show) {
-                        if (show) {
-                            inputFocus.requestFocus()
-                            keyboardController?.show()
-                        } else {
-                            focusManager.clearFocus(true)
-                            keyboardController?.hide()
-                        }
-                    }
-
+                    //简单输入模式
                     Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(all = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        //退格按钮
+                        //关闭按钮
                         SurfaceButton(
-                            icon = Icons.AutoMirrored.Default.Backspace,
-                            contentDescription = stringResource(R.string.generic_delete),
-                            onClick = onBackspaceClick,
-                            color = itemLayoutColorOnSurface(),
-                            contentColor = MaterialTheme.colorScheme.onSurface
+                            icon = Icons.Default.Close,
+                            contentDescription = stringResource(R.string.generic_close),
+                            onClick = onClose
                         )
 
-                        if (mode == InputBarMode.Floating) {
-                            //操作栏切换按钮
-                            SurfaceButton(
-                                onClick = {
-                                    onChangeActionBar(!enabledActionBar)
-                                },
-                                color = itemLayoutColorOnSurface(),
-                                contentColor = MaterialTheme.colorScheme.onSurface,
-                                icon = {
-                                    Crossfade(
-                                        targetState = enabledActionBar
-                                    ) { enabled ->
-                                        Icon(
-                                            modifier = Modifier.size(18.dp),
-                                            imageVector = if (enabled) {
-                                                Icons.Default.ArrowDropUp
-                                            } else {
-                                                Icons.Default.MoreHoriz
-                                            },
-                                            contentDescription = stringResource(R.string.generic_more)
-                                        )
-                                    }
-                                },
+                        ActionBarLayout(
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        ActionButtonsLayout()
+                    }
+                } else {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .then(
+                                if (mode == InputBarMode.Floating && enabledActionBar) {
+                                    Modifier
+                                        //特调操作按钮栏底部边距
+                                        .padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 10.dp)
+                                } else {
+                                    Modifier.padding(all = 16.dp)
+                                }
+                            ),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        //基础输入法功能栏
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            ShowableInputLayout(
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            ActionButtonsLayout()
+                        }
+
+                        if (mode == InputBarMode.Floating && enabledActionBar) {
+                            ActionBarLayout(
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
-//
-//                        //发送按钮
-//                        SurfaceButton(
-//                            icon = Icons.AutoMirrored.Default.Send,
-//                            contentDescription = stringResource(R.string.control_editor_edit_event_launcher_send_text),
-//                            onClick = {
-//                                val text0 = text
-//                                //不应该发送空字符串
-//                                if (text0.isNotEmpty()) {
-//                                    text = ""
-//                                    onSendText(text0)
-//                                }
-//                            }
-//                        )
                     }
-                }
-
-                if (mode == InputBarMode.Floating && enabledActionBar) {
-                    //在悬浮模式下，显示更多的操作项
-                    val scrollState = rememberScrollState()
-                    ActionBar(
-                        modifier = Modifier
-                            .fadeEdge(state = scrollState, direction = EdgeDirection.Horizontal)
-                            .fillMaxWidth()
-                            .horizontalScroll(scrollState),
-                        onShiftClick = { press ->
-                            onShiftClick(press)
-                            if (press) onClear()
-                        },
-                        onCtrlClick = { press ->
-                            onCtrlClick(press)
-                            if (press) onClear()
-                        },
-                        onTabClick = {
-                            onTabClick()
-                            onClear()
-                        },
-                        onEnterClick = {
-                            onEnterClick()
-                            onClear()
-                        },
-                        onUpClick = {
-                            onUpClick()
-                            onClear()
-                        },
-                        onDownClick = {
-                            onDownClick()
-                            onClear()
-                        },
-                        onLeftClick = {
-                            onLeftClick()
-                            onClear()
-                        },
-                        onRightClick = {
-                            onRightClick()
-                            onClear()
-                        }
-                    )
                 }
             }
         }
@@ -481,6 +652,7 @@ private fun SurfaceButton(
     contentDescription: String?,
     onClick: () -> Unit,
     iconSize: Dp = 18.dp,
+    enabled: Boolean = true,
     shape: Shape = IconButtonDefaults.standardShape,
     color: Color = MaterialTheme.colorScheme.primary,
     contentColor: Color = contentColorFor(color)
@@ -497,7 +669,8 @@ private fun SurfaceButton(
         onClick = onClick,
         shape = shape,
         color = color,
-        contentColor = contentColor
+        contentColor = contentColor,
+        enabled = enabled
     )
 }
 
@@ -506,16 +679,18 @@ private fun SurfaceButton(
     modifier: Modifier = Modifier,
     icon: @Composable BoxScope.() -> Unit,
     onClick: () -> Unit,
+    enabled: Boolean = true,
     shape: Shape = IconButtonDefaults.standardShape,
     color: Color = MaterialTheme.colorScheme.primary,
-    contentColor: Color = contentColorFor(color)
+    contentColor: Color = contentColorFor(color),
 ) {
     Surface(
         modifier = modifier,
         shape = shape,
         onClick = onClick,
         color = color,
-        contentColor = contentColor
+        contentColor = contentColor,
+        enabled = enabled
     ) {
         Box(
             modifier = Modifier.padding(all = 12.dp),
