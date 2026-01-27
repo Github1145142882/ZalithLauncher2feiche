@@ -154,6 +154,7 @@ android {
         jniLibs {
             useLegacyPackaging = true
             pickFirsts += listOf("**/libbytehook.so")
+            keepDebugSymbols += listOf("**/libterracotta.so")
         }
     }
 

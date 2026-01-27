@@ -10,6 +10,7 @@
     <string name="generic_delete">حذف</string>
     <string name="generic_rename">إعادة تسمية</string>
     <string name="generic_copy">نسخ</string>
+    <string name="generic_copy_success">تم النسخ بنجاح</string>
     <string name="generic_paste">لصق</string>
     <string name="generic_more">المزيد</string>
     <string name="generic_setting">الإعدادات</string>

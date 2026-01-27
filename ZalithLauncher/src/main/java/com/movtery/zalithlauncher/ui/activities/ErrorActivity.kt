@@ -18,23 +18,49 @@
 
 package com.movtery.zalithlauncher.ui.activities
 
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.launch.LogName
 import com.movtery.zalithlauncher.path.PathManager
+import androidx.activity.viewModels
+import androidx.compose.runtime.LaunchedEffect
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
+import com.movtery.zalithlauncher.ui.components.MarqueeText
+import com.movtery.zalithlauncher.ui.components.ScalingActionButton
 import com.movtery.zalithlauncher.ui.screens.main.ErrorScreen
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.getParcelableSafely
 import com.movtery.zalithlauncher.utils.getSerializableSafely
+import com.movtery.zalithlauncher.utils.network.openLink
 import com.movtery.zalithlauncher.utils.string.throwableToString
+import com.movtery.zalithlauncher.viewmodel.ErrorActivityViewModel
+import com.movtery.zalithlauncher.viewmodel.ErrorOperation
 import kotlinx.parcelize.Parcelize
 import java.io.File
 
@@ -104,6 +130,29 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
 
         setContent {
             ZalithLauncherTheme {
+                val operation = viewModel.operation
+
+                LaunchedEffect(operation) {
+                    when (operation) {
+                        is ErrorOperation.Uploading -> {
+                            Toast.makeText(
+                                this@ErrorActivity,
+                                R.string.crash_uploading_logs,
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        is ErrorOperation.UploadFailed -> {
+                            Toast.makeText(
+                                this@ErrorActivity,
+                                getString(R.string.crash_upload_logs_failed, operation.error),
+                                Toast.LENGTH_LONG
+                            ).show()
+                            viewModel.resetOperation()
+                        }
+                        else -> {}
+                    }
+                }
+
                 Box {
                     ErrorScreen(
                         crashType = errorMessage.crashType,
@@ -116,11 +165,93 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
                                 shareFile(this@ErrorActivity, logFile)
                             }
                         },
+                        onUploadLogsClick = {
+                            viewModel.uploadLogs(this@ErrorActivity, logFile)
+                        },
                         onRestartClick = {
                             ProcessPhoenix.triggerRebirth(this@ErrorActivity)
                         },
                         onExitClick = { finish() }
                     )
+
+                    if (operation is ErrorOperation.UploadSuccess) {
+                        val url = operation.url
+                        Dialog(onDismissRequest = { viewModel.resetOperation() }) {
+                            Surface(
+                                shape = MaterialTheme.shapes.extraLarge,
+                                shadowElevation = 6.dp,
+                                modifier = Modifier
+                                    .padding(16.dp)
+                                    .fillMaxWidth()
+                                    .wrapContentHeight()
+                            ) {
+                                val scrollState = rememberScrollState()
+                                Column(
+                                    modifier = Modifier
+                                        .padding(16.dp)
+                                        .verticalScroll(scrollState),
+                                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.crash_upload_success_title),
+                                        style = MaterialTheme.typography.titleLarge
+                                    )
+                                    Text(
+                                        text = url,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+
+                                    val options = listOf(
+                                        R.string.crash_upload_option_open to {
+                                            openLink(url)
+                                            viewModel.resetOperation()
+                                        },
+                                        R.string.crash_upload_option_copy to {
+                                            val clipboard =
+                                                getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                                            val clip = ClipData.newPlainText("mclogs", url)
+                                            clipboard.setPrimaryClip(clip)
+                                            Toast.makeText(
+                                                this@ErrorActivity,
+                                                getString(R.string.generic_copy_success),
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                            viewModel.resetOperation()
+                                        },
+                                        R.string.crash_upload_option_share to {
+                                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                                type = "text/plain"
+                                                putExtra(
+                                                    Intent.EXTRA_TEXT,
+                                                    getString(
+                                                        R.string.crash_upload_share_template,
+                                                        url
+                                                    )
+                                                )
+                                            }
+                                            startActivity(
+                                                Intent.createChooser(
+                                                    shareIntent,
+                                                    getString(R.string.crash_upload_option_share)
+                                                )
+                                            )
+                                            viewModel.resetOperation()
+                                        },
+                                        R.string.generic_cancel to { viewModel.resetOperation() }
+                                    )
+
+                                    options.forEach { (resId, action) ->
+                                        ScalingActionButton(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onClick = action
+                                        ) {
+                                            MarqueeText(text = stringResource(resId))
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
