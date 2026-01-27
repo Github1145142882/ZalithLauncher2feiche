@@ -86,7 +86,7 @@ suspend fun <E: AbstractPlatformSearcher, T> mirroredPlatformSearcher(
         }
     }
 
-    throw IOException("All sources have failed to attempt)", lastException).apply {
+    throw IOException("All sources have failed to attempt", lastException).apply {
         errors.forEachIndexed { i, e ->
             addSuppressed(Exception("Mirror error #${i + 1}: ${e.message}"))
         }

@@ -22,19 +22,31 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Parcelable
+import android.widget.Toast
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import com.jakewharton.processphoenix.ProcessPhoenix
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.launch.LogName
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.screens.main.ErrorScreen
+import com.movtery.zalithlauncher.ui.screens.main.crashlogs.ShareLinkOperation
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
+import com.movtery.zalithlauncher.utils.copyText
 import com.movtery.zalithlauncher.utils.file.shareFile
 import com.movtery.zalithlauncher.utils.getParcelableSafely
 import com.movtery.zalithlauncher.utils.getSerializableSafely
+import com.movtery.zalithlauncher.utils.network.openLink
 import com.movtery.zalithlauncher.utils.string.throwableToString
+import com.movtery.zalithlauncher.viewmodel.CrashLogsUploadViewModel
 import kotlinx.parcelize.Parcelize
 import java.io.File
 
@@ -59,6 +71,11 @@ fun showExitMessage(context: Context, code: Int, isSignal: Boolean) {
 private data class JvmCrash(val code: Int, val isSignal: Boolean): Parcelable
 
 class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
+
+    /**
+     * 游戏崩溃日志上传逻辑管理 ViewModel
+     */
+    private val viewModel: CrashLogsUploadViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -93,7 +110,10 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
 
         val logFile = when (exitType) {
             EXIT_JVM -> {
-                File(PathManager.DIR_FILES_EXTERNAL, "${LogName.GAME.fileName}.log")
+                File(PathManager.DIR_FILES_EXTERNAL, "${LogName.GAME.fileName}.log").also { file ->
+                    //检查日志文件是否适合上传
+                    viewModel.check(file)
+                }
             }
             else -> {
                 PathManager.FILE_CRASH_REPORT
@@ -104,11 +124,24 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
 
         setContent {
             ZalithLauncherTheme {
-                Box {
+
+                ShareLinkOperation(
+                    operation = viewModel.operation,
+                    onChange = { viewModel.operation = it },
+                    onUploadChancel = { viewModel.cancel() },
+                    onUpload = {
+                        viewModel.upload(logFile) { link ->
+                            openLink(link)
+                            copyText(null, link, this@ErrorActivity)
+                            Toast.makeText(this@ErrorActivity, getString(R.string.generic_copied), Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                )
+
+                Box(modifier = Modifier.fillMaxSize()) {
                     ErrorScreen(
+                        viewModel = viewModel,
                         crashType = errorMessage.crashType,
-                        message = errorMessage.message,
-                        messageBody = errorMessage.messageBody,
                         shareLogs = logFile.exists() && logFile.isFile,
                         canRestart = canRestart,
                         onShareLogsClick = {
@@ -120,7 +153,25 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
                             ProcessPhoenix.triggerRebirth(this@ErrorActivity)
                         },
                         onExitClick = { finish() }
-                    )
+                    ) {
+                        Text(
+                            text = errorMessage.message,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = errorMessage.messageBody,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (viewModel.canUpload) {
+                            Button(
+                                onClick = {
+                                    viewModel.operation = ShareLinkOperation.Tip
+                                }
+                            ) {
+                                Text(text = stringResource(R.string.crash_link_share_button))
+                            }
+                        }
+                    }
                 }
             }
         }
