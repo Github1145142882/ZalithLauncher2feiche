@@ -506,7 +506,8 @@ private fun NavigationUI(
                 entry<NormalNavKey.WebScreen> { key ->
                     WebViewScreen(
                         key = key,
-                        backStackViewModel = screenBackStackModel
+                        backStackViewModel = screenBackStackModel,
+                        eventViewModel = eventViewModel
                     )
                 }
                 entry<NormalNavKey.VersionsManager> {

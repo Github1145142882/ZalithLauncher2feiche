@@ -24,12 +24,18 @@ import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,6 +44,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation3.runtime.NavBackStack
@@ -45,6 +53,8 @@ import androidx.navigation3.runtime.NavKey
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.navigateTo
+import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
+import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 import org.apache.commons.io.FileUtils
 
@@ -60,13 +70,21 @@ fun NavBackStack<NavKey>.navigateToWeb(webUrl: String) = this.navigateTo(
 @Composable
 fun WebViewScreen(
     key: NormalNavKey.WebScreen,
-    backStackViewModel: ScreenBackStackViewModel
+    backStackViewModel: ScreenBackStackViewModel,
+    eventViewModel: EventViewModel
 ) {
     BaseScreen(
         screenKey = key,
         currentKey = backStackViewModel.mainScreen.currentKey,
         useClassEquality = true
-    ) { isVisible ->
+    ) {
+        var webUrl by remember {
+            mutableStateOf(key.url)
+        }
+
+        val urlAvailable = remember(webUrl) {
+            webUrl.isNotEmptyOrBlank() && webUrl != "about:blank"
+        }
 
         val context = LocalContext.current
         var isWebLoading by rememberSaveable { mutableStateOf(true) }
@@ -75,56 +93,89 @@ fun WebViewScreen(
             mutableStateOf<WebView?>(null)
         }
 
-        Box(modifier = Modifier.fillMaxSize()) {
-            if (isVisible) {
-                AndroidView(
-                    modifier = Modifier.fillMaxSize(),
-                    factory = {
-                        WebView(context).apply {
-                            webViewClient = object : WebViewClient() {
-                                override fun onPageFinished(view: WebView?, url: String?) {
-                                    super.onPageFinished(view, url)
-                                    isWebLoading = false
-                                }
-
-                                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                                    super.onPageStarted(view, url, favicon)
-                                    isWebLoading = true
-                                }
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.TopCenter
+        ) {
+            AndroidView(
+                modifier = Modifier.fillMaxSize(),
+                factory = {
+                    WebView(context).apply {
+                        webViewClient = object : WebViewClient() {
+                            override fun onPageFinished(view: WebView?, url: String?) {
+                                super.onPageFinished(view, url)
+                                webUrl = url ?: ""
+                                isWebLoading = false
                             }
 
-                            settings.javaScriptEnabled = true
-                            settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                            loadUrl(key.url)
-                            webViewHolder.value = this
+                            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                                super.onPageStarted(view, url, favicon)
+                                webUrl = url ?: ""
+                                isWebLoading = true
+                            }
                         }
-                    },
-                    update = {
-                        //不在此处重复加载 url
-                    }
-                )
-            } else {
-                webViewHolder.value?.apply {
-                    stopLoading()
-                    loadUrl("about:blank")
-                    clearHistory()
-                    removeAllViews()
-                    destroy()
-                }
-                webViewHolder.value = null
 
-                val webCache = context.getDir("webview", 0)
-                FileUtils.deleteQuietly(webCache)
-                CookieManager.getInstance().removeAllCookies(null)
+                        settings.javaScriptEnabled = true
+                        settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                        loadUrl(key.url)
+                        webViewHolder.value = this
+                    }
+                },
+                update = {
+                    //不在此处重复加载 url
+                }
+            )
+
+            Column(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                AnimatedVisibility(
+                    visible = isWebLoading
+                ) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp)
+                    )
+                }
+
+                //网址，可供用户复制
+                AnimatedVisibility(
+                    visible = webUrl.isNotEmptyOrBlank()
+                ) {
+                    BasicText(
+                        modifier = Modifier
+                            .padding(horizontal = 12.dp)
+                            .clickable(enabled = urlAvailable) {
+                                eventViewModel.sendEvent(EventViewModel.Event.OpenLink(webUrl))
+                            },
+                        text = AnnotatedString(
+                            text = webUrl,
+                            spanStyle = SpanStyle(
+                                background = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        ),
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
             }
 
-            if (isWebLoading) {
-                LinearProgressIndicator(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 12.dp, end = 12.dp)
-                        .align(Alignment.TopCenter)
-                )
+            DisposableEffect(Unit) {
+                onDispose {
+                    webViewHolder.value?.apply {
+                        stopLoading()
+                        loadUrl("about:blank")
+                        clearHistory()
+                        removeAllViews()
+                        destroy()
+                    }
+                    webViewHolder.value = null
+
+                    val webCache = context.getDir("webview", 0)
+                    FileUtils.deleteQuietly(webCache)
+                    CookieManager.getInstance().removeAllCookies(null)
+                }
             }
         }
     }
