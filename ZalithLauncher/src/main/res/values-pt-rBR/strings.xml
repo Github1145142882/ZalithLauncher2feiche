@@ -38,4 +38,15 @@
     <string name="generic_search">Procurar</string>
     <string name="generic_loading">Carregando</string>
     <string name="generic_in_progress">Em progresso</string>
+    <string name="generic_got_it">Entendido</string>
+    <string name="generic_ignore">Ignorar</string>
+    <string name="generic_authorization">Autorização</string>
+    <string name="generic_file_name">Nome do Arquivo: %s</string>
+    <string name="generic_file_size">Tamanho do Arquivo: %s</string>
+    <string name="generic_all">Todos</string>
+    <string name="generic_enabled">Ativado</string>
+    <string name="generic_disabled">Desativado</string>
+    <string name="generic_unspecified">Não especificado</string>
+    <string name="generic_save">Salvar</string>
+    <string name="generic_saved">Salvo</string>
 </resources>
