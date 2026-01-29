@@ -38,4 +38,14 @@
     <string name="terracotta_status_host_scanning">Escaneado mundos em LAN</string>
     <string name="terracotta_status_host_scanning_desc">Por favor, abra o mundo, em seguida aperte ESC e selecione Abrir para LAN, e em seguida selecione em, abrir o mundo para LAN</string>
     <string name="terracotta_status_host_scanning_back">Isso também vai parar de escanear mundos LAN.</string>
+    <string name="terracotta_status_host_starting">Criando sala</string>
+    <string name="terracotta_status_host_starting_back">Isso vai interromper a criação da sala.</string>
+    <string name="terracotta_status_host_ok">Sala criada</string>
+    <string name="terracotta_status_host_ok_code">Código de convite (Copiado):</string>
+    <string name="terracotta_status_host_ok_code_copy">Copiar código de convite</string>
+    <string name="terracotta_status_host_ok_code_copy_toast">Código de convite foi copiado para a área de transferência</string>
+    <string name="terracotta_status_host_ok_back">Isso também fechará a sala, outros convidados sairão e não poderão entrar novamente.</string>
+    <string name="terracotta_status_guest_starting">Entrando na sala</string>
+    <string name="terracotta_status_guest_starting_back">Isso não vai impedir que outros convidados entrem na sala.</string>
+    <string name="terracotta_status_guest_ok">Entrou na sala</string>
 </resources>
