@@ -20,6 +20,7 @@ package com.movtery.zalithlauncher.game.launch
 
 import androidx.collection.ArrayMap
 import com.movtery.zalithlauncher.BuildConfig
+import com.movtery.zalithlauncher.bridge.LoggerBridge
 import com.movtery.zalithlauncher.game.account.Account
 import com.movtery.zalithlauncher.game.account.isAuthServerAccount
 import com.movtery.zalithlauncher.game.account.isLocalAccount
@@ -84,19 +85,28 @@ class LaunchArgs(
                         add(saveName)
                     }
                 } else {
-                    lWarning("Quick Play for singleplayer is not supported and has been skipped.")
+                    val msg = "Quick Play for singleplayer is not supported and has been skipped."
+                    LoggerBridge.append(msg)
+                    lWarning(msg)
                 }
             } else {
                 version.getServerIp()?.let { address ->
-                    val parsed = ServerAddress.parse(address)
-                    argsList += if (info.quickPlay.isQuickPlayMultiplayer) {
-                        listOf(
-                            "--quickPlayMultiplayer",
-                            if (parsed.port < 0) "$address:25565" else address
-                        )
-                    } else {
-                        val port = parsed.port.takeIf { it >= 0 } ?: 25565
-                        listOf("--server", parsed.host, "--port", port.toString())
+                    runCatching {
+                        ServerAddress.parse(address)
+                    }.onFailure {
+                        val msg = "Unable to resolve the server address: $address. The automatic server join feature is unavailable."
+                        LoggerBridge.append(msg)
+                        lWarning(msg, it)
+                    }.getOrNull()?.let { parsed ->
+                        argsList += if (info.quickPlay.isQuickPlayMultiplayer) {
+                            listOf(
+                                "--quickPlayMultiplayer",
+                                if (parsed.port < 0) "$address:25565" else address
+                            )
+                        } else {
+                            val port = parsed.port.takeIf { it >= 0 } ?: 25565
+                            listOf("--server", parsed.host, "--port", port.toString())
+                        }
                     }
                 }
             }
@@ -120,12 +130,16 @@ class LaunchArgs(
                 offlineServer.start()
                 offlineServer.addCharacter(account)
                 offlineServer.getPort()?.let { port ->
-                    lInfo("Using offline Yggdrasil server on port $port")
+                    val msg = "Using offline Yggdrasil server on port $port"
+                    LoggerBridge.append(msg)
+                    lInfo(msg)
                     argsList.add("-javaagent:${LibPath.AUTHLIB_INJECTOR.absolutePath}=http://localhost:$port")
                     argsList.add("-Dauthlibinjector.side=client")
                 } ?: run {
                     //无法获取端口号，说明服务器未成功启动
-                    lWarning("Failed to start offline Yggdrasil server!")
+                    val msg = "Failed to start offline Yggdrasil server!"
+                    LoggerBridge.append(msg)
+                    lWarning(msg)
                     //本次启动将被忽略，为避免浪费性能，关停服务器
                     offlineServer.stop()
                 }

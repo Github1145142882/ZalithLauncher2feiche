@@ -27,7 +27,7 @@ class ServerAddress private constructor(val host: String, val port: Int) {
     companion object {
         private const val UNKNOWN_PORT = -1
         private val PORT_RANGE = 0..65535
-        
+
         fun parse(address: String): ServerAddress {
             require(address.isNotEmpty()) { "Address cannot be empty" }
             
@@ -58,7 +58,7 @@ class ServerAddress private constructor(val host: String, val port: Int) {
         
         private fun parseWithPort(address: String): ServerAddress {
             val colonPos = address.indexOf(':')
-            val hostPart = address.substring(0, colonPos)
+            val hostPart = address.take(colonPos)
             val portPart = address.substring(colonPos + 1)
             return parsePort(hostPart, portPart)
         }
