@@ -19,12 +19,14 @@
 package com.movtery.zalithlauncher.ui.screens.main.control_editor.edit_layer
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -98,12 +100,15 @@ fun EditSwitchLayersVisibilityDialog(
     Dialog(
         onDismissRequest = onDismissRequest
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier.fillMaxHeight(),
             contentAlignment = Alignment.Center
         ) {
             Surface(
-                modifier = Modifier.padding(all = 3.dp),
+                modifier = Modifier
+                    .padding(all = 3.dp)
+                    .heightIn(max = maxHeight - 6.dp)
+                    .wrapContentHeight(),
                 shadowElevation = 3.dp,
                 shape = MaterialTheme.shapes.extraLarge
             ) {
