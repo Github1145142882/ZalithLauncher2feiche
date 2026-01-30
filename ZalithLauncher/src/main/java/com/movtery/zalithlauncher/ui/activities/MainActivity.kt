@@ -239,7 +239,9 @@ class MainActivity : BaseAppCompatActivity() {
                     importer = modpackImportViewModel.importer,
                     onCancel = {
                         modpackImportViewModel.cancel()
-                        keepScreen(false)
+                        lifecycleScope.launch {
+                            keepScreen(false)
+                        }
                     }
                 )
 
@@ -272,12 +274,14 @@ class MainActivity : BaseAppCompatActivity() {
     /**
      * 是否保持屏幕不熄屏
      */
-    private fun keepScreen(on: Boolean) {
-        window?.apply {
-            if (on) {
-                addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
-            } else {
-                clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+    private suspend fun keepScreen(on: Boolean) {
+        withContext(Dispatchers.Main) {
+            window?.apply {
+                if (on) {
+                    addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                } else {
+                    clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+                }
             }
         }
     }
@@ -310,10 +314,14 @@ class MainActivity : BaseAppCompatActivity() {
                 context = this@MainActivity,
                 uri = uri,
                 onStart = {
-                    keepScreen(true)
+                    lifecycleScope.launch {
+                        keepScreen(true)
+                    }
                 },
                 onStop = {
-                    keepScreen(false)
+                    lifecycleScope.launch {
+                        keepScreen(false)
+                    }
                 }
             )
         }
