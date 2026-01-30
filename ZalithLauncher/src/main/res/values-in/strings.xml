@@ -1050,4 +1050,15 @@
     <string name="settings_launcher_mirror_assets_search_title">Sumber Pencarian Platform Aset</string>
     <string name="settings_launcher_mirror_assets_download_title">Sumber Unduhan Platform Aset</string>
     <string name="about_acknowledgements_mcim_text">%s menggunakan sumber mirror MCIM</string>
+    <string name="generic_copied">Disalin</string>
+    <string name="crash_link_share_button">Bagikan Tautan</string>
+    <string name="crash_link_share_tip">Launcher akan mengunggah log game ke platform publik. Anda akan menerima sebuah tautan yang bisa dibagikan dengan mudah kepada orang lain untuk keperluan diagnosis.</string>
+    <string name="crash_link_share_uploading">Mengunggah log ke %s</string>
+    <string name="crash_link_share_failed">Gagal Mengunggah</string>
+    <string name="crash_link_share_failed_link_not_found">Tidak ada tautan yang tersedia. Silakan coba lagi nanti.</string>
+    <string name="game_input_proxy_mode_default">Mode Waktu Nyata</string>
+    <string name="game_input_proxy_mode_simple">Mode Sederhana</string>
+    <string name="game_input_proxy_mode_send">Mode Kirim</string>
+    <string name="settings_launcher_language">Bahasa</string>
+    <string name="control_editor_layers_attribute_hide_when_joystick">Tetap terlihat saat joystick diaktifkan</string>
 </resources>
