@@ -31,7 +31,7 @@
     <string name="generic_input_length">Longitud del texto: %1$d/%2$d</string>
     <string name="generic_unpacking">Descomprimiendo %s</string>
     <string name="generic_unknown">Desconocido</string>
-    <string name="generic_follow_global">Usar configuración global</string>
+    <string name="generic_follow_global">Usar ajuste global</string>
     <string name="generic_custom">Personalizado</string>
     <string name="generic_search">Buscar</string>
     <string name="generic_loading">Cargando</string>
@@ -559,7 +559,7 @@
     <string name="versions_manage_copy_version_tip">Copiar esta versión con aislamiento habilitado. Marca \"Copiar todos los archivos\" para incluir recursos.</string>
     <string name="versions_manage_copy_version_all">Copiar todos los archivos</string>
     <string name="versions_manage_delete_version">Eliminar versión</string>
-    <string name="versions_manage_delete_version_tip_hint1">Eliminar una versión también eliminará todos los archivos dentro del directorio ./versions/%s, incluidos recursos importantes como guardados del juego, paquetes de recursos, mods y más para esa versión.</string>
+    <string name="versions_manage_delete_version_tip_hint1">Al eliminarla también se eliminarán los archivos dentro del directorio ./versions/%s, incluidos recursos importantes como guardados del juego, paquetes de recursos, mods y más para esa versión.</string>
     <string name="versions_manage_delete_version_tip_hint2">Si has habilitado el aislamiento de versiones, los archivos relacionados se almacenan solo en este directorio, por lo que eliminar la versión eliminará estos archivos;</string>
     <string name="versions_manage_delete_version_tip_hint3">Si el aislamiento de versiones no está habilitado, los archivos del juego se almacenan en el directorio raíz, y eliminar la versión no limpiará todos los archivos relacionados.</string>
     <string name="versions_manage_delete_version_tip_hint4">¡Por favor, asegúrate de hacer una copia de seguridad de los datos importantes antes de continuar y elimina con precaución!</string>
@@ -584,11 +584,11 @@
     <string name="versions_settings_overview_management">Gestión</string>
     <string name="versions_settings_overview_quick_actions">Acciones rápidas</string>
     <string name="versions_settings_config">Configuración</string>
-    <string name="versions_overview_custom_version_icon">Icono personalizado</string>
+    <string name="versions_overview_custom_version_icon">Personalizar icono</string>
     <string name="versions_overview_reset_version_icon">Restablecer icono</string>
     <string name="versions_overview_reset_version_icon_message">¿Seguro que deseas restablecer el icono para la versión actual?</string>
     <string name="versions_overview_edit_version_summary">Editar descripción</string>
-    <string name="versions_overview_edit_version_summary_label">Dejar en blanco para usar el predeterminado</string>
+    <string name="versions_overview_edit_version_summary_label">Dejar vacío para usar la versión</string>
     <string name="versions_overview_version_folder">Carpeta de versión</string>
     <string name="versions_overview_saves_folder">Carpeta de guardados</string>
     <string name="versions_overview_resource_pack_folder">Carpeta de paquetes de recursos</string>
@@ -611,9 +611,9 @@
     <string name="versions_config_enable_touch_proxy_summary">Habilitar el proxy de control preparado para el mod Touch Controller</string>
     <string name="versions_config_vibrate_duration_title">Duración de la vibración</string>
     <string name="versions_config_vibrate_duration_summary">Establecer la duración de la vibración requerida por el mod Touch Controller</string>
-    <string name="versions_config_follow_global_if_blank">Dejar en blanco para usar la configuración global</string>
-    <string name="versions_config_disable_if_blank">Dejar en blanco para deshabilitar</string>
-    <string name="versions_config_failed_to_save">Error al guardar la configuración</string>
+    <string name="versions_config_follow_global_if_blank">Dejar vacío para usar el ajuste global</string>
+    <string name="versions_config_disable_if_blank">Dejar vacío para deshabilitar</string>
+    <string name="versions_config_failed_to_save">Error al guardar los ajustes</string>
     <string name="versions_config_microphone_check_title">Comprobar micrófono</string>
     <string name="versions_config_microphone_check_summary">Comprueba si el micrófono del sistema está disponible o confirma que se ha concedido permiso de micrófono al launcher. Esta comprobación asegura que puedes usar mods como Simple Voice Chat que requieren un micrófono.</string>
     <string name="versions_update_loader">Actualizar cargador</string>
@@ -707,7 +707,7 @@
     <string name="minecraft_download_failed_retried">Antes de esto, el launcher ya había intentado un reintento una vez, pero algunas tareas aún fallaron en la descarga</string>
     <string name="minecraft_download_failed_notfound">Algunos archivos de dependencia no se pudieron descargar. Si el problema persiste después de múltiples intentos, es posible que al juego le falten archivos de biblioteca requeridos. Se recomienda reinstalar el juego.</string>
     <string name="settings_element_selected">Seleccionado: %s</string>
-    <string name="settings_label_ignore_if_blank">Dejar en blanco para ignorar</string>
+    <string name="settings_label_ignore_if_blank">Dejar vacío para ignorar</string>
     <string name="settings_tab_renderer">Renderizador</string>
     <string name="settings_tab_game">Juego</string>
     <string name="settings_tab_control">Controles</string>
@@ -729,7 +729,7 @@
     <string name="settings_renderer_shader_dump_title">Registro de Shaders</string>
     <string name="settings_renderer_shader_dump_summary">Enviar el código de shader convertido durante el tiempo de ejecución del juego a un archivo de registro para facilitar la depuración y el análisis de renderizado de gráficos</string>
     <string name="settings_renderer_vulkan_driver_system_title">Usar controlador Vulkan del sistema</string>
-    <string name="settings_renderer_vulkan_driver_system_summary">Cuando está habilitado, el launcher forzará el uso del controlador Vulkan integrado del sistema (para GPU Adreno) en lugar del controlador Turnip predeterminado. Esta configuración solo afecta al backend Zink y a los mods relacionados que usan renderizado Vulkan</string>
+    <string name="settings_renderer_vulkan_driver_system_summary">Cuando está habilitado, el launcher forzará el uso del controlador Vulkan integrado del sistema (para GPU Adreno) en lugar del controlador Turnip predeterminado. Este ajuste solo afecta al backend Zink y a los mods relacionados que usan renderizado Vulkan</string>
     <string name="settings_renderer_zink_driver_adreno">El launcher detectó que tu dispositivo tiene una GPU Adreno. Habilitar esta opción puede causar que el renderizador Zink funcione incorrectamente. ¿Seguro que deseas habilitarlo?</string>
     <string name="settings_renderer_vsync_in_zink_title">Sincronización vertical Zink</string>
     <string name="settings_renderer_vsync_in_zink_summary">Habilitar sincronización vertical para el renderizador Zink a través de la interfaz del sistema</string>
@@ -765,7 +765,7 @@
     <string name="settings_control_mouse_physical_mouse_mode_summary">Cuando se conecta un ratón físico, deshabilitar el puntero del ratón virtual y usar el puntero del ratón del sistema para el control</string>
     <string name="settings_control_mouse_physical_mouse_warning">Si tu dispositivo interpreta el clic derecho del ratón físico como Atrás o el clic central como Inicio, puedes ir a Ajustes del sistema &gt; Opciones de desarrollador y habilitar Deshabilitar monitoreo de permisos, es probable que esto resuelva el problema.</string>
     <string name="settings_control_mouse_hide_title">Ocultar ratón virtual</string>
-    <string name="settings_control_mouse_hide_summary">En algunas situaciones, es posible que desees ocultar el ratón virtual; esta configuración no afecta al control del ratón físico ni al control por deslizamiento</string>
+    <string name="settings_control_mouse_hide_summary">En algunas situaciones, es posible que desees ocultar el ratón virtual; este ajuste no afecta al control del ratón físico ni al control por deslizamiento</string>
     <string name="settings_control_mouse_size_title">Tamaño del ratón virtual</string>
     <string name="settings_control_mouse_sensitivity_title">Sensibilidad del ratón virtual</string>
     <string name="settings_control_mouse_sensitivity_summary">Ajustar la velocidad de movimiento del ratón virtual en modo normal</string>
@@ -776,7 +776,7 @@
     <string name="settings_control_mouse_control_mode_slide">Control por deslizamiento</string>
     <string name="settings_control_mouse_control_mode_click">Control por toque</string>
     <string name="settings_control_mouse_enable_click_title">Modo touchpad</string>
-    <string name="settings_control_mouse_enable_click_summary">Tocar la pantalla se trata como un clic izquierdo del ratón, mantener presionado como mantener clic izquierdo; esta configuración no afecta al control del ratón físico ni al control por toque</string>
+    <string name="settings_control_mouse_enable_click_summary">Tocar la pantalla se trata como un clic izquierdo del ratón, mantener presionado como mantener clic izquierdo; este ajuste no afecta al control del ratón físico ni al control por toque</string>
     <string name="settings_control_mouse_pointer_arrow_title">Puntero de ratón virtual (Predeterminado)</string>
     <string name="settings_control_mouse_pointer_arrow_summary">Personalizar la imagen del puntero del ratón virtual predeterminado para que coincida con las preferencias personales</string>
     <string name="settings_control_mouse_pointer_link_title">Puntero de ratón virtual (Mano)</string>
