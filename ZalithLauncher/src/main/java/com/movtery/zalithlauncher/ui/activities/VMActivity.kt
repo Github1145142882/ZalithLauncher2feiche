@@ -156,7 +156,7 @@ class VMViewModel : ViewModel() {
                 val version: Version = bundle.getParcelableSafely(INTENT_VERSION, Version::class.java)
                     ?: throw IllegalStateException("No launch version has been set.")
                 val windowSize = createWindowSize(
-                    AllSettings.resolutionRatio.state / 100f
+                    AllSettings.resolutionRatio.getValue().toFloat() / 100f
                 )
 
                 val launcher = GameLauncher(
@@ -312,8 +312,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
     private val vmViewModel: VMViewModel by viewModels()
 
     private var mTextureView: TextureView? = null
-    private var mTextureWidth: Int = 0
-    private var mTextureHeight: Int = 0
+    private var mScreenSize: IntSize = IntSize.Zero
 
     private inline fun <T> withHandler(block: AbstractHandler.() -> T): T {
         return vmViewModel.session.handler.block()
@@ -378,7 +377,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
             eventViewModel.events.collect { event ->
                 when (event) {
                     is EventViewModel.Event.Game.RefreshSize -> {
-                        refreshWindowSize(mTextureView?.surfaceTexture, mTextureWidth, mTextureHeight)
+                        refreshWindowSize(mTextureView?.surfaceTexture, mScreenSize)
                     }
                     is EventViewModel.Event.Game.SwitchIme -> {
                         vmViewModel.textInputMode = event.mode ?: vmViewModel.textInputMode.switch()
@@ -505,14 +504,14 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        refreshTextureSize()
+        refreshScreenSize()
     }
 
     override fun onPostResume() {
         super.onPostResume()
         lifecycleScope.launch {
             delay(500)
-            refreshTextureSize()
+            refreshScreenSize()
         }
     }
 
@@ -523,17 +522,15 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
         return IntSize(windowWidth, windowHeight)
     }
     
-    private fun refreshTextureSize() {
+    private fun refreshScreenSize() {
         val textureView = mTextureView ?: return
         val surface = textureView.surfaceTexture ?: return
-        textureView.post {
-            this.mTextureWidth = textureView.width
-            this.mTextureHeight = textureView.height
-            refreshWindowSize(surface, mTextureWidth, mTextureHeight)
+        lifecycleScope.launch(Dispatchers.Main) {
+            refreshWindowSize(surface, mScreenSize)
         }
     }
 
-    private fun refreshWindowSize(surface: SurfaceTexture?, width: Int, height: Int) {
+    private fun refreshWindowSize(surface: SurfaceTexture?, screenSize: IntSize) {
         fun getDisplayPixels(pixels: Int): Int {
             return withHandler {
                 when (type) {
@@ -543,8 +540,8 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
             }
         }
 
-        val windowWidth = getDisplayPixels(width)
-        val windowHeight = getDisplayPixels(height)
+        val windowWidth = getDisplayPixels(screenSize.width)
+        val windowHeight = getDisplayPixels(screenSize.height)
         surface?.setDefaultBufferSize(windowWidth, windowHeight)
         ZLBridgeStates.onWindowChange()
         CallbackBridge.sendUpdateWindowSize(windowWidth, windowHeight)
@@ -637,19 +634,14 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
         }
         vmViewModel.isRunning = true
 
-        this.mTextureWidth = width
-        this.mTextureHeight = height
         withHandler { mIsSurfaceDestroyed = false }
-        refreshWindowSize(surface, width, height)
+        refreshWindowSize(surface, IntSize(width, height))
         lifecycleScope.launch(Dispatchers.Default) {
             withHandler { execute(Surface(surface), lifecycleScope) }
         }
     }
 
     override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture, width: Int, height: Int) {
-        this.mTextureWidth = width
-        this.mTextureHeight = height
-        refreshWindowSize(surface, width, height)
     }
 
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
@@ -677,9 +669,17 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
         val inputArea by withHandler { inputArea }.collectAsStateWithLifecycle()
 
         BoxWithConstraints(
-            modifier = Modifier.fillMaxSize().background(Color.Black)
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black)
         ) {
             val screenSize = rememberBoxSize()
+
+            LaunchedEffect(screenSize) {
+                mScreenSize = screenSize
+                refreshScreenSize()
+            }
+
             AndroidView(
                 modifier = Modifier
                     .fillMaxSize()
