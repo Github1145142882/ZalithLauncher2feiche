@@ -18,6 +18,8 @@
 
 package com.movtery.zalithlauncher.ui.control.event
 
+import java.util.concurrent.ConcurrentHashMap
+
 /**
  * 处理启动器按键事件标识
  */
@@ -27,7 +29,7 @@ class KeyEventHandler(
     /**
      * 当前按键总共按住的数量（也许有同一个按键同时按下的情况）
      */
-    private val keyEvents = mutableMapOf<String, Int>()
+    private val keyEvents = ConcurrentHashMap<String, Int>()
 
     /**
      * 按下按键
@@ -53,20 +55,21 @@ class KeyEventHandler(
     }
 
     private fun handle(primaryKey: String? = null) {
-        val entries = keyEvents.entries.toList()
-        entries.forEach { (key, count) ->
+        val iterator = keyEvents.iterator()
+        while (iterator.hasNext()) {
+            val (key, count) = iterator.next()
             val pressed = when (count) {
                 1 -> true
                 0 -> {
-                    keyEvents.remove(key)
+                    iterator.remove()
                     false
                 }
                 else -> {
                     if (count < 0) {
-                        keyEvents.remove(key)
+                        iterator.remove()
                         false
                     } else {
-                        return@forEach
+                        continue
                     }
                 }
             }

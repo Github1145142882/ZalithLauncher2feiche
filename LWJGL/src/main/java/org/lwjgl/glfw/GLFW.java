@@ -1181,11 +1181,6 @@ public class GLFW
     }
 
     public static int glfwGetKey(@NativeType("GLFWwindow *") long window, int key) {
-		// This is jank, anything asking for int 348 results in an IndexOutOfBounds because idk.
-        // Probably an off-by-one error. This is the 'fix'
-        if (key == GLFW_KEY_LAST) {
-			return GLFW_KEY_LAST;
-		}
         return keyDownBuffer.get(Math.max(0, key-31));
     }
 

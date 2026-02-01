@@ -19,6 +19,7 @@
 package com.movtery.zalithlauncher.path
 
 import android.content.Context
+import android.os.Environment
 import java.io.File
 
 class PathManager {
@@ -57,7 +58,10 @@ class PathManager {
 
         fun refreshPaths(context: Context) {
             DIR_FILES_PRIVATE = context.filesDir
-            DIR_FILES_EXTERNAL = context.getExternalFilesDir(null)!!
+            DIR_FILES_EXTERNAL = context.getExternalFilesDir(null) ?: run {
+                //from FCL (commit 744156a)
+                File(Environment.getExternalStorageDirectory(), "Android/data/${context.packageName}/files")
+            }
             DIR_CACHE = context.cacheDir
             DIR_NATIVE_LIB = context.applicationInfo.nativeLibraryDir
             DIR_RUNTIME_MOD = context.getDir("runtime_mod", 0)

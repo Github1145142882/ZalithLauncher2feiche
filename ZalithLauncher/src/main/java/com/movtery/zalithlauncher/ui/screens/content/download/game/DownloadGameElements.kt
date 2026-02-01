@@ -26,10 +26,12 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -42,6 +44,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Autorenew
 import androidx.compose.material.icons.outlined.Clear
 import androidx.compose.material.icons.rounded.ArrowDropDown
@@ -78,6 +81,7 @@ import com.movtery.zalithlauncher.game.addons.modloader.forgelike.neoforge.NeoFo
 import com.movtery.zalithlauncher.game.addons.modloader.modlike.ModVersion
 import com.movtery.zalithlauncher.game.addons.modloader.optifine.OptiFineVersion
 import com.movtery.zalithlauncher.ui.components.backgroundLayoutColor
+import com.movtery.zalithlauncher.ui.components.influencedByBackgroundColor
 import com.movtery.zalithlauncher.ui.components.rememberMaxHeight
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.getTimeAgo
@@ -405,6 +409,49 @@ fun AddonListItem(
                 style = MaterialTheme.typography.labelMedium
             )
             summary?.invoke()
+        }
+    }
+}
+
+@Composable
+fun AddonWarningItem(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = influencedByBackgroundColor(
+        color = MaterialTheme.colorScheme.errorContainer,
+        enabled = true
+    ),
+    contentColor: Color = MaterialTheme.colorScheme.onErrorContainer
+) {
+    Surface(
+        modifier = modifier,
+        shape = MaterialTheme.shapes.large,
+        color = color,
+        contentColor = contentColor
+    ) {
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.size(34.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(all = 4.dp),
+                    imageVector = Icons.Default.Warning,
+                    contentDescription = null
+                )
+            }
+
+            AddonTextLayout(
+                modifier = Modifier.weight(1f),
+                title = stringResource(R.string.generic_warning),
+                summary = text
+            )
         }
     }
 }

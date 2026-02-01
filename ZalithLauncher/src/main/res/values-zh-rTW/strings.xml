@@ -156,6 +156,7 @@
     <string name="download_game_addon_stable">穩定版</string>
     <string name="download_game_addon_debug">測試版</string>
     <string name="download_game_addon_recommended">%s 官方推薦</string>
+    <string name="download_game_addon_warning_api">未選擇 %s，若不安裝它，大多數模組將無法使用！</string>
     <string name="download_game_addon_not_installable">不支援自動安裝</string>
     <string name="download_game_install_title">安裝遊戲中</string>
     <string name="download_game_install_vanilla">下載並安裝原版 %s</string>

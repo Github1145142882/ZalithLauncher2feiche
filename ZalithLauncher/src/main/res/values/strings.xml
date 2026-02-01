@@ -173,6 +173,7 @@
     <string name="download_game_addon_debug">Debug</string>
     <string name="download_game_addon_recommended">%s Recommended</string>
     <string name="download_game_addon_not_installable">Not installable automatically</string>
+    <string name="download_game_addon_warning_api">%s is not selected. Without installing it, most mods will not work!</string>
     <string name="download_game_install_title">Installing Game</string>
     <string name="download_game_install_vanilla">Downloading Vanilla %s</string>
     <string name="download_game_install_base_download_file">Download %1$s %2$s main file</string>

@@ -62,14 +62,17 @@ fun StyleListDialog(
             usePlatformDefaultWidth = false
         )
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxWidth(0.6f)
                 .fillMaxHeight(),
             contentAlignment = Alignment.Center
         ) {
             Surface(
-                modifier = Modifier.padding(all = 3.dp),
+                modifier = Modifier
+                    .padding(all = 3.dp)
+                    .heightIn(max = maxHeight - 6.dp)
+                    .wrapContentHeight(),
                 shadowElevation = 3.dp,
                 shape = MaterialTheme.shapes.extraLarge
             ) {

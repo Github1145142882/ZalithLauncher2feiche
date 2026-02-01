@@ -18,6 +18,8 @@
 
 package com.movtery.zalithlauncher.game.versioninfo.models;
 
+import static com.movtery.zalithlauncher.path.UrlManagerKt.URL_MINECRAFT_ASSETS_INDEX;
+
 import com.google.gson.annotations.SerializedName;
 
 import org.jetbrains.annotations.Nullable;
@@ -67,8 +69,47 @@ public class GameManifest {
         this.arguments = arguments;
     }
 
+    /**
+     * [Modified from FCL](https://github.com/FCL-Team/FoldCraftLauncher/blob/6d88587eb62d84ae7ef26a9003640535265ff4f2/FCLCore/src/main/java/com/tungsten/fclcore/game/Version.java#L229-L267)
+     */
     public AssetIndex getAssetIndex() {
-        return assetIndex;
+        String assetsId = assets == null ? "legacy" : assets;
+
+        if (assetIndex == null) {
+            String hash;
+            switch (assetsId) {
+                case "1.8":
+                    hash = "f6ad102bcaa53b1a58358f16e376d548d44933ec";
+                    break;
+                case "14w31a":
+                    hash = "10a2a0e75b03cfb5a7196abbdf43b54f7fa61deb";
+                    break;
+                case "14w25a":
+                    hash = "32ff354a3be1c4dd83027111e6d79ee4d701d2c0";
+                    break;
+                case "1.7.4":
+                    hash = "545510a60f526b9aa8a38f9c0bc7a74235d21675";
+                    break;
+                case "1.7.10":
+                    hash = "1863782e33ce7b584fc45b037325a1964e095d3e";
+                    break;
+                case "1.7.3":
+                    hash = "f6cf726f4747128d13887010c2cbc44ba83504d9";
+                    break;
+                case "pre-1.6":
+                    hash = "3d8e55480977e32acd9844e545177e69a52f594b";
+                    break;
+                case "legacy":
+                default:
+                    assetsId = "legacy";
+                    hash = "770572e819335b6c0a053f8378ad88eda189fc14";
+            }
+
+            String url = URL_MINECRAFT_ASSETS_INDEX + "/" + hash + "/" + assetsId + ".json";
+            return new AssetIndex(assetsId, url);
+        } else {
+            return assetIndex;
+        }
     }
 
     public void setAssetIndex(AssetIndex assetIndex) {
@@ -221,6 +262,26 @@ public class GameManifest {
         private long totalSize;
         @SerializedName("url")
         private String url;
+
+        public AssetIndex(String id, String url) {
+            this(id, null, url);
+        }
+
+        public AssetIndex(String id, String sha1, String url) {
+            this(id, sha1, 0, url);
+        }
+
+        public AssetIndex(String id, String sha1, long size, String url) {
+            this(id, sha1, size, 0, url);
+        }
+
+        public AssetIndex(String id, String sha1, long size, long totalSize, String url) {
+            this.id = id;
+            this.sha1 = sha1;
+            this.size = size;
+            this.totalSize = totalSize;
+            this.url = url;
+        }
 
         public String getId() {
             return id;

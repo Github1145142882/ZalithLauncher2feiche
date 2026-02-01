@@ -1066,7 +1066,7 @@ private fun JoystickControlLayout(
             },
             deadZoneRatio = AllSettings.joystickDeadZoneRatio.state / 100f,
             canLock = AllSettings.joystickControlCanLock.state,
-            onLock = { lock ->
+            onCanLock = { lock ->
                 if (AllSettings.joystickControlLockSpring.state) {
                     mapToControlEvent(SPRING, SPRING_VALUE)?.let { key ->
                         val event = ClickEvent(

@@ -335,7 +335,7 @@ fun FabricList(
     currentAddon: CurrentAddon,
     addonList: AddonList,
     error: String? = null,
-    onValueChanged: () -> Unit = {},
+    onValueChanged: (FabricVersion?) -> Unit = {},
     onReload: () -> Unit = {}
 ) {
     AddonListLayout(
@@ -371,7 +371,7 @@ fun FabricList(
         summary = { FabricLikeSummary(it) },
         onValueChange = { version ->
             currentAddon.fabricVersion = version
-            onValueChanged()
+            onValueChanged(version)
         },
         onReload = onReload
     )
@@ -442,7 +442,7 @@ fun QuiltList(
     currentAddon: CurrentAddon,
     addonList: AddonList,
     error: String? = null,
-    onValueChanged: () -> Unit = {},
+    onValueChanged: (QuiltVersion?) -> Unit = {},
     onReload: () -> Unit = {}
 ) {
     AddonListLayout(
@@ -478,7 +478,7 @@ fun QuiltList(
         summary = { FabricLikeSummary(it) },
         onValueChange =  { version ->
             currentAddon.quiltVersion = version
-            onValueChanged()
+            onValueChanged(version)
         },
         onReload = onReload
     )

@@ -51,6 +51,7 @@ import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowDropUp
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material3.Button
@@ -73,6 +74,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -84,6 +86,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.SoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.ImeAction
@@ -262,12 +265,11 @@ fun TextInputBar(
          */
         @Composable
         fun ShowableInputLayout(
+            inputFocus: FocusRequester,
+            focusManager: FocusManager,
+            keyboardController: SoftwareKeyboardController?,
             modifier: Modifier = Modifier
         ) {
-            val inputFocus = remember { FocusRequester() }
-            val focusManager = LocalFocusManager.current
-            val keyboardController = LocalSoftwareKeyboardController.current
-
             OutlinedTextField(
                 modifier = modifier.focusRequester(inputFocus),
                 state = textFieldState,
@@ -321,12 +323,11 @@ fun TextInputBar(
 
         @Composable
         fun HidableInputLayout(
+            inputFocus: FocusRequester,
+            focusManager: FocusManager,
+            keyboardController: SoftwareKeyboardController?,
             modifier: Modifier = Modifier
         ) {
-            val inputFocus = remember { FocusRequester() }
-            val focusManager = LocalFocusManager.current
-            val keyboardController = LocalSoftwareKeyboardController.current
-
             BasicTextField(
                 modifier = modifier.focusRequester(inputFocus),
                 state = textFieldState,
@@ -353,6 +354,8 @@ fun TextInputBar(
          */
         @Composable
         fun ActionButtonsLayout(
+            inputFocus: FocusRequester,
+            keyboardController: SoftwareKeyboardController?,
             modifier: Modifier = Modifier
         ) {
             Row(
@@ -393,6 +396,22 @@ fun TextInputBar(
                                 )
                             }
                         },
+                    )
+                }
+
+                AnimatedVisibility(
+                    visible = inputMode == InputMode.Simple
+                ) {
+                    //拉起键盘按钮
+                    SurfaceButton(
+                        icon = Icons.Default.Keyboard,
+                        contentDescription = stringResource(R.string.game_button_input),
+                        onClick = {
+                            inputFocus.requestFocus()
+                            keyboardController?.show()
+                        },
+                        color = itemLayoutColorOnSurface(),
+                        contentColor = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
@@ -487,6 +506,10 @@ fun TextInputBar(
             color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
             contentColor = MaterialTheme.colorScheme.onSurface
         ) {
+            val inputFocus = remember { FocusRequester() }
+            val focusManager = LocalFocusManager.current
+            val keyboardController = LocalSoftwareKeyboardController.current
+
             Crossfade(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -496,7 +519,10 @@ fun TextInputBar(
                 if (isSimple) {
                     //隐藏的输入法
                     HidableInputLayout(
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        inputFocus = inputFocus,
+                        focusManager = focusManager,
+                        keyboardController = keyboardController,
                     )
 
                     //简单输入模式
@@ -518,7 +544,10 @@ fun TextInputBar(
                             modifier = Modifier.weight(1f)
                         )
 
-                        ActionButtonsLayout()
+                        ActionButtonsLayout(
+                            inputFocus = inputFocus,
+                            keyboardController = keyboardController
+                        )
                     }
                 } else {
                     Column(
@@ -542,10 +571,16 @@ fun TextInputBar(
                             horizontalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
                             ShowableInputLayout(
-                                modifier = Modifier.weight(1f)
+                                modifier = Modifier.weight(1f),
+                                inputFocus = inputFocus,
+                                focusManager = focusManager,
+                                keyboardController = keyboardController,
                             )
 
-                            ActionButtonsLayout()
+                            ActionButtonsLayout(
+                                inputFocus = inputFocus,
+                                keyboardController = keyboardController
+                            )
                         }
 
                         if (mode == InputBarMode.Floating && enabledActionBar) {

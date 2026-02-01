@@ -22,13 +22,16 @@ import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -118,14 +121,16 @@ fun MultiplayerDialog(
             dismissOnClickOutside = false
         )
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier.fillMaxWidth(0.7f),
             contentAlignment = Alignment.Center
         ) {
             Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(all = 6.dp),
+                    .padding(all = 6.dp)
+                    .heightIn(max = maxHeight - 12.dp)
+                    .wrapContentHeight(),
                 shape = MaterialTheme.shapes.extraLarge,
                 shadowElevation = 6.dp
             ) {

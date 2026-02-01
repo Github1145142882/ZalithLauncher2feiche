@@ -172,6 +172,7 @@
     <string name="download_game_addon_debug">测试版</string>
     <string name="download_game_addon_recommended">%s 官方推荐</string>
     <string name="download_game_addon_not_installable">不支持自动安装</string>
+    <string name="download_game_addon_warning_api">未选择 %s，若不安装它，大多数模组将无法使用！</string>
     <string name="download_game_install_title">安装游戏中</string>
     <string name="download_game_install_vanilla">下载安装原版 %s</string>
     <string name="download_game_install_base_download_file">下载 %1$s %2$s 主文件</string>

@@ -28,6 +28,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,9 +37,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -347,12 +350,15 @@ fun TitleTaskFlowDialog(
             dismissOnClickOutside = false
         )
     ) {
-        Box(
+        BoxWithConstraints(
             modifier = Modifier.fillMaxHeight(),
             contentAlignment = Alignment.Center
         ) {
             Surface(
-                modifier = Modifier.padding(all = 6.dp),
+                modifier = Modifier
+                    .padding(all = 6.dp)
+                    .heightIn(max = maxHeight - 12.dp)
+                    .wrapContentHeight(),
                 shape = MaterialTheme.shapes.extraLarge,
                 shadowElevation = 6.dp
             ) {
@@ -481,7 +487,8 @@ fun MemoryPreview(
     mainColor: Color = MaterialTheme.colorScheme.primary,
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceVariant,
     textStyle: TextStyle = MaterialTheme.typography.labelMedium,
-    textColor: Color = MaterialTheme.colorScheme.onPrimary,
+    textColorOnMemory: Color = MaterialTheme.colorScheme.onPrimary,
+    textColorOnBackground: Color = MaterialTheme.colorScheme.onSurface,
     usedText: @Composable (usedMemory: Double, totalMemory: Double) -> String,
     previewText: (@Composable (preview: Double) -> String)? = null
 ) {
@@ -520,6 +527,41 @@ fun MemoryPreview(
             .clip(RoundedCornerShape(12.dp))
             .background(backgroundColor)
     ) {
+        val usedText = usedText(usedMemory, totalMemory)
+
+        @Composable
+        fun UsedMemoryText(
+            modifier: Modifier = Modifier,
+            textColor: Color = textColorOnMemory,
+            marquee: Boolean = true
+        ) {
+            if (marquee) {
+                MarqueeText(
+                    modifier = modifier,
+                    text = usedText,
+                    style = textStyle,
+                    color = textColor
+                )
+            } else {
+                Text(
+                    modifier = modifier,
+                    text = usedText,
+                    style = textStyle,
+                    color = textColor,
+                    softWrap = false,
+                    maxLines = 1
+                )
+            }
+        }
+
+        if (preview == null) {
+            UsedMemoryText(
+                modifier = Modifier.padding(horizontal = 8.dp),
+                textColor = textColorOnBackground,
+                marquee = false,
+            )
+        }
+
         Row(modifier = Modifier.fillMaxWidth()) {
             //已使用内存部分
             if (usedRatio > 0) {
@@ -538,13 +580,19 @@ fun MemoryPreview(
                         .background(mainColor),
                     contentAlignment = Alignment.CenterStart
                 ) {
-                    val text = usedText(usedMemory, totalMemory)
-                    MarqueeText(
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                        text = text,
-                        style = textStyle,
-                        color = textColor
-                    )
+                    if (preview != null) {
+                        UsedMemoryText(
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        )
+                    } else {
+                        UsedMemoryText(
+                            modifier = Modifier
+                                .width(IntrinsicSize.Max)
+                                .padding(start = 8.dp),
+                            textColor = textColorOnMemory,
+                            marquee = false,
+                        )
+                    }
                 }
             }
 
@@ -571,7 +619,7 @@ fun MemoryPreview(
                                 modifier = Modifier.padding(horizontal = 8.dp),
                                 text = text,
                                 style = textStyle,
-                                color = textColor
+                                color = textColorOnMemory
                             )
                         }
                     }

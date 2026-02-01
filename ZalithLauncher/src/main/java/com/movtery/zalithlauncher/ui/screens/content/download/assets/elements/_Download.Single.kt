@@ -19,15 +19,17 @@
 package com.movtery.zalithlauncher.ui.screens.content.download.assets.elements
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.LazyListState
@@ -161,7 +163,7 @@ private fun DownloadDialog(
                 usePlatformDefaultWidth = false
             )
         ) {
-            Box(
+            BoxWithConstraints(
                 modifier = Modifier
                     .fillMaxWidth(
                         if (dependencyProjects.isNotEmpty()) {
@@ -174,7 +176,10 @@ private fun DownloadDialog(
                 contentAlignment = Alignment.Center
             ) {
                 Surface(
-                    modifier = Modifier.padding(all = 6.dp),
+                    modifier = Modifier
+                        .padding(all = 6.dp)
+                        .heightIn(max = maxHeight - 12.dp)
+                        .wrapContentHeight(),
                     shape = MaterialTheme.shapes.extraLarge,
                     shadowElevation = 6.dp
                 ) {

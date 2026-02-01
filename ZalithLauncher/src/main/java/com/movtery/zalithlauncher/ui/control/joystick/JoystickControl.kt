@@ -122,6 +122,7 @@ suspend fun saveJoystickStyle(
  * @param lockThreshold 前进锁判定范围（在组件的外部，正上方），作为百分比，根据组件整体大小计算
  * @param onDirectionChanged 当摇杆的方向变更时，使用这个函数回调
  * @param canLock 是否可以进行前进锁
+ * @param onCanLock 当遥感可以进行前进锁定时，或者不能进行前进锁定时，使用这个函数回调
  * @param onLock 当摇杆触发前进锁，或者离开锁定状态时，使用这个函数回调
  */
 @Composable
@@ -136,6 +137,7 @@ fun StyleableJoystick(
     lockThreshold: Float = 0.3f,
     onDirectionChanged: (JoystickDirection) -> Unit = {},
     canLock: Boolean = true,
+    onCanLock: (Boolean) -> Unit = {},
     onLock: (Boolean) -> Unit = {}
 ) {
     val theme = if (isDarkTheme) style.darkStyle else style.lightStyle
@@ -170,6 +172,7 @@ fun StyleableJoystick(
         lockThreshold = lockThreshold,
         onDirectionChanged = onDirectionChanged,
         canLock = canLock,
+        onCanLock = onCanLock,
         onLock = onLock
     )
 }
@@ -190,6 +193,7 @@ fun StyleableJoystick(
  * @param lockThreshold 前进锁判定范围（在组件的外部，正上方），作为百分比，根据组件整体大小计算
  * @param onDirectionChanged 当摇杆的方向变更时，使用这个函数回调
  * @param canLock 是否可以进行前进锁
+ * @param onCanLock 当遥感可以进行前进锁定时，或者不能进行前进锁定时，使用这个函数回调
  * @param onLock 当摇杆触发前进锁，或者离开锁定状态时，使用这个函数回调
  */
 @Composable
@@ -216,6 +220,7 @@ fun Joystick(
     lockThreshold: Float = 0.3f,
     onDirectionChanged: (JoystickDirection) -> Unit = {},
     canLock: Boolean = true,
+    onCanLock: (Boolean) -> Unit = {},
     onLock: (Boolean) -> Unit = {}
 ) {
     //使用这个标记来判断是否渲染摇杆组件，未完全初始化时，可能导致组件闪烁
@@ -325,6 +330,9 @@ fun Joystick(
 
     LaunchedEffect(direction) {
         onDirectionChanged(direction)
+    }
+    LaunchedEffect(internalCanLock) {
+        onCanLock(internalCanLock)
     }
     LaunchedEffect(isLocked) {
         onLock(isLocked)

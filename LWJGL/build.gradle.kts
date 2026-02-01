@@ -23,15 +23,8 @@ tasks.jar {
     })
     exclude("net/java/openjdk/cacio/ctc/**")
     manifest {
-        attributes("Manifest-Version" to "3.4.0-snapshot")
+        attributes("Manifest-Version" to "3.3.3")
         attributes("Automatic-Module-Name" to "org.lwjgl")
-        attributes("Specification-Title" to "Lightweight Java Game Library - Core")
-        attributes("Specification-Version" to "3.4.0-snapshot")
-        attributes("Specification-Vendor" to "lwjgl.org")
-        attributes("Implementation-Title" to "lwjgl")
-        attributes("Implementation-Version" to "SNAPSHOT")
-        attributes("Implementation-Vendor" to "lwjgl.org")
-        attributes("Multi-Release" to "true")
     }
 }
 
@@ -45,5 +38,4 @@ java {
 
 dependencies {
     implementation(fileTree(mapOf("dir" to "libs", "include" to listOf("*.jar"))))
-    compileOnly(fileTree("dir" to "compileOnly", "include" to listOf("*.jar")))
 }
