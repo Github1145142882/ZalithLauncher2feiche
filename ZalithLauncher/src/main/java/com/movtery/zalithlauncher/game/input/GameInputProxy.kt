@@ -147,7 +147,13 @@ class GameInputProxy(
      */
     fun handleSpecialKey(keyEvent: KeyEvent, text: CharSequence): Boolean {
         if (text.isEmpty()) {
-            return handleSpecialKey(keyEvent)
+            when (keyEvent.keyCode) {
+                KeyEvent.KEYCODE_DEL -> sender.sendBackspace()
+                KeyEvent.KEYCODE_DPAD_LEFT -> sender.sendLeft()
+                KeyEvent.KEYCODE_DPAD_RIGHT -> sender.sendRight()
+                else -> return false
+            }
+            return true
         }
         return false
     }
@@ -155,14 +161,20 @@ class GameInputProxy(
     /**
      * 仅处理特殊按键
      */
-    fun handleSpecialKey(keyEvent: KeyEvent): Boolean {
+    fun handleSpecialKey(keyEvent: KeyEvent) {
         when (keyEvent.keyCode) {
             KeyEvent.KEYCODE_DEL -> sender.sendBackspace()
+
             KeyEvent.KEYCODE_DPAD_LEFT -> sender.sendLeft()
             KeyEvent.KEYCODE_DPAD_RIGHT -> sender.sendRight()
-            else -> return false
+            KeyEvent.KEYCODE_DPAD_UP -> sender.sendUp()
+            KeyEvent.KEYCODE_DPAD_DOWN -> sender.sendDown()
+
+            KeyEvent.KEYCODE_ENTER -> sender.sendEnter()
+            KeyEvent.KEYCODE_TAB -> sender.sendTab()
+
+            else -> sender.sendOther(keyEvent)
         }
-        return true
     }
 }
 
