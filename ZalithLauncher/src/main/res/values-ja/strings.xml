@@ -1061,4 +1061,5 @@
     <string name="crash_link_share_uploading">ログを %s にアップロードしています</string>
     <string name="crash_link_share_failed">アップロード失敗</string>
     <string name="crash_link_share_failed_link_not_found">利用可能なリンクが見つかりません。後でもう一度お試しください。</string>
+    <string name="download_game_addon_warning_api">%s が選択されていません。インストールしないと、ほとんどのモッドは動作しません！</string>
 </resources>
