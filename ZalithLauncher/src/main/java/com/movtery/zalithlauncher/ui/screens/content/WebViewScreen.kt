@@ -25,13 +25,13 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.text.BasicText
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -44,13 +44,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import com.movtery.zalithlauncher.ui.base.BaseScreen
+import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.navigateTo
 import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
@@ -97,37 +96,10 @@ fun WebViewScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.TopCenter
         ) {
-            AndroidView(
-                modifier = Modifier.fillMaxSize(),
-                factory = {
-                    WebView(context).apply {
-                        webViewClient = object : WebViewClient() {
-                            override fun onPageFinished(view: WebView?, url: String?) {
-                                super.onPageFinished(view, url)
-                                webUrl = url ?: ""
-                                isWebLoading = false
-                            }
-
-                            override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
-                                super.onPageStarted(view, url, favicon)
-                                webUrl = url ?: ""
-                                isWebLoading = true
-                            }
-                        }
-
-                        settings.javaScriptEnabled = true
-                        settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                        loadUrl(key.url)
-                        webViewHolder.value = this
-                    }
-                },
-                update = {
-                    //不在此处重复加载 url
-                }
-            )
-
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(color = MaterialTheme.colorScheme.surface)
             ) {
                 AnimatedVisibility(
                     visible = isWebLoading
@@ -143,22 +115,46 @@ fun WebViewScreen(
                 AnimatedVisibility(
                     visible = webUrl.isNotEmptyOrBlank()
                 ) {
-                    BasicText(
+                    MarqueeText(
                         modifier = Modifier
+                            .fillMaxWidth()
                             .padding(horizontal = 12.dp)
                             .clickable(enabled = urlAvailable) {
                                 eventViewModel.sendEvent(EventViewModel.Event.OpenLink(webUrl))
                             },
-                        text = AnnotatedString(
-                            text = webUrl,
-                            spanStyle = SpanStyle(
-                                background = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        ),
+                        text = webUrl,
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
+
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = {
+                        WebView(context).apply {
+                            webViewClient = object : WebViewClient() {
+                                override fun onPageFinished(view: WebView?, url: String?) {
+                                    super.onPageFinished(view, url)
+                                    webUrl = url ?: ""
+                                    isWebLoading = false
+                                }
+
+                                override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                                    super.onPageStarted(view, url, favicon)
+                                    webUrl = url ?: ""
+                                    isWebLoading = true
+                                }
+                            }
+
+                            settings.javaScriptEnabled = true
+                            settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                            loadUrl(key.url)
+                            webViewHolder.value = this
+                        }
+                    },
+                    update = {
+                        //不在此处重复加载 url
+                    }
+                )
             }
 
             DisposableEffect(Unit) {
