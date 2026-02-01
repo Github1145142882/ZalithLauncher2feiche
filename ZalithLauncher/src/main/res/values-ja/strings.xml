@@ -562,7 +562,7 @@
     <string name="control_editor_edit_visibility_in_menu">ゲーム外で表示</string>
     <string name="control_editor_edit_switch_layers">コントロールレイヤーの表示切り替え</string>
     <string name="control_editor_edit_style_config">コントロールの外観リスト</string>
-    <string name="control_editor_edit_style_config_empty">現在のコントロールレイアウトにはコントロールが表示されません</string>
+    <string name="control_editor_edit_style_config_empty">現在のコントロールレイアウトにはコントロールの外観がまだありません</string>
     <string name="control_editor_edit_style_config_name">コントロールの外観の名称</string>
     <string name="control_editor_edit_style_config_animate_swap">アニメーショントランジションを有効にする</string>
     <string name="control_editor_edit_style_config_light">ライトモード</string>
@@ -804,7 +804,7 @@
     <string name="settings_renderer_shader_dump_summary">ゲーム中に変換されたシェーダーコードをログファイルに出力してグラッフィクレンダリングのデバッグや分析を容易にします</string>
     <string name="settings_renderer_resolution_scale_summary">値を低くするとパフォーマンスが良くなり、値を高くするとグラフィックの品質が上がります。必要に応じて変更してください</string>
     <string name="settings_label_ignore_if_blank">無視する場合は空白にしてください</string>
-    <string name="settings_renderer_vulkan_driver_system_summary">有効にすると、ランチャーはデフォルトのTurnipドライバーではなくシステムの埋め込みVulkanドライバー (Adreno GPU用) を強制的に使用します。この設定は、Vulkanドライバーを使用するZinkバックエンドとと関連するモッドにのみ影響します</string>
+    <string name="settings_renderer_vulkan_driver_system_summary">有効にすると、ランチャーはデフォルトのTurnipドライバーではなくシステムの埋め込みVulkanドライバー (Adreno GPU用) を強制的に使用します。この設定は、Vulkanドライバーを使用するZinkバックエンドと関連するモッドにのみ影響します</string>
     <string name="settings_renderer_zink_driver_adreno">ランチャーはあなたのデバイスにAdreno GPUが使用されていることを確認しました。このオプション有効にするとZinkレンダラーが誤作動を起こす可能性があります。有効にしてもいいですか？</string>
     <string name="settings_game_version_isolation_title">グローバルバージョンの分離</string>
     <string name="settings_game_version_isolation_summary">全てのバージョンを分離してデータがお互いに干渉しないようにします</string>
@@ -1055,4 +1055,10 @@
     <string name="game_input_proxy_mode_send">送信モード</string>
     <string name="settings_launcher_language">言語</string>
     <string name="control_editor_layers_attribute_hide_when_joystick">ジョイスティックが有効な時は常に表示</string>
+    <string name="generic_copied">コピー済み</string>
+    <string name="crash_link_share_button">リンクを共有</string>
+    <string name="crash_link_share_tip">ランチャーはゲームのログを公開プラットフォームにアップロードします。診断のために他のユーザーと簡単に共有できるリンクが送信されます。</string>
+    <string name="crash_link_share_uploading">ログを %s にアップロードしています</string>
+    <string name="crash_link_share_failed">アップロード失敗</string>
+    <string name="crash_link_share_failed_link_not_found">利用可能なリンクが見つかりません。後でもう一度お試しください。</string>
 </resources>
