@@ -1,3 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="generic_cancel">قايىتىش</string>
+    <string name="generic_confirm">جەزىملەشتۈرۈش</string>
+    <string name="generic_error">خاتا</string>
+    <string name="generic_tip">ئەسكەرتىش</string>
+    <string name="generic_warning">ئاگاھلاندۇرۇش</string>
+    <string name="generic_back">قايتىش</string>
+    <string name="generic_refresh">يىڭىلاش</string>
+    <string name="generic_reset">قايتا تەڭشەش</string>
+    <string name="generic_delete">يۇيۇش</string>
+    <string name="generic_rename">قايتا ئىسىم قويۇش</string>
+    <string name="generic_copy">كۆپەيتىش</string>
+    <string name="generic_paste">چاپلىاش</string>
+    <string name="generic_more">تېخىمۇ كۆپ</string>
+    <string name="generic_setting">تەڭشەش</string>
+    <string name="generic_expand">ئېچىش</string>
+    <string name="generic_collapse">يىغىشتۇرۇش</string>
+    <string name="generic_main_menu">ئاساسىي تىزىملىك</string>
+    <string name="generic_download">چۈشۈرۈش</string>
+    <string name="generic_done">ئورۇنلىاندى</string>
+    <string name="generic_close">تاقاش</string>
+    <string name="generic_clear">تازىلاش</string>
+    <string name="generic_import">كىرگۈزۈش</string>
+    <string name="generic_enable">قوزغىتىش</string>
+    <string name="generic_disable">چەكلەش</string>
+    <string name="generic_open_link">كۆرگۈچتە زىيارەت قىلىش</string>
+    <string name="generic_cannot_empty">مەزمۇن بوش قالسا بولمايدۇ!</string>
+    <string name="generic_input_invalid_character">ئىسىم ئىچىدە ئىناۋەتسىز ھەرپ بار: ”%s“</string>
+    <string name="generic_input_failed_to_number">كىرگۈزگەن مەزمۇنلارنى رەقەمگە ئايرىشقا بولمايدۇ</string>
+    <string name="generic_input_too_small">"كىرگۈزگەن سان  %sدىن كىچىك بولماسلىقى كېرەك"</string>
+    <string name="generic_input_too_large">كىرگۈزگەن %s ئېشىپ كەتمەسلىكى كېرەك</string>
 </resources>
