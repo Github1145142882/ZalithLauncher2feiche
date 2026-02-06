@@ -18,18 +18,18 @@
 
 package com.movtery.zalithlauncher.utils.nbt
 
-import net.querz.nbt.tag.ByteTag
-import net.querz.nbt.tag.CompoundTag
-import net.querz.nbt.tag.DoubleTag
-import net.querz.nbt.tag.FloatTag
-import net.querz.nbt.tag.IntTag
-import net.querz.nbt.tag.ListTag
-import net.querz.nbt.tag.LongTag
-import net.querz.nbt.tag.ShortTag
-import net.querz.nbt.tag.StringTag
-import net.querz.nbt.tag.Tag
+import com.github.steveice10.opennbt.tag.builtin.ByteTag
+import com.github.steveice10.opennbt.tag.builtin.CompoundTag
+import com.github.steveice10.opennbt.tag.builtin.DoubleTag
+import com.github.steveice10.opennbt.tag.builtin.FloatTag
+import com.github.steveice10.opennbt.tag.builtin.IntTag
+import com.github.steveice10.opennbt.tag.builtin.ListTag
+import com.github.steveice10.opennbt.tag.builtin.LongTag
+import com.github.steveice10.opennbt.tag.builtin.ShortTag
+import com.github.steveice10.opennbt.tag.builtin.StringTag
+import com.github.steveice10.opennbt.tag.builtin.Tag
 
-private inline fun <reified T : Tag<*>, R> CompoundTag.getAs(key: String, crossinline mapper: (T) -> R, defaultValue: R): R {
+private inline fun <reified T : Tag, R> CompoundTag.getAs(key: String, crossinline mapper: (T) -> R, defaultValue: R): R {
     return (this.get(key) as? T)?.let(mapper) ?: defaultValue
 }
 
@@ -41,68 +41,75 @@ fun CompoundTag.asCompoundTag(key: String): CompoundTag? {
 /**
  * 获取指定键对应的 Boolean 值，通过 ByteTag 的方式手动判断
  */
-fun CompoundTag.asBoolean(key: String, defaultValue: Boolean): Boolean {
-    return asByte(key, if (defaultValue) 1 else 0) == 1.toByte()
+fun CompoundTag.asBoolean(key: String, defaultValue: Boolean?): Boolean? {
+    return asByte(key, defaultValue?.let { if (it) 1 else 0 })?.let { it == 1.toByte() }
+}
+
+/**
+ * 获取指定键对应的 Boolean 值，通过 ByteTag 的方式手动判断
+ */
+fun CompoundTag.asBooleanNotNull(key: String, defaultValue: Boolean): Boolean {
+    return asByteNotNull(key, if (defaultValue) 1 else 0) == 1.toByte()
 }
 
 /** 获取指定键对应的 Byte 值 */
 fun CompoundTag.asByte(key: String, defaultValue: Byte?): Byte? {
-    return getAs<ByteTag, Byte?>(key, { it.asByte() }, defaultValue)
+    return getAs<ByteTag, Byte?>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Byte 值 */
 fun CompoundTag.asByteNotNull(key: String, defaultValue: Byte): Byte {
-    return getAs<ByteTag, Byte>(key, { it.asByte() }, defaultValue)
+    return getAs<ByteTag, Byte>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Short 值 */
 fun CompoundTag.asShort(key: String, defaultValue: Short?): Short? {
-    return getAs<ShortTag, Short?>(key, { it.asShort() }, defaultValue)
+    return getAs<ShortTag, Short?>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Short 值 */
 fun CompoundTag.asShortNotNull(key: String, defaultValue: Short): Short {
-    return getAs<ShortTag, Short>(key, { it.asShort() }, defaultValue)
+    return getAs<ShortTag, Short>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Int 值 */
 fun CompoundTag.asInt(key: String, defaultValue: Int?): Int? {
-    return getAs<IntTag, Int?>(key, { it.asInt() }, defaultValue)
+    return getAs<IntTag, Int?>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Int 值 */
 fun CompoundTag.asIntNotNull(key: String, defaultValue: Int): Int {
-    return getAs<IntTag, Int>(key, { it.asInt() }, defaultValue)
+    return getAs<IntTag, Int>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Long 值 */
 fun CompoundTag.asLong(key: String, defaultValue: Long?): Long? {
-    return getAs<LongTag, Long?>(key, { it.asLong() }, defaultValue)
+    return getAs<LongTag, Long?>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Long 值 */
 fun CompoundTag.asLongNotNull(key: String, defaultValue: Long): Long {
-    return getAs<LongTag, Long>(key, { it.asLong() }, defaultValue)
+    return getAs<LongTag, Long>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Float 值 */
 fun CompoundTag.asFloat(key: String, defaultValue: Float?): Float? {
-    return getAs<FloatTag, Float?>(key, { it.asFloat() }, defaultValue)
+    return getAs<FloatTag, Float?>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Float 值 */
 fun CompoundTag.asFloatNotNull(key: String, defaultValue: Float): Float {
-    return getAs<FloatTag, Float>(key, { it.asFloat() }, defaultValue)
+    return getAs<FloatTag, Float>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Double 值 */
 fun CompoundTag.asDouble(key: String, defaultValue: Double?): Double? {
-    return getAs<DoubleTag, Double?>(key, { it.asDouble() }, defaultValue)
+    return getAs<DoubleTag, Double?>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 Double 值 */
 fun CompoundTag.asDoubleNotNull(key: String, defaultValue: Double): Double {
-    return getAs<DoubleTag, Double>(key, { it.asDouble() }, defaultValue)
+    return getAs<DoubleTag, Double>(key, { it.value }, defaultValue)
 }
 
 /** 获取指定键对应的 String 值 */
@@ -116,6 +123,6 @@ fun CompoundTag.asStringNotNull(key: String, defaultValue: String): String {
 }
 
 /** 获取指定键对应的 tag 列表 */
-fun CompoundTag.asList(key: String): ListTag<CompoundTag>? {
-    return getListTag(key)?.asCompoundTagList()
+fun CompoundTag.asList(key: String, defaultValue: ListTag?): ListTag? {
+    return getAs<ListTag, ListTag?>(key, { it }, defaultValue)
 }

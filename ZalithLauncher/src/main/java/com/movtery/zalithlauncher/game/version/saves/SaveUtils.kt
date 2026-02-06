@@ -1,7 +1,9 @@
 package com.movtery.zalithlauncher.game.version.saves
 
+import com.github.steveice10.opennbt.NBTIO
+import com.github.steveice10.opennbt.tag.builtin.CompoundTag
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
-import com.movtery.zalithlauncher.utils.nbt.asBoolean
+import com.movtery.zalithlauncher.utils.nbt.asBooleanNotNull
 import com.movtery.zalithlauncher.utils.nbt.asCompoundTag
 import com.movtery.zalithlauncher.utils.nbt.asInt
 import com.movtery.zalithlauncher.utils.nbt.asLong
@@ -9,8 +11,6 @@ import com.movtery.zalithlauncher.utils.nbt.asString
 import com.movtery.zalithlauncher.utils.string.isBiggerOrEqualTo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import net.querz.nbt.io.NBTUtil
-import net.querz.nbt.tag.CompoundTag
 import java.io.File
 
 /**
@@ -31,7 +31,7 @@ suspend fun parseLevelDatFile(saveFile: File, levelDatFile: File): SaveData = wi
     runCatching {
         if (!levelDatFile.exists()) error("The ${levelDatFile.absolutePath} file does not exist!")
 
-        val compound: CompoundTag = NBTUtil.read(levelDatFile, true).tag as? CompoundTag
+        val compound = NBTIO.readFile(levelDatFile)
             ?: error("Failed to read the level.dat file as a CompoundTag.")
         val data: CompoundTag = compound.asCompoundTag("Data")
             ?: error("Data entry not found in the NBT structure tree.")
@@ -49,12 +49,12 @@ suspend fun parseLevelDatFile(saveFile: File, levelDatFile: File): SaveData = wi
         val difficulty = data.asInt("Difficulty", 2) //默认为普通
             ?.let { levelCode -> Difficulty.entries.find { it.levelCode == levelCode } }
         //是否锁定了游戏难度
-        val difficultyLocked = data.asBoolean("DifficultyLocked", false)
+        val difficultyLocked = data.asBooleanNotNull("DifficultyLocked", false)
         //是否为极限模式
-        val hardcoreMode = data.asBoolean("hardcore", false)
+        val hardcoreMode = data.asBooleanNotNull("hardcore", false)
         //是否开启了命令（作弊）
-        val allowCommands = if (data.containsKey("allowCommands")) {
-            data.asBoolean("allowCommands", false)
+        val allowCommands = if (data.contains("allowCommands")) {
+            data.asBooleanNotNull("allowCommands", false)
         } else {
             //如果不存在 allowCommands，则通过游戏模式判断
             gameMode == GameMode.CREATIVE

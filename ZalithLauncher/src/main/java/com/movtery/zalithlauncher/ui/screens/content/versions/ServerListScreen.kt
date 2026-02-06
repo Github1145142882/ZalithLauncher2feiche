@@ -76,15 +76,12 @@ import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.version.installed.Version
+import com.movtery.zalithlauncher.game.version.multiplayer.AllServers
 import com.movtery.zalithlauncher.game.version.multiplayer.ServerData
-import com.movtery.zalithlauncher.game.version.multiplayer.ServerPingResult
 import com.movtery.zalithlauncher.game.version.multiplayer.description.ComponentDescription
 import com.movtery.zalithlauncher.game.version.multiplayer.description.ComponentDescriptionRoot
 import com.movtery.zalithlauncher.game.version.multiplayer.description.ServerDescription
 import com.movtery.zalithlauncher.game.version.multiplayer.description.StringDescription
-import com.movtery.zalithlauncher.game.version.multiplayer.parseServerData
-import com.movtery.zalithlauncher.game.version.multiplayer.pingServer
-import com.movtery.zalithlauncher.game.version.multiplayer.resolve
 import com.movtery.zalithlauncher.ui.base.BaseScreen
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
 import com.movtery.zalithlauncher.ui.components.EdgeDirection
@@ -103,7 +100,6 @@ import com.movtery.zalithlauncher.ui.screens.content.versions.layouts.VersionChu
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import com.movtery.zalithlauncher.utils.copyText
-import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.utils.network.ServerAddress
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
@@ -129,56 +125,16 @@ sealed interface ServerListOperation {
     data object LoadedData : ServerListOperation
 }
 
-/**
- * 保存单个服务器的状态
- */
-private class ServerState(
-    val data: ServerData
-) {
-    sealed interface Operation {
-        data object Loading : Operation
-        /** 服务器加载成功 */
-        data class Loaded(val result: ServerPingResult) : Operation
-        /** 无法连接至服务器 */
-        data object Failed : Operation
-    }
-
-    var icon by mutableStateOf<Any?>(data.icon)
-        private set
-
-    var operation by mutableStateOf<Operation>(Operation.Loading)
-        private set
-
-    suspend fun load() {
-        withContext(Dispatchers.Main) {
-            operation = Operation.Loading
-        }
-
-        runCatching {
-            val resolvedAddress = data.ip.resolve()
-            val result = pingServer(resolvedAddress)
-
-            withContext(Dispatchers.Main) {
-                icon = result.status.favicon ?: data.icon
-                operation = Operation.Loaded(result)
-            }
-        }.onFailure {
-            lWarning("Unable to load/connect to server: ${data.ip}", it)
-            withContext(Dispatchers.Main) {
-                operation = Operation.Failed
-            }
-        }
-    }
-}
-
 private class ServerListViewModel(
     val serverData: File
 ) : ViewModel() {
     var operation by mutableStateOf<ServerListOperation>(ServerListOperation.Loading)
 
-    private val internalServers = mutableListOf<ServerState>()
-    private val _servers = MutableStateFlow<List<ServerState>?>(emptyList<ServerState>())
+    private val internalServers = mutableListOf<ServerData>()
+    private val _servers = MutableStateFlow<List<ServerData>?>(emptyList())
     val servers = _servers.asStateFlow()
+
+    private val allServers = AllServers()
 
     /**
      * 搜索服务器的名称
@@ -186,8 +142,8 @@ private class ServerListViewModel(
     var searchName by mutableStateOf("")
 
     /** 作为标记，记录哪些服务器已被加载 */
-    private val serversToLoad = mutableListOf<ServerState>()
-    private val loadQueue = LinkedList<ServerState>()
+    private val serversToLoad = mutableListOf<ServerData>()
+    private val loadQueue = LinkedList<ServerData>()
     private val semaphore = Semaphore(8) //一次最多允许同时加载8个服务器
     private var initialQueueSize = 0
     private val queueMutex = Mutex()
@@ -208,17 +164,12 @@ private class ServerListViewModel(
                 _servers.update { emptyList() }
             }
 
-            val dataList = parseServerData(serverData)
-            internalServers.addAll(
-                dataList.map { data ->
-                    ServerState(data)
-                }
-            )
+            allServers.loadServers(serverData)
 
             withContext(Dispatchers.Main) {
                 operation = ServerListOperation.LoadedData
                 _servers.update {
-                    if (internalServers.isEmpty()) {
+                    if (allServers.serverList.isEmpty()) {
                         null
                     } else {
                         filteredServers()
@@ -228,9 +179,9 @@ private class ServerListViewModel(
         }
     }
 
-    private fun filteredServers(): List<ServerState> {
-        return internalServers.filter { server ->
-            server.data.name.contains(searchName)
+    private fun filteredServers(): List<ServerData> {
+        return allServers.serverList.filter { server ->
+            server.name.contains(searchName)
         }
     }
 
@@ -278,7 +229,7 @@ private class ServerListViewModel(
      * 尝试 Ping 服务器
      */
     fun loadServer(
-        server: ServerState,
+        server: ServerData,
         isRefresh: Boolean = false
     ) {
         if (isRefresh) {
@@ -501,9 +452,9 @@ private fun ServerListHeader(
 
 @Composable
 private fun ServerListBody(
-    servers: List<ServerState>?,
-    onLoad: (ServerState) -> Unit,
-    onRefresh: (ServerState) -> Unit,
+    servers: List<ServerData>?,
+    onLoad: (ServerData) -> Unit,
+    onRefresh: (ServerData) -> Unit,
     onCopy: (String) -> Unit,
     onPlay: (ServerAddress) -> Unit,
     modifier: Modifier = Modifier,
@@ -521,8 +472,8 @@ private fun ServerListBody(
                         item = server,
                         onLoad = { onLoad(server) },
                         onRefresh = { onRefresh(server) },
-                        onCopy = { onCopy(server.data.originIp) },
-                        onPlay = { onPlay(server.data.ip) }
+                        onCopy = { onCopy(server.originIp) },
+                        onPlay = { onPlay(server.ip) }
                     )
                 }
             }
@@ -549,7 +500,7 @@ private fun ServerListBody(
 
 @Composable
 private fun ServerItem(
-    item: ServerState,
+    item: ServerData,
     onLoad: () -> Unit,
     onRefresh: () -> Unit,
     onCopy: () -> Unit,
@@ -610,13 +561,13 @@ private fun ServerItem(
                         //服务器名称
                         MinecraftColorTextNormal(
                             modifier = Modifier.basicMarquee(iterations = Int.MAX_VALUE),
-                            inputText = item.data.name,
+                            inputText = item.name,
                             style = MaterialTheme.typography.titleSmall,
                             maxLines = 1
                         )
 
                         //显示服务器的延迟、在线人数
-                        if (ot is ServerState.Operation.Loaded) {
+                        if (ot is ServerData.Operation.Loaded) {
                             val undefined = stringResource(R.string.servers_list_undefined)
 
                             //服务器延迟显示部分
@@ -694,11 +645,11 @@ private fun ServerItem(
                     }
 
                     when (ot) {
-                        is ServerState.Operation.Loading -> {
+                        is ServerData.Operation.Loading -> {
                             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
                         }
 
-                        is ServerState.Operation.Loaded -> {
+                        is ServerData.Operation.Loaded -> {
                             ot.result.status.description?.let { des ->
                                 DescriptionTextRender(
                                     description = des,
@@ -708,7 +659,7 @@ private fun ServerItem(
                             }
                         }
 
-                        is ServerState.Operation.Failed -> {
+                        is ServerData.Operation.Failed -> {
                             Text(
                                 text = stringResource(R.string.servers_list_failed_to_connect),
                                 style = MaterialTheme.typography.bodySmall,
@@ -721,7 +672,7 @@ private fun ServerItem(
                 //服务器ip地址
                 Text(
                     modifier = alphaModifier,
-                    text = item.data.originIp,
+                    text = item.originIp,
                     style = MaterialTheme.typography.labelSmall
                 )
             }
@@ -752,7 +703,7 @@ private fun ServerItem(
                 //刷新服务器按钮
                 IconButton(
                     onClick = onRefresh,
-                    enabled = ot !is ServerState.Operation.Loading
+                    enabled = ot !is ServerData.Operation.Loading
                 ) {
                     Icon(
                         imageVector = Icons.Default.Refresh,
@@ -800,7 +751,7 @@ fun ServerSignalIcon(
 
 @Composable
 private fun ServerIcon(
-    server: ServerState,
+    server: ServerData,
     size: Dp,
     modifier: Modifier = Modifier,
 ) {
@@ -809,16 +760,16 @@ private fun ServerIcon(
     val density = LocalDensity.current
     val pxSize = with(density) { size.roundToPx() }
 
-    val imageRequest = remember(server.icon, pxSize) {
+    val imageRequest = remember(server.uiIcon, pxSize) {
         val builder = ImageRequest.Builder(context)
 
-        if (server.icon == null) {
+        if (server.uiIcon == null) {
             //如果服务器没有提供可用的图标，则使用本地缓存的图标
-            builder.data(server.data.icon)
+            builder.data(server.icon)
                 .size(pxSize) //固定大小
                 .crossfade(true)
         } else {
-            builder.data(server.icon)
+            builder.data(server.uiIcon)
                 .size(pxSize)
                 .crossfade(true)
         }
