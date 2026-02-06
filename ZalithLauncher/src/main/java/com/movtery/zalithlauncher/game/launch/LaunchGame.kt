@@ -41,7 +41,8 @@ import java.net.UnknownHostException
 import java.nio.channels.UnresolvedAddressException
 
 object LaunchGame {
-    private var isLaunching: Boolean = false
+    var isLaunching: Boolean = false
+        private set
 
     fun launchGame(
         context: Context,

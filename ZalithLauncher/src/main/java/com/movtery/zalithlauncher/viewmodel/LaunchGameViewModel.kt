@@ -22,8 +22,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import com.movtery.zalithlauncher.game.launch.LaunchGame
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.ui.screens.content.elements.LaunchGameOperation
+import com.movtery.zalithlauncher.ui.screens.content.elements.QuickPlay
+import com.movtery.zalithlauncher.utils.network.ServerAddress
 
 class LaunchGameViewModel : ViewModel() {
     /**
@@ -47,12 +50,31 @@ class LaunchGameViewModel : ViewModel() {
      * 快速启动（通过存档管理快速游玩存档）
      * @param saveName 存档文件名称
      */
-    fun quickLaunch(
+    fun quickPlaySave(
         version: Version,
         saveName: String
     ) {
-        if (launchGameOperation == LaunchGameOperation.None) {
-            launchGameOperation = LaunchGameOperation.TryLaunch(version, saveName)
+        if (launchGameOperation == LaunchGameOperation.None && !LaunchGame.isLaunching) {
+            launchGameOperation = LaunchGameOperation.TryLaunch(
+                version = version,
+                quickPlay = QuickPlay.Save(saveName),
+            )
+        }
+    }
+
+    /**
+     * 通过服务器列表快速游玩服务器
+     * @param address 服务器地址
+     */
+    fun quickPlayServer(
+        version: Version,
+        address: ServerAddress
+    ) {
+        if (launchGameOperation == LaunchGameOperation.None && !LaunchGame.isLaunching) {
+            launchGameOperation = LaunchGameOperation.TryLaunch(
+                version = version,
+                quickPlay = QuickPlay.Server(address),
+            )
         }
     }
 

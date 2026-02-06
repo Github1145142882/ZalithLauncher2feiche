@@ -320,7 +320,7 @@ fun SavesManagerScreen(
                         savesDir = savesDir,
                         updateOperation = { savesOperation = it },
                         quickPlay = { saveName ->
-                            launchGameViewModel.quickLaunch(
+                            launchGameViewModel.quickPlaySave(
                                 version = version,
                                 saveName = saveName
                             )

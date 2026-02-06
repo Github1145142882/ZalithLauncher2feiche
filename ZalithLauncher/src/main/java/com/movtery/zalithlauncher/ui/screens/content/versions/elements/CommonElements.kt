@@ -209,6 +209,7 @@ private fun MinecraftColorText(
     modifier: Modifier = Modifier,
     fontSize: TextUnit = TextUnit.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
+    softWrap: Boolean = false,
 ) {
     val density = LocalDensity.current
 
@@ -229,14 +230,16 @@ private fun MinecraftColorText(
             fontSize = fontSize,
             maxLines = maxLines,
             modifier = Modifier.offset(x = offsetDp, y = offsetDp),
-            lineHeight = lineHeight
+            lineHeight = lineHeight,
+            softWrap = softWrap,
         )
         //前景层
         Text(
             text = foreground,
             fontSize = fontSize,
             maxLines = maxLines,
-            lineHeight = lineHeight
+            lineHeight = lineHeight,
+            softWrap = softWrap,
         )
     }
 }
@@ -349,6 +352,7 @@ fun ComponentText(
     modifier: Modifier = Modifier,
     fontSize: TextUnit = TextUnit.Unspecified,
     maxLines: Int = Int.MAX_VALUE,
+    softWrap: Boolean = false,
 ) {
     val density = LocalDensity.current
 
@@ -371,13 +375,15 @@ fun ComponentText(
             text = background,
             fontSize = fontSize,
             maxLines = maxLines,
-            lineHeight = lineHeight
+            lineHeight = lineHeight,
+            softWrap = softWrap,
         )
         Text(
             text = foreground,
             fontSize = fontSize,
             maxLines = maxLines,
-            lineHeight = lineHeight
+            lineHeight = lineHeight,
+            softWrap = softWrap,
         )
     }
 }

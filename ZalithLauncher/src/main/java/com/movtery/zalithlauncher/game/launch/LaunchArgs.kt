@@ -32,17 +32,20 @@ import com.movtery.zalithlauncher.game.version.download.artifactToPath
 import com.movtery.zalithlauncher.game.version.download.filterLibrary
 import com.movtery.zalithlauncher.game.version.download.getLibraryReplacement
 import com.movtery.zalithlauncher.game.version.installed.Version
+import com.movtery.zalithlauncher.game.version.installed.VersionInfo
 import com.movtery.zalithlauncher.game.version.installed.getGameManifest
 import com.movtery.zalithlauncher.game.versioninfo.models.GameManifest
 import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.path.LibPath
 import com.movtery.zalithlauncher.path.PathManager
+import com.movtery.zalithlauncher.ui.screens.content.elements.QuickPlay
 import com.movtery.zalithlauncher.utils.file.child
 import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.utils.network.ServerAddress
 import com.movtery.zalithlauncher.utils.string.insertJSONValueList
+import com.movtery.zalithlauncher.utils.string.isEmptyOrBlank
 import com.movtery.zalithlauncher.utils.string.isLowerTo
 import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
 import com.movtery.zalithlauncher.utils.string.toUnicodeEscaped
@@ -75,19 +78,31 @@ class LaunchArgs(
         argsList.addAll(getMinecraftClientArgs())
 
         version.getVersionInfo()?.let { info ->
-            val playSingle = version.quickPlaySingle?.takeIf { it.isNotEmptyOrBlank() }
-            if (playSingle != null) { //快速启动单人游戏
-                if (info.quickPlay.isQuickPlaySingleplayer) {
-                    //将不受支持的字符转换为Unicode
-                    val saveName = playSingle.toUnicodeEscaped()
-                    argsList.apply {
-                        add("--quickPlaySingleplayer")
-                        add(saveName)
+            val quickPlay = version.quickPlaySingle
+            if (quickPlay != null) {
+                when (quickPlay) {
+                    is QuickPlay.Save -> {
+                        if (quickPlay.saveName.isEmptyOrBlank()) return@let
+
+                        if (info.quickPlay.isQuickPlaySingleplayer) {
+                            //将不受支持的字符转换为Unicode
+                            val saveName = quickPlay.saveName.toUnicodeEscaped()
+                            argsList.apply {
+                                add("--quickPlaySingleplayer")
+                                add(saveName)
+                            }
+                        } else {
+                            val msg = "Quick Play for singleplayer is not supported and has been skipped."
+                            LoggerBridge.append(msg)
+                            lWarning(msg)
+                        }
                     }
-                } else {
-                    val msg = "Quick Play for singleplayer is not supported and has been skipped."
-                    LoggerBridge.append(msg)
-                    lWarning(msg)
+                    is QuickPlay.Server -> {
+                        argsList.addQuickPlayServer(
+                            serverAddress = quickPlay.serverAddress,
+                            quickPlay = info.quickPlay
+                        )
+                    }
                 }
             } else {
                 version.getServerIp()?.let { address ->
@@ -98,27 +113,39 @@ class LaunchArgs(
                         LoggerBridge.append(msg)
                         lWarning(msg, it)
                     }.getOrNull()?.let { parsed ->
-                        argsList += if (info.quickPlay.isQuickPlayMultiplayer) {
-                            val port = if (parsed.port < 0) {
-                                ServerAddress.DEFAULT_PORT
-                            } else {
-                                parsed.port
-                            }
-
-                            listOf(
-                                "--quickPlayMultiplayer",
-                                "${parsed.getASCIIHost()}:$port"
-                            )
-                        } else {
-                            val port = parsed.port.takeIf { it >= 0 } ?: ServerAddress.DEFAULT_PORT
-                            listOf("--server", parsed.getASCIIHost(), "--port", port.toString())
-                        }
+                        argsList.addQuickPlayServer(
+                            serverAddress = parsed,
+                            quickPlay = info.quickPlay
+                        )
                     }
                 }
             }
         }
 
         return argsList
+    }
+
+    private fun MutableList<String>.addQuickPlayServer(
+        serverAddress: ServerAddress,
+        quickPlay: VersionInfo.QuickPlay
+    ) {
+        val args = if (quickPlay.isQuickPlayMultiplayer) {
+            val port = if (serverAddress.port < 0) {
+                ServerAddress.DEFAULT_PORT
+            } else {
+                serverAddress.port
+            }
+
+            listOf(
+                "--quickPlayMultiplayer",
+                "${serverAddress.getASCIIHost()}:$port"
+            )
+        } else {
+            val port = serverAddress.port.takeIf { it >= 0 } ?: ServerAddress.DEFAULT_PORT
+            listOf("--server", serverAddress.getASCIIHost(), "--port", port.toString())
+        }
+
+        addAll(args)
     }
 
     private fun getLWJGL3ClassPath(): String =

@@ -20,6 +20,7 @@ package com.movtery.zalithlauncher.ui.screens.content.elements
 
 import android.app.Activity
 import android.net.Uri
+import android.os.Parcelable
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -51,13 +52,26 @@ import com.movtery.zalithlauncher.ui.components.VideoPlayer
 import com.movtery.zalithlauncher.utils.checkStoragePermissions
 import com.movtery.zalithlauncher.utils.file.InvalidFilenameException
 import com.movtery.zalithlauncher.utils.file.checkFilenameValidity
+import com.movtery.zalithlauncher.utils.network.ServerAddress
 import com.movtery.zalithlauncher.utils.string.isBiggerTo
 import com.movtery.zalithlauncher.utils.string.isLowerTo
 import com.movtery.zalithlauncher.viewmodel.BackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlinx.parcelize.Parcelize
 import java.io.File
+
+@Parcelize
+sealed interface QuickPlay : Parcelable {
+    /** 快速启动游玩存档  仅支持 1.20+ 23w14a+ */
+    @Parcelize
+    data class Save(val saveName: String): QuickPlay
+
+    /** 快速启动游玩服务器 */
+    @Parcelize
+    data class Server(val serverAddress: ServerAddress): QuickPlay
+}
 
 sealed interface LaunchGameOperation {
     data object None : LaunchGameOperation
@@ -72,26 +86,26 @@ sealed interface LaunchGameOperation {
     data class RendererNoStoragePermission(
         val renderer: RendererInterface,
         val version: Version,
-        val quickPlay: String?
+        val quickPlay: QuickPlay?
     ) : LaunchGameOperation
 
     /** 当前渲染器不支持选中版本 */
     data class UnsupportedRenderer(
         val renderer: RendererInterface,
         val version: Version,
-        val quickPlay: String?
+        val quickPlay: QuickPlay?
     ): LaunchGameOperation
 
     /** 尝试启动：启动前检查一些东西 */
     data class TryLaunch(
         val version: Version?,
-        val quickPlay: String? = null
+        val quickPlay: QuickPlay? = null
     ) : LaunchGameOperation
 
     /** 正式启动 */
     data class RealLaunch(
         val version: Version,
-        val quickPlay: String?
+        val quickPlay: QuickPlay?
     ) : LaunchGameOperation
 }
 

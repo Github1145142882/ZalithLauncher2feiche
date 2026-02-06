@@ -1,5 +1,7 @@
 package com.movtery.zalithlauncher.ui.screens.content.versions
 
+import android.content.Context
+import android.widget.Toast
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -25,6 +27,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.CircularProgressIndicator
@@ -98,7 +102,9 @@ import com.movtery.zalithlauncher.ui.screens.content.versions.elements.Minecraft
 import com.movtery.zalithlauncher.ui.screens.content.versions.layouts.VersionChunkBackground
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
+import com.movtery.zalithlauncher.utils.copyText
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
+import com.movtery.zalithlauncher.utils.network.ServerAddress
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.LaunchGameViewModel
 import kotlinx.coroutines.Dispatchers
@@ -162,11 +168,6 @@ private class ServerState(
                 operation = Operation.Failed
             }
         }
-
-    }
-
-    fun cancel() {
-
     }
 }
 
@@ -310,6 +311,20 @@ private class ServerListViewModel(
         }
     }
 
+    /**
+     * 复制服务器ip
+     */
+    fun copy(
+        context: Context,
+        ip: String,
+        copiedText: String
+    ) {
+        viewModelScope.launch(Dispatchers.Main) {
+            copyText(label = null, text = ip, context = context)
+            Toast.makeText(context, copiedText, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     init {
         loadServer()
         startQueueProcessor()
@@ -359,6 +374,8 @@ fun ServerListScreen(
         ),
         Triple(NormalNavKey.Versions.ServerList, versionsScreenKey, false),
     ) { isVisible ->
+        val context = LocalContext.current
+
         val viewModel = rememberServerListViewModel(
             serverData = dataFile,
             version = version
@@ -399,13 +416,18 @@ fun ServerListScreen(
                             }
                         )
 
+                        val copiedText = stringResource(R.string.generic_copied)
                         ServerListBody(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .weight(1f),
                             servers = servers,
                             onLoad = { viewModel.loadServer(it) },
-                            onRefresh = { viewModel.loadServer(it, true) }
+                            onRefresh = { viewModel.loadServer(it, true) },
+                            onCopy = { viewModel.copy(context, it, copiedText) },
+                            onPlay = { address ->
+                                launchGameViewModel.quickPlayServer(version, address)
+                            }
                         )
                     }
                 }
@@ -482,6 +504,8 @@ private fun ServerListBody(
     servers: List<ServerState>?,
     onLoad: (ServerState) -> Unit,
     onRefresh: (ServerState) -> Unit,
+    onCopy: (String) -> Unit,
+    onPlay: (ServerAddress) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     servers?.let { list ->
@@ -496,7 +520,9 @@ private fun ServerListBody(
                         modifier = Modifier.fillMaxWidth(),
                         item = server,
                         onLoad = { onLoad(server) },
-                        onRefresh = { onRefresh(server) }
+                        onRefresh = { onRefresh(server) },
+                        onCopy = { onCopy(server.data.originIp) },
+                        onPlay = { onPlay(server.data.ip) }
                     )
                 }
             }
@@ -526,6 +552,8 @@ private fun ServerItem(
     item: ServerState,
     onLoad: () -> Unit,
     onRefresh: () -> Unit,
+    onCopy: () -> Unit,
+    onPlay: () -> Unit,
     modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     shape: Shape = MaterialTheme.shapes.large,
@@ -698,15 +726,39 @@ private fun ServerItem(
                 )
             }
 
-            //刷新服务器按钮
-            IconButton(
-                onClick = onRefresh,
-                enabled = ot !is ServerState.Operation.Loading
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Refresh,
-                    contentDescription = stringResource(R.string.generic_refresh)
-                )
+            Row {
+
+                //快速启动
+                IconButton(
+                    onClick = onPlay,
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.PlayArrow,
+                        contentDescription = stringResource(R.string.generic_copy)
+                    )
+                }
+
+                //复制服务器ip
+                IconButton(
+                    onClick = onCopy,
+                ) {
+                    Icon(
+                        modifier = Modifier.size(18.dp),
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = stringResource(R.string.generic_copy)
+                    )
+                }
+
+                //刷新服务器按钮
+                IconButton(
+                    onClick = onRefresh,
+                    enabled = ot !is ServerState.Operation.Loading
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Refresh,
+                        contentDescription = stringResource(R.string.generic_refresh)
+                    )
+                }
             }
         }
     }

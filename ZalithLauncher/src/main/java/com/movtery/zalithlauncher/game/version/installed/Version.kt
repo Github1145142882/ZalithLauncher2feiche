@@ -30,6 +30,7 @@ import com.movtery.zalithlauncher.game.path.getVersionsHome
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.unit.getOrMin
+import com.movtery.zalithlauncher.ui.screens.content.elements.QuickPlay
 import com.movtery.zalithlauncher.utils.platform.getMaxMemoryForSettings
 import com.movtery.zalithlauncher.utils.string.isNotEmptyOrBlank
 import kotlinx.parcelize.IgnoredOnParcel
@@ -57,9 +58,9 @@ class Version(
      */
     var offlineAccountLogin: Boolean = false,
     /**
-     * 快速启动单人游戏（存档名），仅支持  1.20+  23w14a+
+     * 快速启动
      */
-    var quickPlaySingle: String? = null
+    var quickPlaySingle: QuickPlay? = null
 ): Parcelable {
     /**
      * 当前版本是否被置顶

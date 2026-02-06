@@ -18,16 +18,19 @@
 
 package com.movtery.zalithlauncher.utils.network
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
 import java.net.IDN
 import java.util.Objects
 
 /**
  * [Reference HMCL](https://github.com/HMCL-dev/HMCL/blob/e0805fc/HMCLCore/src/main/java/org/jackhuang/hmcl/util/ServerAddress.java)
  */
+@Parcelize
 class ServerAddress(
     val host: String,
     val port: Int = DEFAULT_PORT
-) {
+) : Parcelable {
     /**
      * 尝试获取为国际化域名（IDN）
      */
