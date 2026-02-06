@@ -148,11 +148,12 @@ fun AssetsIcon(
         AsyncImagePainter.State.Empty -> {
             Box(modifier = sizeModifier)
         }
-        is AsyncImagePainter.State.Error, is AsyncImagePainter.State.Loading -> {
+        is AsyncImagePainter.State.Loading -> {
             ShimmerBox(
                 modifier = sizeModifier
             )
         }
+        is AsyncImagePainter.State.Error,
         is AsyncImagePainter.State.Success -> {
             Image(
                 painter = painter,

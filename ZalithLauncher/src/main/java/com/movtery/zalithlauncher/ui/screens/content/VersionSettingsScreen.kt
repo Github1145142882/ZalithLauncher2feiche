@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Dashboard
+import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Lightbulb
@@ -96,6 +97,7 @@ import com.movtery.zalithlauncher.ui.screens.content.versions.AddonDiffs
 import com.movtery.zalithlauncher.ui.screens.content.versions.ModsManagerScreen
 import com.movtery.zalithlauncher.ui.screens.content.versions.ResourcePackManageScreen
 import com.movtery.zalithlauncher.ui.screens.content.versions.SavesManagerScreen
+import com.movtery.zalithlauncher.ui.screens.content.versions.ServerListScreen
 import com.movtery.zalithlauncher.ui.screens.content.versions.ShadersManagerScreen
 import com.movtery.zalithlauncher.ui.screens.content.versions.UpdateLoaderScreen
 import com.movtery.zalithlauncher.ui.screens.content.versions.VersionConfigScreen
@@ -268,7 +270,8 @@ private val settingItems = listOf(
     CategoryItem(NormalNavKey.Versions.ModsManager, { CategoryIcon(Icons.Outlined.Extension, R.string.mods_manage) }, R.string.mods_manage, division = true),
     CategoryItem(NormalNavKey.Versions.SavesManager, { CategoryIcon(Icons.Outlined.Public, R.string.saves_manage) }, R.string.saves_manage),
     CategoryItem(NormalNavKey.Versions.ResourcePackManager, { CategoryIcon(Icons.Outlined.Image, R.string.resource_pack_manage) }, R.string.resource_pack_manage),
-    CategoryItem(NormalNavKey.Versions.ShadersManager, { CategoryIcon(Icons.Outlined.Lightbulb, R.string.shader_pack_manage) }, R.string.shader_pack_manage)
+    CategoryItem(NormalNavKey.Versions.ShadersManager, { CategoryIcon(Icons.Outlined.Lightbulb, R.string.shader_pack_manage) }, R.string.shader_pack_manage),
+    CategoryItem(NormalNavKey.Versions.ServerList, { CategoryIcon(Icons.Outlined.Dns, R.string.servers_list) }, R.string.servers_list, division = true),
 )
 
 @Composable
@@ -468,6 +471,16 @@ private fun NavigationUI(
                                 targetScreen = backScreenViewModel.downloadShadersScreen
                             )
                         },
+                        submitError = submitError
+                    )
+                }
+                entry<NormalNavKey.Versions.ServerList> {
+                    ServerListScreen(
+                        mainScreenKey = mainScreenKey,
+                        versionsScreenKey = versionsScreenKey,
+                        launchGameViewModel = launchGameViewModel,
+                        version = version,
+                        backToMainScreen = backToMainScreen,
                         submitError = submitError
                     )
                 }

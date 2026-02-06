@@ -727,6 +727,11 @@
     <string name="shader_pack_manage_name">光影包名称</string>
     <string name="shader_pack_manage_delete_warning">您确定要删除光影包 %s 吗？该操作不可撤销！</string>
     <string name="shader_pack_manage_no_packs">当前版本还没有光影包</string>
+    <string name="servers_list">服务器</string>
+    <string name="servers_list_no_servers">当前版本还未添加服务器</string>
+    <string name="servers_list_failed_to_connect">无法连接至服务器</string>
+    <string name="servers_list_undefined">未定义</string>
+    <string name="servers_list_players_full">已满员</string>
     <!--  游戏  -->
     <string name="minecraft_download_stat_download_task">统计下载任务</string>
     <string name="minecraft_download_stat_verify_task">统计验证任务</string>

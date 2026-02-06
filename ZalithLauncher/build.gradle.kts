@@ -263,6 +263,7 @@ dependencies {
     implementation(libs.ktor.server.cio)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.minidns.hla)
     implementation(libs.toml4j)
     implementation(libs.maven.artifact)
     implementation(libs.mmkv)

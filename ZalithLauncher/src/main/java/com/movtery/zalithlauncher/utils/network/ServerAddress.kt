@@ -24,15 +24,18 @@ import java.util.Objects
 /**
  * [Reference HMCL](https://github.com/HMCL-dev/HMCL/blob/e0805fc/HMCLCore/src/main/java/org/jackhuang/hmcl/util/ServerAddress.java)
  */
-class ServerAddress private constructor(val host: String, val port: Int) {
+class ServerAddress(
+    val host: String,
+    val port: Int = DEFAULT_PORT
+) {
     /**
      * 尝试获取为国际化域名（IDN）
      */
-    fun getASCIIHost(): String {
+    fun getASCIIHost(default: String = host): String {
         return try {
             IDN.toASCII(host)
         } catch (_: IllegalArgumentException) {
-            host
+            default
         }
     }
 
@@ -86,8 +89,6 @@ class ServerAddress private constructor(val host: String, val port: Int) {
         private fun illegalAddress(address: String): IllegalArgumentException = 
             IllegalArgumentException("Invalid server address: $address")
     }
-    
-    constructor(host: String) : this(host, DEFAULT_PORT)
     
     override fun equals(other: Any?): Boolean = when {
         this === other -> true

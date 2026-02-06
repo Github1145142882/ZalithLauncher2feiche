@@ -75,6 +75,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -523,13 +524,12 @@ private fun SavesList(
         if (list.isNotEmpty()) {
             LazyColumn(
                 modifier = modifier,
-                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp)
+                contentPadding = PaddingValues(all = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(list) { saveData ->
                     SaveItemLayout(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp),
+                        modifier = Modifier.fillMaxWidth(),
                         saveData = saveData,
                         quickPlay = quickPlay,
                         minecraftVersion = minecraftVersion,
@@ -571,6 +571,7 @@ private fun SaveItemLayout(
     minecraftVersion: String,
     onClick: () -> Unit = {},
     updateOperation: (SavesOperation) -> Unit = {},
+    shape: Shape = MaterialTheme.shapes.large,
     itemColor: Color = itemLayoutColor(),
     itemContentColor: Color = MaterialTheme.colorScheme.onSurface,
     shadowElevation: Dp = itemLayoutShadowElevation()
@@ -588,7 +589,7 @@ private fun SaveItemLayout(
     Surface(
         modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value),
         onClick = onClick,
-        shape = MaterialTheme.shapes.large,
+        shape = shape,
         color = itemColor,
         contentColor = itemContentColor,
         shadowElevation = shadowElevation

@@ -83,6 +83,8 @@ sealed interface NormalNavKey : NavKey {
         @Serializable data object ResourcePackManager : Versions
         /** 光影包管理屏幕 */
         @Serializable data object ShadersManager : Versions
+        /** 服务器列表屏幕 */
+        @Serializable data object ServerList : Versions
     }
 
     /** 下载游戏嵌套子屏幕 */
