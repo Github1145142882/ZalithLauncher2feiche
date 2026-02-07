@@ -113,8 +113,7 @@ class AllServers {
                 newFile.copyTo(currentDataFile, true)
                 FileUtils.deleteQuietly(newFile)
             }.onFailure {
-                it.printStackTrace()
-                println("Couldn't save server list")
+                lWarning("Couldn't save server list", it)
             }
         }
     }
