@@ -131,10 +131,20 @@ private fun LogList(
         state = scrollState
     ) {
         items(logs) { log ->
+            val textSize = AllSettings.logTextSize.state
+            val fontSize = remember(textSize) {
+                TextUnit(textSize.toFloat(), TextUnitType.Sp)
+            }
+            val lineHeight = remember(textSize) {
+                val height = textSize.toFloat() * 1.1f
+                TextUnit(height, TextUnitType.Sp)
+            }
+
             Text(
                 text = log,
                 modifier = Modifier.fillParentMaxWidth(),
-                fontSize = TextUnit(AllSettings.logTextSize.state.toFloat(), TextUnitType.Sp)
+                fontSize = fontSize,
+                lineHeight = lineHeight
             )
         }
     }
