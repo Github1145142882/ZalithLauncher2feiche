@@ -1061,4 +1061,26 @@
     <string name="game_input_proxy_mode_send">Mode Kirim</string>
     <string name="settings_launcher_language">Bahasa</string>
     <string name="control_editor_layers_attribute_hide_when_joystick">Tetap terlihat saat joystick diaktifkan</string>
+    <string name="download_game_addon_warning_api">%s belum dipilih. Tanpa memasangnya, Sebagian besar mod tidak akan berfungsi!</string>
+    <string name="account_advanced">Pengaturan Lanjutan</string>
+    <string name="account_local_uuid_tip_1">UUID adalah pengenal unik dari pemain Minecraft.</string>
+    <string name="account_local_uuid_tip_2">Launcher yang berbeda mungkin menghasilkan UUID yang berbeda.</string>
+    <string name="account_local_uuid_tip_3">Menjaga UUID tetap sama saat berpindah launcher memungkinkan game tetap mengenali karakter Anda dan mempertahankan data inventori.</string>
+    <string name="account_local_uuid_tip_4">Opsi ini ditujukan untuk pengguna lanjutan dan biasanya tidak perlu diubah.</string>
+    <string name="account_local_uuid_invalid">Format UUID Tidak Valid</string>
+    <string name="account_local_uuid_copy">Salin UUID</string>
+    <string name="account_local_uuid_copied">UUID akun %s berhasil disalin</string>
+    <string name="servers_list">Server</string>
+    <string name="servers_list_no_servers">Belum ada server yang ditambahkan untuk versi ini</string>
+    <string name="servers_list_failed_to_connect">Gagal terhubung ke server</string>
+    <string name="servers_list_undefined">Tidak Terdefinisi</string>
+    <string name="servers_list_players_full">Penuh</string>
+    <string name="servers_list_add_server">Tambah Server</string>
+    <string name="servers_list_add_server_name">Nama Server</string>
+    <string name="servers_list_add_server_default_name">Server Minecraft</string>
+    <string name="servers_list_add_server_ip">Alamat Server</string>
+    <string name="servers_list_delete_server">Hapus Server</string>
+    <string name="servers_list_delete_server_text">Apakah anda yakin ingin menghapus server %s?</string>
+    <string name="servers_list_edit_server">Ubah Server</string>
+    <string name="servers_list_copy_server_address">Salin Alamat</string>
 </resources>
