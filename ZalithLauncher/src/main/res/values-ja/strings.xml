@@ -359,7 +359,7 @@
     <string name="settings_control_physical_key_bind_ime_bound">割り当てキー: %s</string>
     <string name="settings_control_physical_key_bind_ime_un_bind">未割り当て</string>
     <string name="settings_game_jvm_args_title">JVM引数</string>
-    <string name="settings_renderer_vsync_in_zink_title">Zink垂直同期</string>
+    <string name="settings_renderer_vsync_in_zink_title"> Zink垂直同期</string>
     <string name="settings_renderer_vsync_in_zink_summary">システムインターフェースを使用してZinkレンダラーの垂直同期を有効にします</string>
     <string name="settings_tab_info_about">情報</string>
     <string name="settings_renderer_global_renderer_title">グローバルレンダラー</string>
@@ -1062,4 +1062,25 @@
     <string name="crash_link_share_failed">アップロード失敗</string>
     <string name="crash_link_share_failed_link_not_found">利用可能なリンクが見つかりません。後でもう一度お試しください。</string>
     <string name="download_game_addon_warning_api">%s が選択されていません。インストールしないと、ほとんどのモッドは動作しません！</string>
+    <string name="account_advanced">詳細設定</string>
+    <string name="account_local_uuid_tip_1">UUIDはマインクラフトプレイヤーの一意の識別子です。</string>
+    <string name="account_local_uuid_tip_2">ランチャーによって生成されるUUIDが異なる場合があります。</string>
+    <string name="account_local_uuid_tip_3">ランチャーを切り替える際にUUIDを同じに保つと、ゲームは引き続きプレイヤーを認識し、インベントリのデータを保持できます。</string>
+    <string name="account_local_uuid_tip_4">この設定は上級者向けであり、調整は通常必要ありません。</string>
+    <string name="account_local_uuid_invalid">無効なUUID形式</string>
+    <string name="account_local_uuid_copy">UUIDをコピー</string>
+    <string name="account_local_uuid_copied">アカウント %s のUUIDがコピーされました</string>
+    <string name="servers_list">サーバー</string>
+    <string name="servers_list_no_servers">このバージョンにはサーバーが追加されていません</string>
+    <string name="servers_list_failed_to_connect">サーバーに接続できません</string>
+    <string name="servers_list_undefined">未定義</string>
+    <string name="servers_list_players_full">満員</string>
+    <string name="servers_list_add_server">サーバーを追加</string>
+    <string name="servers_list_add_server_name">サーバー名</string>
+    <string name="servers_list_add_server_default_name">マインクラフトサーバー</string>
+    <string name="servers_list_add_server_ip">サーバーアドレス</string>
+    <string name="servers_list_delete_server">サーバーを削除</string>
+    <string name="servers_list_delete_server_text">サーバー %s を削除してもよろしいですか？</string>
+    <string name="servers_list_edit_server">サーバーを編集</string>
+    <string name="servers_list_copy_server_address">サーバーアドレスをコピー</string>
 </resources>
