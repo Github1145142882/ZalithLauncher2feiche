@@ -83,4 +83,7 @@
     <string name="terracotta_tutorial_host_tab">Tutorial para anfitriões</string>
     <string name="terracotta_tutorial_guest_tab">Tutorial para convidados</string>
     <string name="terracotta_tutorial_guest_step_join_room">- Depois de confirmar que você entrou na sala, selecione Multijogador e clique duas vezes em Terracotta Lobby.</string>
+    <string name="terracotta_tutorial_guest_step_alternate_server">- Ao entrar no jogo usando o endereço do servidor de backup, contas offline não são suportadas. Resolva este problema você mesmo.</string>
+    <string name="terracotta_tutorial_note_title">Notas:</string>
+    <string name="terracotta_warning_region">O modo multijogador é atualmente compatível apenas com a China. Outras regiões ainda não são compatíveis. Não nos responsabilizamos por quaisquer problemas que possam surgir se você usar este recurso fora da China.</string>
 </resources>
