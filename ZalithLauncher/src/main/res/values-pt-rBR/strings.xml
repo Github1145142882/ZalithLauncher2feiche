@@ -714,4 +714,6 @@
     <string name="resource_pack_manage_type_zip">Arquivo Zip</string>
     <string name="resource_pack_manage_formats">Formato da versão: %s</string>
     <string name="resource_pack_manage_exists">Já existe uma textura com este nome</string>
+    <string name="resource_pack_manage_name">Nome da textura</string>
+    <string name="resource_pack_manage_delete_warning">Tem certeza de que deseja excluir a textura %s? Esta ação não pode ser desfeita!</string>
 </resources>
