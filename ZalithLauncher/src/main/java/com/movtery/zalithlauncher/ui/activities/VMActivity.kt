@@ -60,6 +60,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewModelScope
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.bridge.CURSOR_DISABLED
 import com.movtery.zalithlauncher.bridge.LoggerBridge
 import com.movtery.zalithlauncher.bridge.ZLBridge
 import com.movtery.zalithlauncher.bridge.ZLBridgeStates
@@ -458,10 +459,10 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
                         )
                     }
 
-                    //鼠标抓获模式变更时，应该关闭输入框
+                    //鼠标变更为抓获模式时，应该关闭输入框
                     val cursorMode by ZLBridgeStates.cursorMode.collectAsStateWithLifecycle()
                     LaunchedEffect(cursorMode) {
-                        vmViewModel.disableInputMode()
+                        if (cursorMode == CURSOR_DISABLED) vmViewModel.disableInputMode()
                     }
                 }
             }
