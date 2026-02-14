@@ -131,7 +131,12 @@ class GameHandler(
                 false
             } else {
                 //已禁用手柄控制，避免继续向下被当作键盘事件进行处理
-                true
+                if (AllSettings.showMenuBall.state) {
+                    //开启游戏菜单悬浮窗时，完全无响应
+                    false
+                } else {
+                    true
+                }
             }
         }
         //已在VMActivity绑定onBackPressedDispatcher，这里不应该继续向下处理
