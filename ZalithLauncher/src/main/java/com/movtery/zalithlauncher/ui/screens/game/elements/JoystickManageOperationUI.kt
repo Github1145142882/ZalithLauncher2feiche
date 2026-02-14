@@ -288,6 +288,7 @@ private fun JoystickManageDialog(
 
                             Spacer(Modifier)
 
+                            //摇杆死区范围
                             InfoLayoutSliderItem(
                                 modifier = Modifier.fillMaxWidth(),
                                 title = stringResource(R.string.game_styles_joystick_deadzone),
@@ -295,6 +296,20 @@ private fun JoystickManageDialog(
                                 onValueChange = { AllSettings.joystickDeadZoneRatio.updateState(it.toInt()) },
                                 onValueChangeFinished = { AllSettings.joystickDeadZoneRatio.save() },
                                 valueRange = AllSettings.joystickDeadZoneRatio.floatRange,
+                                decimalFormat = "#0",
+                                suffix = "%",
+                                fineTuningStep = 1.0f,
+                                enabled = AllSettings.enableJoystickControl.state
+                            )
+
+                            //摇杆前进锁判定范围
+                            InfoLayoutSliderItem(
+                                modifier = Modifier.fillMaxWidth(),
+                                title = stringResource(R.string.game_styles_joystick_lock_threshold),
+                                value = AllSettings.joystickLockThreshold.state.toFloat(),
+                                onValueChange = { AllSettings.joystickLockThreshold.updateState(it.toInt()) },
+                                onValueChangeFinished = { AllSettings.joystickLockThreshold.save() },
+                                valueRange = AllSettings.joystickLockThreshold.floatRange,
                                 decimalFormat = "#0",
                                 suffix = "%",
                                 fineTuningStep = 1.0f,

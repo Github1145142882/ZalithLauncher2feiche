@@ -358,6 +358,7 @@
     <string name="game_styles_joystick_edit">編輯搖桿樣式</string>
     <string name="game_styles_joystick_edit_use_control_layout">使用控制佈局提供的樣式</string>
     <string name="game_styles_joystick_deadzone">搖桿死區範圍</string>
+    <string name="game_styles_joystick_lock_threshold">搖桿前進鎖定判定範圍</string>
     <string name="game_styles_joystick_can_lock">前進鎖定</string>
     <string name="game_styles_joystick_lock_sprint">鎖定時強制疾跑</string>
     <string name="game_styles_joystick_hide_when_mouse">使用實體滑鼠時隱藏</string>

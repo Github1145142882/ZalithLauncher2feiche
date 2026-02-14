@@ -396,6 +396,7 @@
     <string name="game_styles_joystick_edit">Edit Joystick Style</string>
     <string name="game_styles_joystick_edit_use_control_layout">Use Style Provided by Control Layout</string>
     <string name="game_styles_joystick_deadzone">Joystick Deadzone Range</string>
+    <string name="game_styles_joystick_lock_threshold">Joystick Forward Lock Threshold</string>
     <string name="game_styles_joystick_can_lock">Forward Lock</string>
     <string name="game_styles_joystick_lock_sprint">Force Sprint When Locked</string>
     <string name="game_styles_joystick_hide_when_mouse">Hide When Using Physical Mouse</string>

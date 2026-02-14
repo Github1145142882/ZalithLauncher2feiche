@@ -518,6 +518,11 @@ object AllSettings : SettingsRegistry() {
     val joystickDeadZoneRatio = intSetting("joystickDeadZoneRatio", 30, 10..50)
 
     /**
+     * 摇杆前进锁判定范围
+     */
+    val joystickLockThreshold = intSetting("joystickLockThreshold", 30, 5..50)
+
+    /**
      * 游戏中摇杆移动组件是否可锁定
      */
     val joystickControlCanLock = boolSetting("joystickControlCanLock", true)

@@ -395,6 +395,7 @@
     <string name="game_styles_joystick_edit">编辑摇杆样式</string>
     <string name="game_styles_joystick_edit_use_control_layout">使用控制布局提供的样式</string>
     <string name="game_styles_joystick_deadzone">摇杆死区范围</string>
+    <string name="game_styles_joystick_lock_threshold">摇杆前进锁判定范围</string>
     <string name="game_styles_joystick_can_lock">前进锁定</string>
     <string name="game_styles_joystick_lock_sprint">锁定时强制疾跑</string>
     <string name="game_styles_joystick_hide_when_mouse">在实体鼠标操作时隐藏</string>
