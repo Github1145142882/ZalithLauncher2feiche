@@ -95,7 +95,6 @@ private suspend fun fetchNodesFromRemote(): List<URI> {
             }
             .toList()
 
-        lInfo("Terracotta node list: $result")
         result
     }.onFailure {
         lWarning("Failed to fetch terracotta node list", it)
