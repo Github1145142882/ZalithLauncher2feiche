@@ -78,6 +78,26 @@ fun SimpleGamepadCapture(
     val isBinding = remember(remapperViewModel.uiOperation) { remapperViewModel.uiOperation != GamepadRemapOperation.None }
     fun isBinding() = remapperViewModel.uiOperation != GamepadRemapOperation.None
 
+    //以事件接收的方式，单独处理按键事件
+    //事件源：GameHandler 处理来自 VMActivity 的 dispatchKeyEvent
+    LaunchedEffect(view, gamepadViewModel, isBinding) {
+        gamepadViewModel.keyEvents.collect { event ->
+            if (isBinding()) {
+                remapperViewModel.sendEvent(
+                    GamepadRemapperViewModel.Event.Button(event.keyCode, event)
+                )
+            } else {
+                val deviceName = event.getDeviceName()
+                val remapper = remapperViewModel.findMapping(deviceName)
+                if (remapper == null) {
+                    remapperViewModel.startRemapperUI(deviceName)
+                } else {
+                    remapper.handleKeyEventInput(event, gamepadViewModel)
+                }
+            }
+        }
+    }
+
     DisposableEffect(view, gamepadViewModel, isBinding) {
         val motionListener = View.OnGenericMotionListener { _, event ->
             if (isBinding()) {
@@ -97,31 +117,10 @@ fun SimpleGamepadCapture(
             } else false
         }
 
-        val keyListener = View.OnKeyListener { _, keyCode, keyEvent ->
-            if (keyEvent.isGamepadKeyEvent()) {
-                if (isBinding()) {
-                    remapperViewModel.sendEvent(
-                        GamepadRemapperViewModel.Event.Button(keyCode, keyEvent)
-                    )
-                } else {
-                    val deviceName = keyEvent.getDeviceName()
-                    val remapper = remapperViewModel.findMapping(deviceName)
-                    if (remapper == null) {
-                        remapperViewModel.startRemapperUI(deviceName)
-                    } else {
-                        remapper.handleKeyEventInput(keyEvent, gamepadViewModel)
-                    }
-                }
-                true
-            } else false
-        }
-
         view.setOnGenericMotionListener(motionListener)
-        view.setOnKeyListener(keyListener)
 
         onDispose {
             view.setOnGenericMotionListener(null)
-            view.setOnKeyListener(null)
         }
     }
 

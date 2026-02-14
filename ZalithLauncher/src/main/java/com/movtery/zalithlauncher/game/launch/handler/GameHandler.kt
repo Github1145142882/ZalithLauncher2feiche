@@ -124,7 +124,10 @@ class GameHandler(
     override fun shouldIgnoreKeyEvent(event: KeyEvent): Boolean {
         if (event.action == KeyEvent.ACTION_UP && (event.flags and KeyEvent.FLAG_CANCELED) != 0) return false
 
-        if (AllSettings.gamepadControl.state && event.isGamepadKeyEvent()) return true
+        if (AllSettings.gamepadControl.state && event.isGamepadKeyEvent()) {
+            gamepadViewModel.sendKeyEvent(event)
+            return false
+        }
         if (event.keyCode == KeyEvent.KEYCODE_BACK) return true
 
         if ((event.flags and KeyEvent.FLAG_SOFT_KEYBOARD) == KeyEvent.FLAG_SOFT_KEYBOARD) {

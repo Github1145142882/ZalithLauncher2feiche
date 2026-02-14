@@ -18,11 +18,13 @@
 
 package com.movtery.zalithlauncher.viewmodel
 
+import android.view.KeyEvent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.movtery.zalithlauncher.ui.control.gamepad.DpadDirection
 import com.movtery.zalithlauncher.ui.control.gamepad.GamepadMap
 import com.movtery.zalithlauncher.ui.control.gamepad.GamepadMapping
@@ -31,10 +33,25 @@ import com.movtery.zalithlauncher.ui.control.gamepad.Joystick
 import com.movtery.zalithlauncher.ui.control.gamepad.JoystickType
 import com.movtery.zalithlauncher.ui.control.gamepad.keyMappingMMKV
 import com.movtery.zalithlauncher.ui.control.joystick.JoystickDirection
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 
 private const val BUTTON_PRESS_THRESHOLD = 0.85f
 
-class GamepadViewModel() : ViewModel() {
+class GamepadViewModel : ViewModel() {
+    private val _keyEvents = MutableSharedFlow<KeyEvent>()
+    val keyEvents = _keyEvents.asSharedFlow()
+
+    /**
+     * 发送一个按键事件
+     */
+    fun sendKeyEvent(event: KeyEvent) {
+        viewModelScope.launch {
+            _keyEvents.emit(event)
+        }
+    }
+
     private val listeners = mutableListOf<(Event) -> Unit>()
 
     /**
