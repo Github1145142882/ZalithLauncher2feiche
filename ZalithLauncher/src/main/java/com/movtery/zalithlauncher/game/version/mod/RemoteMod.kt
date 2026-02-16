@@ -112,11 +112,9 @@ class RemoteMod(
                     if (loadFromCache && cachedFile != null) {
                         remoteFile = cachedFile
                     } else {
-                        getVersionByLocalFile(file, sha1)?.let { version ->
-                            updateRemoteFile(version)
-                            remoteFile?.let { modFile ->
-                                modFileCache.encode(sha1, modFile, MMKV.ExpireInDay)
-                            }
+                        loadRemoteFile(sha1)?.let { modFile ->
+                            remoteFile = modFile
+                            modFileCache.encode(sha1, modFile, MMKV.ExpireInDay)
                         }
                     }
 
@@ -153,35 +151,42 @@ class RemoteMod(
         }
     }
 
-    private fun updateRemoteFile(
-        version: PlatformVersion
-    ) {
-        remoteFile = when (version) {
+    suspend fun loadRemoteFile(
+        sha1: String? = null
+    ): ModFile? {
+        val file = localMod.file
+        val sha10 = sha1 ?: calculateFileSha1(file)
+        val version = getVersionByLocalFile(file, sha10)
+        return version?.toModFile()
+    }
+
+    private fun PlatformVersion.toModFile(): ModFile {
+        return when (this) {
             is ModrinthVersion -> {
                 ModFile(
-                    id = version.id,
-                    projectId = version.projectId,
+                    id = id,
+                    projectId = projectId,
                     platform = Platform.MODRINTH,
-                    loaders = version.loaders.mapNotNull { loaderName ->
+                    loaders = loaders.mapNotNull { loaderName ->
                         ModrinthModLoaderCategory.entries.find { it.facetValue() == loaderName }
                     }.toTypedArray(),
-                    datePublished = version.datePublished
+                    datePublished = datePublished
                 )
             }
             is CurseForgeFile -> {
                 ModFile(
-                    id = version.id.toString(),
-                    projectId = version.modId.toString(),
+                    id = id.toString(),
+                    projectId = modId.toString(),
                     platform = Platform.CURSEFORGE,
-                    loaders = version.gameVersions.mapNotNull { loaderName ->
+                    loaders = gameVersions.mapNotNull { loaderName ->
                         CurseForgeModLoader.entries.find {
                             it.getDisplayName().equals(loaderName, true)
                         }
                     }.toTypedArray(),
-                    datePublished = version.fileDate
+                    datePublished = fileDate
                 )
             }
-            else -> error("Unknown version type: $version")
+            else -> error("Unknown version type: $this")
         }
     }
 }

@@ -402,6 +402,7 @@
     <string name="game_styles_joystick_hide_when_mouse">在实体鼠标操作时隐藏</string>
     <string name="game_styles_joystick_hide_when_gamepad">在手柄操作时隐藏</string>
     <string name="game_styles_save_failed">保存样式失败</string>
+    <string name="game_saponsorship_finished_game">启动器已经成功运行了 %s 次游戏！如果您觉得好用的话，可以考虑赞助支持一下作者喔！qwq</string>
     <!--  渲染器  -->
     <string name="renderer_version_support">MC 版本支持：</string>
     <string name="renderer_version_unsupported_warning">当前渲染器 %s 不支持该游戏版本，继续使用可能导致渲染错误或游戏崩溃！您确定要无视风险坚持访问吗？</string>
@@ -679,6 +680,7 @@
     <string name="mods_update_task_show">将要更新如下模组</string>
     <string name="mods_update_task_download">下载新版本模组</string>
     <string name="mods_update_task_replace">替换模组文件</string>
+    <string name="mods_update_task_loading">同步模组数据：%s</string>
     <string name="mods_update_no_mods_update">所有模组都是最新版本，无需更新</string>
     <string name="mods_update_updating">更新所有模组 (%1$d/%2$d, %3$s)</string>
     <string name="mods_update_updating_retry">重试更新所有模组 (%1$d/%2$d, %3$s)</string>

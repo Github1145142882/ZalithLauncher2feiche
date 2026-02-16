@@ -30,14 +30,17 @@ import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.control.ControlManager
 import com.movtery.zalithlauncher.notification.NotificationManager
+import com.movtery.zalithlauncher.path.URL_SUPPORT
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
+import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.elements.Background
@@ -191,6 +194,9 @@ class MainActivity : BaseAppCompatActivity() {
             }
         }
 
+        val finishedGame = AllSettings.finishedGame
+        val showSponsorship = AllSettings.showSponsorship
+
         setContent {
             ZalithLauncherTheme(
                 backgroundViewModel = backgroundViewModel
@@ -229,6 +235,24 @@ class MainActivity : BaseAppCompatActivity() {
                             screenBackStackModel.mainScreen.removeAndNavigateTo(
                                 remove = NestedNavKey.VersionSettings::class,
                                 screenKey = NormalNavKey.VersionsManager
+                            )
+                        }
+                    )
+                }
+
+                //显示赞助支持的小弹窗
+                if (!isImporting && finishedGame.state >= 100 && showSponsorship.state) {
+                    SimpleAlertDialog(
+                        title = stringResource(R.string.about_sponsor),
+                        text = stringResource(R.string.game_saponsorship_finished_game, finishedGame.state),
+                        dismissText = stringResource(R.string.generic_close),
+                        onDismiss = {
+                            showSponsorship.save(false)
+                        },
+                        onConfirm = {
+                            showSponsorship.save(false)
+                            eventViewModel.sendEvent(
+                                EventViewModel.Event.OpenLink(URL_SUPPORT)
                             )
                         }
                     )

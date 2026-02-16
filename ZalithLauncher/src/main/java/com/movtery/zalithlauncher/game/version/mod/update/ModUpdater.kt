@@ -26,18 +26,24 @@ import androidx.compose.material.icons.outlined.CleaningServices
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material.icons.outlined.Schedule
 import com.movtery.zalithlauncher.R
+import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskFlowExecutor
 import com.movtery.zalithlauncher.coroutine.TitledTask
 import com.movtery.zalithlauncher.coroutine.addTask
 import com.movtery.zalithlauncher.coroutine.buildPhase
 import com.movtery.zalithlauncher.game.addons.modloader.ModLoader
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformVersion
+import com.movtery.zalithlauncher.game.download.assets.platform.getProjectByVersion
+import com.movtery.zalithlauncher.game.version.mod.ModProject
 import com.movtery.zalithlauncher.game.version.mod.RemoteMod
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.utils.logging.Logger.lDebug
 import com.movtery.zalithlauncher.utils.logging.Logger.lInfo
+import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.withContext
 import org.apache.commons.io.FileUtils
@@ -142,24 +148,49 @@ class ModUpdater(
                     icon = Icons.Outlined.FilterAlt
                 ) { task ->
                     val totalSize = mods.size
-                    val list = mods.mapIndexedNotNull { index, mod ->
-                        val localFile = mod.localMod.file
-                        //更新进度条
+                    val needLoad = mutableListOf<RemoteMod>()
+                    val readyData = mutableListOf<ModData>()
+
+                    mods.forEachIndexed { index, mod ->
+                        val file = mod.localMod.file
+
                         task.updateProgress(
-                            percentage = (index + 1).toFloat() / totalSize,
+                            percentage = (index + 1f) / totalSize,
                             message = R.string.empty_holder,
-                            localFile.nameWithoutExtension
+                            file.nameWithoutExtension
                         )
-                        val modFile = mod.remoteFile ?: return@mapIndexedNotNull null
-                        val modProject = mod.projectInfo ?: return@mapIndexedNotNull null
-                        ModData(
-                            file = localFile,
-                            modFile = modFile,
-                            project = modProject,
-                            mcMod = mod.mcMod
-                        )
+
+                        val modFile = mod.remoteFile
+                        val project = mod.projectInfo
+
+                        if (modFile != null && project != null) {
+                            readyData += ModData(
+                                file = file,
+                                modFile = modFile,
+                                project = project,
+                                mcMod = mod.mcMod
+                            )
+                        } else {
+                            needLoad += mod
+                        }
                     }
-                    dataList.addAll(list)
+
+                    val loadedData = if (needLoad.isNotEmpty()) {
+                        needLoad.map { mod ->
+                            async(Dispatchers.IO) {
+                                loadModData(task, mod)
+                            }
+                        }.awaitAll()
+                            .filterNotNull()
+                            .also {
+                                task.updateMessage(null)
+                            }
+                    } else {
+                        emptyList()
+                    }
+
+                    dataList.addAll(readyData)
+                    dataList.addAll(loadedData)
                 }
 
                 //检查更新
@@ -247,6 +278,42 @@ class ModUpdater(
                     clearTempModUpdaterDir()
                 }
             }
+        )
+    }
+
+    private suspend fun loadModData(
+        task: Task,
+        mod: RemoteMod
+    ): ModData? {
+        val file = mod.localMod.file
+
+        val modFile = mod.remoteFile ?: runCatching {
+            task.updateMessage(R.string.mods_update_task_loading, file.name)
+            mod.loadRemoteFile()
+        }.onFailure {
+            lWarning("Failed to load remote mod version", it)
+        }.getOrNull() ?: return null
+
+        val project = mod.projectInfo ?: runCatching {
+            task.updateMessage(R.string.mods_update_task_loading, file.name)
+
+            val project = getProjectByVersion(modFile.projectId, modFile.platform)
+            ModProject(
+                id = project.platformId(),
+                platform = project.platform(),
+                iconUrl = project.platformIconUrl(),
+                title = project.platformTitle(),
+                slug = project.platformSlug()
+            )
+        }.onFailure {
+            lWarning("Failed to load remote project", it)
+        }.getOrNull() ?: return null
+
+        return ModData(
+            file = file,
+            modFile = modFile,
+            project = project,
+            mcMod = mod.mcMod
         )
     }
 

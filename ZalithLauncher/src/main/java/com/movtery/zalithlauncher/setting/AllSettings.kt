@@ -541,4 +541,14 @@ object AllSettings : SettingsRegistry() {
      * 游戏内文本输入模式，控制输入代理的输入行为
      */
     val textInputMode = enumSetting("textInputMode", InputMode.Default)
+
+    /**
+     * 玩家结束运行游戏的次数
+     */
+    val finishedGame = intSetting("finishedGame", 0)
+
+    /**
+     * 是否在打开启动器时，根据特定的运行游戏次数，显示赞助支持弹窗
+     */
+    val showSponsorship = boolSetting("showSponsorship", true)
 }

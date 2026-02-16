@@ -61,6 +61,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Deselect
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.SelectAll
 import androidx.compose.material.icons.filled.Update
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Block
@@ -309,6 +310,14 @@ private class ModsManageViewModel(
             }
     }
 
+    fun selectAllMods() {
+        allMods.forEach { mod ->
+            if (!selectedMods.contains(mod)) {
+                selectedMods.add(mod)
+            }
+        }
+    }
+
     /** 在ViewModel的生命周期协程内调用 */
     fun doInScope(block: suspend () -> Unit) {
         viewModelScope.launch {
@@ -337,8 +346,6 @@ private class ModsManageViewModel(
 
                 launch {
                     try {
-                        //重载模组信息时，应从选择列表中清除
-                        selectedMods.remove(mod)
                         mod.load(loadFromCache)
                     } finally {
                         semaphore.release()
@@ -661,6 +668,9 @@ fun ModsManagerScreen(
                                 }
                             },
                             isModsSelected = viewModel.selectedMods.isNotEmpty(),
+                            onSelectAll = {
+                                viewModel.selectAllMods()
+                            },
                             onClearModsSelected = { viewModel.selectedMods.clear() },
                             swapToDownload = swapToDownload,
                             refresh = { viewModel.refresh(context) },
@@ -744,6 +754,7 @@ private fun ModsActionsHeader(
     modsDir: File,
     onDeleteAll: () -> Unit,
     isModsSelected: Boolean,
+    onSelectAll: () -> Unit,
     onClearModsSelected: () -> Unit,
     swapToDownload: () -> Unit,
     refresh: () -> Unit,
@@ -875,6 +886,15 @@ private fun ModsActionsHeader(
                         }
 
                         IconButton(
+                            onClick = onSelectAll
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.SelectAll,
+                                contentDescription = null
+                            )
+                        }
+
+                        IconButton(
                             onClick = {
                                 if (isModsSelected) onClearModsSelected()
                             }
@@ -997,13 +1017,11 @@ private fun ModsList(
                         onForceRefresh(mod)
                     },
                     onClick = {
-                        if (mod.isLoaded) {
-                            //仅加载了项目信息的模组允许被选择
-                            if (selectedMods.contains(mod)) {
-                                removeFromSelected(mod)
-                            } else {
-                                addToSelected(mod)
-                            }
+                        //仅加载了项目信息的模组允许被选择
+                        if (selectedMods.contains(mod)) {
+                            removeFromSelected(mod)
+                        } else {
+                            addToSelected(mod)
                         }
                     },
                     onEnable = {
