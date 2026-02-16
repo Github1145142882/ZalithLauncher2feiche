@@ -424,8 +424,8 @@
     <string name="account_logging_blocked_ip">O endereço IP atual foi bloqueado para login.</string>
     <string name="account_logging_profile_not_exists">Crie um perfil de jogador do Minecraft primeiro e tente fazer login novamente!</string>
     <string name="account_logging_not_purchased_minecraft">Propriedade do Minecraft não verificada. Compre no site oficial da Mojang.</string>
-    <string name="account_type_microsoft">MicroSoft</string>
-    <string name="account_type_local">Off</string>
+    <string name="account_type_microsoft">Conta Microsoft (Requer Java ORG)</string>
+    <string name="account_type_local">Nickname Offline</string>
     <string name="account_add_new_server">Adicionar servidor de autenticação</string>
     <string name="account_add_new_server_button">Adicionar Autenticação</string>
     <string name="account_add_new_account">Adicionar Conta</string>
@@ -779,7 +779,7 @@
     <string name="settings_game_skip_game_integrity_check_summary">Ao iniciar o jogo, os arquivos de jogo existentes não serão baixados novamente, mesmo que não correspondam aos arquivos reais</string>
     <string name="settings_game_version_custom_info_title">Informações da Versão Personalizada</string>
     <string name="settings_game_version_custom_info_summary">As informações personalizadas são exibidas no canto inferior esquerdo do menu principal e no canto superior esquerdo da tela de depuração F3. Pode não funcionar para versões especiais ou logins de contas externas. Você pode adicionar a tag [zl_version], que será substituída automaticamente pelo número da versão atual.</string>
-    <string name="settings_game_auto_pick_java_runtime_title">Seleção automática da Runtine</string>
+    <string name="settings_game_auto_pick_java_runtime_title">Seleção automática da Runtime</string>
     <string name="settings_game_auto_pick_java_runtime_summary">Quando o Java for necessário, o launcher selecionará automaticamente o ambiente apropriado. Se não for possível determinar, ele usará o ambiente Java padrão.</string>
     <string name="settings_game_java_runtime_title">JRE</string>
     <string name="settings_game_java_runtime_summary">Especifique o ambiente Java padrão a ser usado</string>
@@ -1083,4 +1083,6 @@
     <string name="upgrade_is_latest">Você já está na versão mais recente</string>
     <string name="upgrade_cloud_drive">Espaço em nuvem</string>
     <string name="url_wiki_minecraft_game_release">https://minecraft.wiki/w/Java_Edition_%s</string>
+    <string name="download_install_warning_mobile_data">Você está usando dados móveis. Continuar o download consumirá os seus dados.</string>
+    <string name="game_styles_joystick_lock_threshold">Limiar de bloqueio frontal do joystick</string>
 </resources>
