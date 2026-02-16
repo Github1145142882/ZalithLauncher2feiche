@@ -593,7 +593,7 @@
     <string name="settings_renderer_shader_dump_summary">Keluarkan kode shader yang dikonversi ke file log selama runtime game untuk memudahkan debugging dan menganalisa proses rendering grafis</string>
     <string name="settings_renderer_vulkan_driver_system_summary">Saat diaktifkan, peluncur akan memaksa penggunaan driver Vulkan bawaan sistem (untuk GPU Adreno), alih-alih driver Turnip bawaan. Pengaturan ini hanya memengaruhi backend Zink dan mod terkait yang menggunakan rendering Vulkan</string>
     <string name="settings_renderer_zink_driver_adreno">Launcher mendeteksi perangkatmu menggunakan GPU Adreno. Mengaktifkan opsi ini dapat menyebabkan perender Zink tidak berfungsi. Apakah Anda yakin ingin mengaktifkannya?</string>
-    <string name="settings_renderer_vsync_in_zink_title">Sinkronisasi vertikal Zink</string>
+    <string name="settings_renderer_vsync_in_zink_title">Sinkronisasi Vertikal Zink</string>
     <string name="settings_renderer_vsync_in_zink_summary">Aktifkan sinkronisasi vertikal untuk perender Zink melalui antarmuka sistem</string>
     <string name="settings_renderer_force_big_core_title">Paksa Core performa tinggi</string>
     <string name="settings_renderer_force_big_core_summary">Memaksa rendering Minecraft memakai core CPU performa tinggi (big core). Kalau diaktifkan bisa bikin baterai makin boros dan panas</string>
@@ -1083,4 +1083,6 @@
     <string name="servers_list_delete_server_text">Apakah anda yakin ingin menghapus server %s?</string>
     <string name="servers_list_edit_server">Ubah Server</string>
     <string name="servers_list_copy_server_address">Salin Alamat</string>
+    <string name="download_install_warning_mobile_data">Anda sedang menggunakan data seluler. Melanjutkan unduhan akan mengonsumsi kuota data.</string>
+    <string name="game_styles_joystick_lock_threshold">Batas Kunci Joystick Ke Depan</string>
 </resources>
