@@ -1083,4 +1083,6 @@
     <string name="servers_list_delete_server_text">サーバー %s を削除してもよろしいですか？</string>
     <string name="servers_list_edit_server">サーバーを編集</string>
     <string name="servers_list_copy_server_address">サーバーアドレスをコピー</string>
+    <string name="download_install_warning_mobile_data">モバイルデータ通信を利用しています。ダウンロードを続行するとデータが消費されます。</string>
+    <string name="game_styles_joystick_lock_threshold">ジョイスティックの前進ロックのしきい値</string>
 </resources>
