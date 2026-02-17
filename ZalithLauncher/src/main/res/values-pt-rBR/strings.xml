@@ -132,7 +132,7 @@
     <string name="unpack_screen_cacio">Backend GUI portátil para OpenJDK</string>
     <string name="unpack_screen_lwjgl">Biblioteca de jogos Java leve (necessária para Minecraft)</string>
     <string name="unpack_screen_launcher">Componentes essenciais do launcher</string>
-    <string name="main_launch_game">Entrar no jogo</string>
+    <string name="main_launch_game">Iniciar o jogo</string>
     <string name="main_task_menu">Menu de tarefas</string>
     <string name="download_category_game">Jogo</string>
     <string name="download_category_modpack">ModPack</string>
@@ -381,7 +381,7 @@
     <string name="game_menu_option_input_method">Alternar método de entrada</string>
     <string name="game_menu_option_switch_fps">CONTADOR DE FPS</string>
     <string name="game_menu_option_switch_memory">EXIBIR USO DE MEMORIA RAM</string>
-    <string name="game_menu_option_menu_ball_opacity">Opacidade da Sobreposição do Menu</string>
+    <string name="game_menu_option_menu_ball_opacity">Opacidade da Engrenagem Flutuante</string>
     <string name="game_menu_option_send_keycode">Enviar Tecla</string>
     <string name="game_menu_option_hotbar_rule">Regra de Posicionamento da Barra de Atalhos</string>
     <string name="game_menu_option_hotbar_rule_auto">Adaptativo (Pode Ser Impreciso)</string>
@@ -389,7 +389,7 @@
     <string name="game_menu_option_hotbar_width">Largura Da Hotbar</string>
     <string name="game_menu_option_hotbar_height">Altura da Hotbar</string>
     <string name="game_menu_option_show_menu">Ativar Engrenagem Flutuante</string>
-    <string name="game_menu_option_show_menu_hided">A sobreposição do menu do jogo foi desativada. Você pode abrir o menu do jogo usando o botão Voltar do sistema</string>
+    <string name="game_menu_option_show_menu_hided">A Engrenagem Flutuante foi desativada. Você pode abrir o menu dela usando o botão de voltar do sistema do seu dispositivo.</string>
     <string name="game_styles_joystick">Gerenciar Joystick</string>
     <string name="game_styles_joystick_enable">Ativar Joystick</string>
     <string name="game_styles_joystick_x">Posição X do joystick</string>
@@ -549,7 +549,7 @@
     <string name="multirt_runtime_corrupt">Java Runtime corrompido</string>
     <string name="multirt_runtime_incompatible_arch">Arquitetura incompatível: %s</string>
     <string name="multirt_runtime_delete_message">Excluir o ambiente de execução Java %s? Isso não pode ser desfeito!</string>
-    <string name="multirt_runtime_deleting">Excluindo o runtime Java: %s</string>
+    <string name="multirt_runtime_deleting">Excluindo o Java Runtime: %s</string>
     <string name="multirt_runtime_delete_failed">Falha ao excluir o ambiente de execução Java</string>
     <string name="multirt_runtime_import_failed">Falha ao importar o runtime Java</string>
     <string name="multirt_runtime_import_failed_file_name">Nome de arquivo inválido</string>
@@ -604,7 +604,7 @@
     <string name="versions_manage_cleanup_progress_next_version">Verificando versão: %s</string>
     <string name="versions_manage_cleanup_failed">Ocorreu uma exceção ao limpar os arquivos do jogo!</string>
     <string name="versions_manage_cleanup_failed_files">Os seguintes arquivos não puderam ser limpos por motivos desconhecidos:</string>
-    <string name="versions_manage_cleanup_success">Arquivos %1$d limpos com sucesso, total tamanho: %2$s</string>
+    <string name="versions_manage_cleanup_success">Arquivos %1$d limpos com sucesso, tamanho total: %2$s</string>
     <string name="versions_settings_overview">Visão geral</string>
     <string name="versions_settings_overview_management">Gerenciamento</string>
     <string name="versions_settings_overview_quick_actions">Ações rápidas</string>
@@ -631,7 +631,7 @@
     <string name="versions_config_vulkan_driver">Driver Vulkan</string>
     <string name="versions_config_java_runtime_summary">Especifique o ambiente Java usado por a versão atual</string>
     <string name="versions_config_auto_join_server_ip_title">Servidor de entrada automática</string>
-    <string name="versions_config_auto_join_server_ip_summary">Insira o IP do servidor aqui para entrar automaticamente após iniciar o jogo (ex.:114.514.114.514:114514)</string>
+    <string name="versions_config_auto_join_server_ip_summary">Insira o IP do servidor aqui para entrar automaticamente após adentrar no jogo (ex.:114.514.114.514:114514)</string>
     <string name="versions_config_enable_touch_proxy_title">Habilitar Proxy de Controle</string>
     <string name="versions_config_enable_touch_proxy_summary">Ative o proxy de controle preparado para o módulo Touch Controller</string>
     <string name="versions_config_vibrate_duration_title">Duração da vibração</string>
@@ -660,7 +660,7 @@
     <string name="mods_manage_description">Descrição do Mod:</string>
     <string name="mods_manage_version">Versão do Mod: %s</string>
     <string name="mods_manage_delete_warning">Tem certeza de que deseja excluir o mod %s? Esta ação não pode ser desfeita!</string>
-    <string name="mods_manage_no_mods">Sai fora, tem Mod pra essa versão não</string>
+    <string name="mods_manage_no_mods">Tá vazio aqui, coloca mod aí</string>
     <string name="mods_manage_no_loader">Sem ModLoader para a versão atual manin, mods não podem ser usados agora</string>
     <string name="mods_update">Atualizar Mods</string>
     <string name="mods_update_warning_1">Antes de verificar se há atualizações de mods, observe que atualizar um grande número de mods de uma só vez pode causar problemas de compatibilidade, tornando um jogo que funcionava anteriormente repentinamente inutilizável.</string>
@@ -703,7 +703,7 @@
     <string name="saves_manage_delete_warning">Tem certeza de que deseja excluir o arquivo do Mundo %s? Esta ação não pode ser desfeita!</string>
     <string name="saves_manage_quick_play">Jogo rápido</string>
     <string name="saves_manage_quick_play_disabled">Jogo Rápido (somente 1.20</string>
-    <string name="saves_manage_no_saves">Sem mundos pra está versão😭</string>
+    <string name="saves_manage_no_saves">Tá vazio aqui, coloca mundo aí</string>
     <string name="saves_manage_import_unpacking">Descompactando Mundo: %s</string>
     <string name="saves_manage_import_failed">Ocorreu um erro ao importar o Mundo</string>
     <string name="resource_pack_manage">Texturas!</string>
@@ -716,14 +716,14 @@
     <string name="resource_pack_manage_exists">Já existe uma textura com este nome</string>
     <string name="resource_pack_manage_name">Nome da textura</string>
     <string name="resource_pack_manage_delete_warning">Tem certeza de que deseja excluir a textura %s? Esta ação não pode ser desfeita!</string>
-    <string name="resource_pack_manage_no_packs">Nenhum textura disponível para a versão atual</string>
+    <string name="resource_pack_manage_no_packs">Tá vazio aqui, coloca textura aí</string>
     <string name="shader_pack_manage">Shaders!</string>
     <string name="shader_pack_manage_exists">Já existe uma shader com este nome</string>
     <string name="shader_pack_manage_name">Nome da shader</string>
     <string name="shader_pack_manage_delete_warning">Tem certeza de que deseja excluir a Shader %s? Esta ação não pode ser desfeita!</string>
-    <string name="shader_pack_manage_no_packs">Nenhuma Shader para esta versão</string>
+    <string name="shader_pack_manage_no_packs">Tá vazio aqui, coloca shader aí</string>
     <string name="servers_list">Servidores</string>
-    <string name="servers_list_no_servers">Nenhum servidor foi adicionado para esta versão</string>
+    <string name="servers_list_no_servers">Sem servidores para entrar automaticamente assim que abrir o jogo</string>
     <string name="servers_list_failed_to_connect">Não foi possível conectar ao servidor</string>
     <string name="servers_list_undefined">Indefinido</string>
     <string name="servers_list_players_full">Cheio</string>
@@ -783,9 +783,9 @@
     <string name="settings_game_auto_pick_java_runtime_summary">Quando o Java for necessário, o launcher selecionará automaticamente o ambiente apropriado. Se não for possível determinar, ele usará o ambiente Java padrão.</string>
     <string name="settings_game_java_runtime_title">JRE</string>
     <string name="settings_game_java_runtime_summary">Especifique o ambiente Java padrão a ser usado</string>
-    <string name="settings_game_java_memory_title">Alocação de ram global para as versões</string>
+    <string name="settings_game_java_memory_title">Taxa de alocação da memória RAM</string>
     <string name="settings_game_java_memory_summary">Ajustar o uso de ram que você quer que seja usada no seu Minecraft</string>
-    <string name="settings_game_java_memory_used_text">Usando: %1$dMB | Total disponível: %2$dMB</string>
+    <string name="settings_game_java_memory_used_text">Usando: %1$dMB | Total do dispositivo: %2$dMB</string>
     <string name="settings_game_java_memory_allocation_text">Alocado: %dMB</string>
     <string name="settings_game_jvm_args_title">Argumentos JVM</string>
     <string name="settings_game_jvm_args_summary">Argumentos adicionais da JVM adicionados ao iniciar a JVM. Modificá-los sem o conhecimento adequado não é recomendado, pois pode causar travamentos, qualquer coisa utilize o CHAT GPT para lhe auxiliar/ajudar</string>
@@ -1085,4 +1085,6 @@
     <string name="url_wiki_minecraft_game_release">https://minecraft.wiki/w/Java_Edition_%s</string>
     <string name="download_install_warning_mobile_data">Você está usando dados móveis. Continuar o download consumirá os seus dados.</string>
     <string name="game_styles_joystick_lock_threshold">Limiar de bloqueio frontal do joystick</string>
+    <string name="game_saponsorship_finished_game">O inicializador executou o jogo com sucesso %s vezes! Se você o achar útil, considere apoiar o desenvolvedor! :)</string>
+    <string name="mods_update_task_loading">Sincronizando dados do mod: %s</string>
 </resources>
