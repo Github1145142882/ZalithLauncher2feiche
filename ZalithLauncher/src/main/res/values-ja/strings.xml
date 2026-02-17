@@ -1085,4 +1085,6 @@
     <string name="servers_list_copy_server_address">サーバーアドレスをコピー</string>
     <string name="download_install_warning_mobile_data">モバイルデータ通信を利用しています。ダウンロードを続行するとデータが消費されます。</string>
     <string name="game_styles_joystick_lock_threshold">ジョイスティックの前進ロックのしきい値</string>
+    <string name="game_saponsorship_finished_game">ランチャーはゲームを %s 回正常に実行しました！役に立ったと思ったら、開発者へのサポートをお願いします！ :)</string>
+    <string name="mods_update_task_loading">モッドデータを同期中: %s</string>
 </resources>
