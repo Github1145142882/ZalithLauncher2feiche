@@ -120,6 +120,14 @@ class PackExporter(
                         mimeType = "application/*"
                     )
                 }
+
+                addTask(
+                    id = "ExportModpack.Cleanup_Finished",
+                    title = context.getString(R.string.download_install_clear_temp),
+                    icon = Icons.Outlined.CleaningServices
+                ) {
+                    clearTempModPackDir()
+                }
             }
         )
     }
