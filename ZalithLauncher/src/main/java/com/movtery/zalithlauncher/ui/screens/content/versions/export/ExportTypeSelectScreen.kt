@@ -86,7 +86,7 @@ fun ExportTypeSelectScreen(
                     modifier = Modifier
                         .offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
                     title = stringResource(R.string.versions_export_type_multimc),
-                    summary = stringResource(R.string.versions_export_type_multimc_summary),
+                    summary = stringResource(R.string.versions_export_type_multimc_summary, InfoDistributor.LAUNCHER_SHORT_NAME),
                     icon = painterResource(R.drawable.img_platform_multimc),
                     onClick = { onTypeSelect(PackType.MultiMC) }
                 )
