@@ -199,6 +199,7 @@ fun VersionSettingsScreen(
     key: NestedNavKey.VersionSettings,
     backScreenViewModel: ScreenBackStackViewModel,
     backToMainScreen: () -> Unit,
+    onExportModpack: () -> Unit,
     launchGameViewModel: LaunchGameViewModel,
     eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
@@ -254,6 +255,7 @@ fun VersionSettingsScreen(
                     key.currentKey = newKey
                 },
                 backToMainScreen = backToMainScreen,
+                onExport = onExportModpack,
                 launchGameViewModel = launchGameViewModel,
                 version = key.version,
                 eventViewModel = eventViewModel,
@@ -347,6 +349,7 @@ private fun NavigationUI(
     versionsScreenKey: NavKey?,
     onCurrentKeyChange: (NavKey?) -> Unit,
     backToMainScreen: () -> Unit,
+    onExport: () -> Unit,
     launchGameViewModel: LaunchGameViewModel,
     version: Version,
     eventViewModel: EventViewModel,
@@ -376,6 +379,7 @@ private fun NavigationUI(
                         mainScreenKey = mainScreenKey,
                         versionsScreenKey = versionsScreenKey,
                         backToMainScreen = backToMainScreen,
+                        onExport = onExport,
                         version = version,
                         submitError = submitError
                     )

@@ -132,7 +132,7 @@
     <string name="main_task_menu">任務選單</string>
     <!--  下載  -->
     <string name="download_category_game">遊戲</string>
-    <string name="download_category_modpack">整合包</string>
+    <string name="download_category_modpack">模組包</string>
     <string name="download_category_mod">模組</string>
     <string name="download_category_resource_pack">資源包</string>
     <string name="download_category_saves">存檔</string>
@@ -195,18 +195,18 @@
     <string name="download_assets_result_previous_page">上一頁</string>
     <string name="download_assets_result_next_page">下一頁</string>
     <string name="download_assets_failed_to_get_result">取得搜尋結果失敗：%s，點擊重試。</string>
-    <string name="download_modpack_warning1">在安裝前，您需要了解，大多數整合包是為電腦端製作的，在您嘗試啟動時，很可能會發生崩潰或其他問題，這些通常不是啟動器層面可以解決的問題。</string>
+    <string name="download_modpack_warning1">在安裝前，您需要了解，大多數模組包是為電腦端製作的，在您嘗試啟動時，很可能會發生崩潰或其他問題，這些通常不是啟動器層面可以解決的問題。</string>
     <string name="download_modpack_warning2">您需要自行學習相關知識來嘗試解決，或是尋求其他人的協助。</string>
-    <string name="download_modpack_warning3">註：啟動器開發者通常不會處理整合包引起的任何問題。</string>
-    <string name="download_modpack_install_title">正在安裝整合包</string>
-    <string name="download_modpack_install_parse">解析整合包</string>
+    <string name="download_modpack_warning3">註：啟動器開發者通常不會處理模組包引起的任何問題。</string>
+    <string name="download_modpack_install_title">正在安裝模組包</string>
+    <string name="download_modpack_install_parse">解析模組包</string>
     <string name="download_modpack_install_get_mod_url">取得模組下載連結 (%1$d/%2$d)</string>
-    <string name="download_modpack_install_overrides">解壓整合包檔案</string>
-    <string name="download_modpack_download">下載整合包所需內容</string>
+    <string name="download_modpack_install_overrides">解壓模組包檔案</string>
+    <string name="download_modpack_download">下載模組包所需內容</string>
     <string name="download_modpack_download_mods">下載所有模組 (%1$d/%2$d, %3$s)</string>
     <string name="download_modpack_download_mods_retry">重試下載所有模組 (%1$d/%2$d, %3$s)</string>
     <string name="download_modpack_get_loaders">取得載入器資訊</string>
-    <string name="download_modpack_final_move">正在移動整合包檔案</string>
+    <string name="download_modpack_final_move">正在移動模組包檔案</string>
     <!--  資源類別  -->
     <string name="download_assets_category_worldgen">世界生成</string>
     <string name="download_assets_category_biomes">生物群系</string>
@@ -292,23 +292,23 @@
     <string name="download_assets_features_items">物品</string>
     <string name="download_assets_features_locale">在地化</string>
     <string name="download_assets_features_models">模型</string>
-    <!--  导入整合包  -->
-    <string name="import_modpack">匯入整合包</string>
-    <string name="import_modpack_tip">您可以自行匯入本地整合包文件，啟動器目前支援以下格式：</string>
+    <!--  导入模組包  -->
+    <string name="import_modpack">匯入模組包</string>
+    <string name="import_modpack_tip">您可以自行匯入本地模組包文件，啟動器目前支援以下格式：</string>
     <string name="import_modpack_task_unpack">匯入並解壓文件</string>
-    <string name="import_modpack_task_parse">解析整合包</string>
-    <string name="import_modpack_task_extract_files">提取整合包文件</string>
+    <string name="import_modpack_task_parse">解析模組包</string>
+    <string name="import_modpack_task_extract_files">提取模組包文件</string>
     <string name="import_modpack_task_extract_files_and_schedule_download">提取並建立下載任務</string>
-    <string name="import_modpack_not_supported_title">不支援的整合包</string>
-    <string name="import_modpack_not_supported_formats">啟動器不支援此整合包格式，目前支援以下格式：</string>
-    <string name="import_modpack_not_supported_text1">啟動器無法匯入此整合包，可能原因如下：</string>
-    <string name="import_modpack_not_supported_text2">① 整合包已損壞，無法解壓或解析</string>
+    <string name="import_modpack_not_supported_title">不支援的模組包</string>
+    <string name="import_modpack_not_supported_formats">啟動器不支援此模組包格式，目前支援以下格式：</string>
+    <string name="import_modpack_not_supported_text1">啟動器無法匯入此模組包，可能原因如下：</string>
+    <string name="import_modpack_not_supported_text2">① 模組包已損壞，無法解壓或解析</string>
     <string name="import_modpack_not_supported_text3">② 您選擇的文件可能不是壓縮包</string>
-    <string name="import_modpack_not_supported_text4">請查看整合包作者的相關說明，以取得正確的匯入方式。</string>
+    <string name="import_modpack_not_supported_text4">請查看模組包作者的相關說明，以取得正確的匯入方式。</string>
     <string name="import_modpack_finished_title">匯入成功</string>
-    <string name="import_modpack_finished_text">您選擇的整合包已成功安裝！</string>
+    <string name="import_modpack_finished_text">您選擇的模組包已成功安裝！</string>
     <string name="import_modpack_failed_title">匯入失敗</string>
-    <string name="import_modpack_failed_text">安裝整合包時發生錯誤：</string>
+    <string name="import_modpack_failed_text">安裝模組包時發生錯誤：</string>
     <!--  版本描述  -->
     <string name="version_summary_fools_the_love_and_hugs_update">愛與擁抱更新，讓世界充滿和平與彩虹。</string>
     <string name="version_summary_fools_trendy_update">未來已來！我們為 Minecraft 加入了現代科技！</string>
@@ -609,6 +609,46 @@
     <string name="versions_update_loader_diff_load">載入：%1$s %2$s</string>
     <string name="versions_update_loader_error_message">安裝載入器時出現異常：</string>
     <string name="versions_update_loader_success_message">已成功變更該遊戲的載入器版本！</string>
+
+    <string name="versions_export">匯出模組包</string>
+    <string name="versions_export_type_mcbbs">MCBBS 模組包</string>
+    <string name="versions_export_type_mcbbs_summary">可被 %s、HMCL 等啟動器匯入</string>
+    <string name="versions_export_type_modrinth">Modrinth 模組包</string>
+    <string name="versions_export_type_modrinth_summary">可被常見的第三方啟動器匯入</string>
+    <string name="versions_export_type_multimc">MultiMC 模組包</string>
+    <string name="versions_export_type_multimc_summary">可被 %s、MultiMC 等啟動器匯入</string>
+    <string name="versions_export_alias_options">遊戲設定</string>
+    <string name="versions_export_alias_resource_packs">資源包目錄</string>
+    <string name="versions_export_alias_mods">模組目錄</string>
+    <string name="versions_export_alias_saves">存檔目錄</string>
+    <string name="versions_export_alias_shaderpacks">光影包目錄</string>
+    <string name="versions_export_alias_config">模組設定目錄</string>
+    <string name="versions_export_alias_launcher">啟動器版本設定目錄</string>
+    <string name="versions_export_pack_name">模組包名稱</string>
+    <string name="versions_export_pack_version">模組包版本</string>
+    <string name="versions_export_pack_author">模組包作者</string>
+    <string name="versions_export_pack_summary">模組包描述</string>
+    <string name="versions_export_pack_summary_hint">描述您的模組包，或撰寫更新日誌（支援 Markdown）</string>
+    <string name="versions_export_pack_jvm_args">遊戲參數</string>
+    <string name="versions_export_pack_java_args">Java 虛擬機參數</string>
+    <string name="versions_export_pack_website">模組包官方網站</string>
+    <string name="versions_export_pack_min_memory">最小分配記憶體</string>
+    <string name="versions_export_pack_max_memory">最大分配記憶體</string>
+    <string name="versions_export_pack_pack_remote">從 Modrinth 下載關鍵資源</string>
+    <string name="versions_export_pack_pack_curseforge">一併打包 CurseForge 的遠端資源</string>
+    <string name="versions_export_pack_select_files">選擇檔案</string>
+    <string name="versions_export_pack_select_output">匯出為</string>
+    <string name="versions_export_pack_select_folder_title">選擇匯出目錄</string>
+    <string name="versions_export_pack_select_folder_message">請選擇一個目錄用於啟動器產生最終的模組包檔案</string>
+    <string name="versions_export_pack_files">要打包的內容</string>
+    <string name="versions_export_pack_dir_empty">此目錄是空的！</string>
+    <string name="versions_export_task_fetch_remote">取得遠端資料</string>
+    <string name="versions_export_task_pack_manifest">打包中繼資料</string>
+    <string name="versions_export_task_generate_pack">產生模組包</string>
+    <string name="versions_export_task_error_title">匯出失敗</string>
+    <string name="versions_export_task_error_message">匯出模組包時發生錯誤：</string>
+    <string name="versions_export_task_finished">您的模組包已成功匯出！</string>
+    
     <string name="manage_only_show_valid">可用的</string>
     <string name="manage_delete_all">全部刪除</string>
     <string name="manage_delete_all_message">您確定要刪除所有選取的資源檔案嗎？此操作將無法復原，請謹慎選擇。</string>
@@ -852,7 +892,7 @@
     <string name="about_acknowledgements_fcl_text">%s 引用了 FCL 的部分程式碼，並參考其部分實作</string>
     <string name="about_acknowledgements_hmcl_text">%s 引用了 HMCL 的部分程式碼，並參考其部分實作</string>
     <string name="about_acknowledgements_mcmod">MC 百科（mcmod.cn）</string>
-    <string name="about_acknowledgements_mcmod_text">%s 使用了來自 MC 百科 的模組與整合包翻譯</string>
+    <string name="about_acknowledgements_mcmod_text">%s 使用了來自 MC 百科 的模組與模組包翻譯</string>
     <string name="about_acknowledgements_bangbang93_text">%s 使用了 BMCL API 鏡像來源</string>
     <string name="about_acknowledgements_mcim_text">%s 使用了 MCIM 鏡像來源</string>
     <string name="about_acknowledgements_github_community">GitHub 社群</string>

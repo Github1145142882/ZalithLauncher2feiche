@@ -60,9 +60,9 @@ class ModrinthManifest(
 
         class Env(
             @SerializedName("client")
-            val client: String,
+            val client: String? = null,
             @SerializedName("server")
-            val server: String
+            val server: String? = null
         )
     }
 }

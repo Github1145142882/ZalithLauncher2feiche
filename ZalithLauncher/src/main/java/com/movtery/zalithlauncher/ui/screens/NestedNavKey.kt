@@ -28,11 +28,11 @@ import kotlinx.serialization.Serializable
  */
 sealed interface NestedNavKey {
     /** 启动屏幕 */
-    @Serializable class Splash() : BackStackNavKey<NavKey>()
+    @Serializable class Splash : BackStackNavKey<NavKey>()
     /** 主屏幕 */
-    @Serializable class Main() : BackStackNavKey<NavKey>()
+    @Serializable class Main : BackStackNavKey<NavKey>()
     /** 设置屏幕 */
-    @Serializable class Settings() : BackStackNavKey<NavKey>()
+    @Serializable class Settings : BackStackNavKey<NavKey>()
     /** 版本详细设置屏幕 */
     @Serializable
     class VersionSettings(@Contextual val version: Version) : BackStackNavKey<NavKey>() {
@@ -40,20 +40,27 @@ sealed interface NestedNavKey {
             backStack.addIfEmpty(NormalNavKey.Versions.OverView)
         }
     }
+    /** 导出整合包屏幕 */
+    @Serializable
+    class VersionExport(@Contextual val version: Version) : BackStackNavKey<NavKey>() {
+        init {
+            backStack.addIfEmpty(NormalNavKey.VersionExports.SelectType)
+        }
+    }
     /** 下载屏幕 */
-    @Serializable class Download() : BackStackNavKey<NavKey>()
+    @Serializable class Download : BackStackNavKey<NavKey>()
 
     //下载嵌套子屏幕
     /** 下载游戏屏幕 */
-    @Serializable class DownloadGame() : BackStackNavKey<NavKey>()
+    @Serializable class DownloadGame : BackStackNavKey<NavKey>()
     /** 下载整合包屏幕 */
-    @Serializable class DownloadModPack() : BackStackNavKey<NavKey>()
+    @Serializable class DownloadModPack : BackStackNavKey<NavKey>()
     /** 下载模组屏幕 */
-    @Serializable class DownloadMod() : BackStackNavKey<NavKey>()
+    @Serializable class DownloadMod : BackStackNavKey<NavKey>()
     /** 下载资源包屏幕 */
-    @Serializable class DownloadResourcePack() : BackStackNavKey<NavKey>()
+    @Serializable class DownloadResourcePack : BackStackNavKey<NavKey>()
     /** 下载存档屏幕 */
-    @Serializable class DownloadSaves() : BackStackNavKey<NavKey>()
+    @Serializable class DownloadSaves : BackStackNavKey<NavKey>()
     /** 下载光影包屏幕 */
-    @Serializable class DownloadShaders() : BackStackNavKey<NavKey>()
+    @Serializable class DownloadShaders : BackStackNavKey<NavKey>()
 }
