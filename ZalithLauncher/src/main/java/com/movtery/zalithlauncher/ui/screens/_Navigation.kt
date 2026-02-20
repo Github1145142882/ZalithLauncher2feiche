@@ -96,6 +96,14 @@ fun <E: NavKey> NavBackStack<E>.clearWith(navKey: E) {
     removeIf { it::class.java != targetClass }
 }
 
+/**
+ * 清除指定的key
+ */
+fun <E: NavKey> NavBackStack<E>.clearKeys(vararg navKeys: E) {
+    val classes = navKeys.map { it::class.java }
+    removeIf { it::class.java in classes }
+}
+
 fun <E: NavKey> NavBackStack<E>.addIfEmpty(navKey: E) {
     if (isEmpty()) {
         add(navKey)

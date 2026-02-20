@@ -51,6 +51,7 @@ import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.fadeEdge
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
+import com.movtery.zalithlauncher.ui.screens.clearKeys
 import com.movtery.zalithlauncher.ui.screens.content.elements.TitleTaskFlowDialog
 import com.movtery.zalithlauncher.ui.screens.content.versions.export.ExportInfoScreen
 import com.movtery.zalithlauncher.ui.screens.content.versions.export.ExportSelectFilesScreen
@@ -177,6 +178,7 @@ private class ExportModpackViewModel(
         outputUri: Uri,
         onStart: () -> Unit = {},
         onStop: () -> Unit = {},
+        onFinished: () -> Unit = {}
     ) {
         viewModelScope.launch(Dispatchers.Main) {
             val info = startMutex.withLock {
@@ -202,6 +204,7 @@ private class ExportModpackViewModel(
                             _packExporter.update { null }
                             _packExportOperation.update { PackExportOperation.Finished }
                             onStop()
+                            onFinished()
                         },
                         onError = { throwable ->
                             _packExporter.update { null }
@@ -509,6 +512,12 @@ private fun NavigationUI(
                                 },
                                 onStop = {
                                     eventViewModel.sendKeepScreen(false)
+                                },
+                                onFinished = {
+                                    backStack.clearKeys(
+                                        NormalNavKey.VersionExports.EditInfo,
+                                        NormalNavKey.VersionExports.SelectFiles
+                                    )
                                 }
                             )
                         }
