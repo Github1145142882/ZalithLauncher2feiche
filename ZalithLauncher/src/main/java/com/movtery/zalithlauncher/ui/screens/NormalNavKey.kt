@@ -87,6 +87,16 @@ sealed interface NormalNavKey : NavKey {
         @Serializable data object ServerList : Versions
     }
 
+    /** 导出整合包屏幕 */
+    sealed interface VersionExports : NormalNavKey {
+        /** 选择导出格式 */
+        @Serializable data object SelectType : VersionExports
+        /** 编辑整合包导出配置 */
+        @Serializable data object EditInfo : VersionExports
+        /** 选择要导出的文件 */
+        @Serializable data object SelectFiles : VersionExports
+    }
+
     /** 下载游戏嵌套子屏幕 */
     sealed interface DownloadGame : NormalNavKey {
         /** 选择游戏版本屏幕 */

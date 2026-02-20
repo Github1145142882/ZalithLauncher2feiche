@@ -21,6 +21,7 @@ package com.movtery.zalithlauncher.context
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.utils.file.ensureParentDirectory
@@ -106,5 +107,40 @@ fun Context.copyLocalFile(
     }
     contentResolver.openInputStream(uri).use { inputStream ->
         FileUtils.copyToFile(inputStream, outputFile)
+    }
+}
+
+@Throws(IOException::class)
+fun Context.writeLocalFile(
+    inputFile: File,
+    outputUri: Uri,
+    mimeType: String
+) {
+    val baseDocId = DocumentsContract.getTreeDocumentId(outputUri)
+    val fileUri =
+        DocumentsContract.buildDocumentUriUsingTree(outputUri, "$baseDocId/${inputFile.name}")
+
+    try {
+        contentResolver.openOutputStream(fileUri, "wt")?.use { out ->
+            FileUtils.copyFile(inputFile, out)
+            return
+        }
+    } catch (_: IOException) {
+        // handle below
+    } catch (_: RuntimeException) {
+        // handle below
+    }
+
+    val parentDocumentUri = DocumentsContract.buildDocumentUriUsingTree(
+        outputUri,
+        DocumentsContract.getTreeDocumentId(outputUri)
+    )
+
+    val newFileUri =
+        DocumentsContract.createDocument(contentResolver, parentDocumentUri, mimeType, inputFile.name)
+            ?: throw IOException("Failed to create document: ${inputFile.name}")
+
+    contentResolver.openOutputStream(newFileUri, "wt")?.use { out ->
+        FileUtils.copyFile(inputFile, out)
     }
 }

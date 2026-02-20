@@ -256,6 +256,7 @@ private fun rememberVersionViewModel() : VersionsScreenViewModel {
 fun VersionsManageScreen(
     backScreenViewModel: ScreenBackStackViewModel,
     navigateToVersions: (Version) -> Unit,
+    navigateToExport: (Version) -> Unit,
     eventViewModel: EventViewModel,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
@@ -313,6 +314,7 @@ fun VersionsManageScreen(
                 vanillaVersionsCount = viewModel.vanillaVersionsCount,
                 modloaderVersionsCount = viewModel.modloaderVersionsCount,
                 navigateToVersions = navigateToVersions,
+                navigateToExport = navigateToExport,
                 modifier = Modifier
                     .fillMaxHeight()
                     .weight(7.5f)
@@ -460,10 +462,11 @@ private fun VersionsLayout(
     vanillaVersionsCount: Int,
     modloaderVersionsCount: Int,
     navigateToVersions: (Version) -> Unit,
+    navigateToExport: (Version) -> Unit,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit,
     onRefresh: () -> Unit,
     onVersionPinned: () -> Unit,
-    onInstall: () -> Unit
+    onInstall: () -> Unit,
 ) {
     val surfaceYOffset by swapAnimateDpAsState(
         targetValue = (-40).dp,
@@ -569,6 +572,7 @@ private fun VersionsLayout(
                                 },
                                 onRenameClick = { versionsOperation = VersionsOperation.Rename(version) },
                                 onCopyClick = { versionsOperation = VersionsOperation.Copy(version) },
+                                onExportClick = { navigateToExport(version) },
                                 onDeleteClick = { versionsOperation = VersionsOperation.Delete(version) },
                                 onPinned = onVersionPinned
                             )

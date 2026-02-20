@@ -57,6 +57,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -73,6 +74,7 @@ import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.SimpleTextSlider
 import com.movtery.zalithlauncher.ui.components.SliderValueEditDialog
 import com.movtery.zalithlauncher.ui.components.itemLayoutColorOnSurface
+import com.movtery.zalithlauncher.ui.screens.content.elements.DisabledAlpha
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 
 
@@ -299,7 +301,9 @@ fun InfoLayoutSwitchItem(
         contentColor = contentColor
     ) {
         MarqueeText(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier
+                .alpha(if (enabled) 1f else DisabledAlpha)
+                .weight(1f),
             text = title,
             style = MaterialTheme.typography.bodyMedium
         )

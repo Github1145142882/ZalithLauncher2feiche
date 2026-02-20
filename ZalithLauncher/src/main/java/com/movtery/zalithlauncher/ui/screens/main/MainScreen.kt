@@ -100,6 +100,7 @@ import com.movtery.zalithlauncher.ui.screens.content.LauncherScreen
 import com.movtery.zalithlauncher.ui.screens.content.LicenseScreen
 import com.movtery.zalithlauncher.ui.screens.content.MultiplayerScreen
 import com.movtery.zalithlauncher.ui.screens.content.SettingsScreen
+import com.movtery.zalithlauncher.ui.screens.content.VersionExportScreen
 import com.movtery.zalithlauncher.ui.screens.content.VersionSettingsScreen
 import com.movtery.zalithlauncher.ui.screens.content.VersionsManageScreen
 import com.movtery.zalithlauncher.ui.screens.content.WebViewScreen
@@ -459,6 +460,14 @@ private fun NavigationUI(
                 useClassEquality = true
             )
         }
+        /** 导航至整合包导出屏幕 */
+        val navigateToExport: (Version) -> Unit = { version ->
+            screenBackStackModel.mainScreen.removeAndNavigateTo(
+                remove = NestedNavKey.VersionSettings::class,
+                screenKey = NestedNavKey.VersionExport(version),
+                useClassEquality = true
+            )
+        }
 
         NavDisplay(
             backStack = backStack,
@@ -514,6 +523,7 @@ private fun NavigationUI(
                     VersionsManageScreen(
                         backScreenViewModel = screenBackStackModel,
                         navigateToVersions = navigateToVersions,
+                        navigateToExport = navigateToExport,
                         eventViewModel = eventViewModel,
                         submitError = submitError
                     )
@@ -531,9 +541,20 @@ private fun NavigationUI(
                         key = key,
                         backScreenViewModel = screenBackStackModel,
                         backToMainScreen = toMainScreen,
+                        onExportModpack = {
+                            navigateToExport(key.version)
+                        },
                         launchGameViewModel = launchGameViewModel,
                         eventViewModel = eventViewModel,
                         submitError = submitError
+                    )
+                }
+                entry<NestedNavKey.VersionExport> { key ->
+                    VersionExportScreen(
+                        key = key,
+                        backScreenViewModel = screenBackStackModel,
+                        eventViewModel = eventViewModel,
+                        backToMainScreen = toMainScreen
                     )
                 }
                 entry<NestedNavKey.Download> { key ->

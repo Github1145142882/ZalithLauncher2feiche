@@ -87,6 +87,7 @@ fun VersionOverViewScreen(
     mainScreenKey: NavKey?,
     versionsScreenKey: NavKey?,
     backToMainScreen: () -> Unit,
+    onExport: () -> Unit,
     version: Version,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
@@ -156,6 +157,7 @@ fun VersionOverViewScreen(
                     modifier = Modifier.offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
                     onEditSummary = { versionsOperation = VersionsOperation.EditSummary(version) },
                     onRename = { versionsOperation = VersionsOperation.Rename(version) },
+                    onExport = onExport,
                     onDelete = { versionsOperation = VersionsOperation.Delete(version) }
                 )
             }
@@ -272,6 +274,7 @@ private fun VersionManagementLayout(
     modifier: Modifier = Modifier,
     onEditSummary: () -> Unit = {},
     onRename: () -> Unit = {},
+    onExport: () -> Unit = {},
     onDelete: () -> Unit = {}
 ) {
     VersionChunkBackground(
@@ -302,6 +305,14 @@ private fun VersionManagementLayout(
                 ) {
                     Text(
                         text = stringResource(R.string.versions_manage_rename_version)
+                    )
+                }
+                OutlinedButton(
+                    modifier = Modifier.padding(end = 12.dp),
+                    onClick = onExport
+                ) {
+                    Text(
+                        text = stringResource(R.string.versions_export)
                     )
                 }
                 OutlinedButton(

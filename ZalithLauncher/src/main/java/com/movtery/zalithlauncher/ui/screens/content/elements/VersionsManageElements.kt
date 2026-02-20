@@ -39,6 +39,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FileCopy
+import androidx.compose.material.icons.filled.FolderZip
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AlertDialog
@@ -674,6 +675,7 @@ fun VersionItemLayout(
     onSettingsClick: () -> Unit = {},
     onRenameClick: () -> Unit = {},
     onCopyClick: () -> Unit = {},
+    onExportClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
     onPinned: () -> Unit = {}
 ) {
@@ -801,6 +803,20 @@ fun VersionItemLayout(
                         },
                         onClick = {
                             onCopyClick()
+                            menuExpanded = false
+                        }
+                    )
+                    DropdownMenuItem(
+                        text = { Text(text = stringResource(R.string.versions_export)) },
+                        leadingIcon = {
+                            Icon(
+                                modifier = Modifier.size(20.dp),
+                                imageVector = Icons.Filled.FolderZip,
+                                contentDescription = stringResource(R.string.versions_export)
+                            )
+                        },
+                        onClick = {
+                            onExportClick()
                             menuExpanded = false
                         }
                     )
