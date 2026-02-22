@@ -21,10 +21,12 @@ package com.movtery.zalithlauncher.ui.components
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -41,7 +43,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -59,7 +60,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,15 +72,15 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.ui.screens.content.elements.DisabledAlpha
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.animation.getAnimateTweenJellyBounce
-import com.movtery.zalithlauncher.utils.animation.swapAnimateDpAsState
 import java.text.DecimalFormat
 
 /**
@@ -117,46 +117,21 @@ fun MenuSubscreen(
     closeScreen: () -> Unit,
     shape: Shape = RoundedCornerShape(21.0.dp),
     backgroundColor: Color = Color.Black.copy(alpha = 0.25f),
-    backgroundAnimDuration: Int = 150,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val visible = state == MenuState.SHOW
-    val animationProgress = remember { Animatable(0f) }
-    var shouldRender by remember { mutableStateOf(false) }
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
-    LaunchedEffect(visible) {
-        if (visible) {
-            shouldRender = true
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(backgroundAnimDuration)
-            )
-        } else {
-            animationProgress.animateTo(
-                targetValue = 0f,
-                animationSpec = tween(backgroundAnimDuration)
-            )
-            shouldRender = false
-        }
-    }
-
-    val bgAlpha by remember {
-        derivedStateOf { animationProgress.value }
-    }
-    val menuOffset by swapAnimateDpAsState(
-        targetValue = 40.dp,
-        swapIn = visible,
-        isHorizontal = true,
-        animationSpec = getAnimateTweenJellyBounce()
-    )
-
-    if (shouldRender) {
-        Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             //背景阴影层
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .alpha(bgAlpha)
                     .background(color = backgroundColor)
                     .clickable(
                         indication = null, //禁用水波纹点击效果
@@ -164,28 +139,33 @@ fun MenuSubscreen(
                         onClick = closeScreen
                     )
             )
+        }
 
-            //Menu
-            if (animationProgress.value > 0f) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .fillMaxWidth(fraction = 1f / 3f)
-                        .fillMaxHeight()
-                        .padding(top = 12.dp, end = 12.dp, bottom = 12.dp)
-                        .offset {
-                            IntOffset(x = menuOffset.roundToPx(), y = 0)
-                        }
+        //Menu
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxWidth(fraction = 1f / 3f)
+                .fillMaxHeight()
+                .padding(top = 12.dp, end = 12.dp, bottom = 12.dp)
+        ) {
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn() + slideInHorizontally(
+                    animationSpec = getAnimateTweenJellyBounce()
                 ) {
-                    BackgroundCard(
-                        shape = shape,
-                        influencedByBackground = false,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .alpha(animationProgress.value),
-                        content = content
-                    )
+                    if (isRtl) -40 else 40
+                  },
+                exit = fadeOut() + slideOutHorizontally {
+                    if (isRtl) -40 else 40
                 }
+            ) {
+                BackgroundCard(
+                    shape = shape,
+                    influencedByBackground = false,
+                    modifier = Modifier.fillMaxSize(),
+                    content = content
+                )
             }
         }
     }
@@ -197,7 +177,6 @@ fun DualMenuSubscreen(
     closeScreen: () -> Unit,
     shape: Shape = RoundedCornerShape(21.0.dp),
     backgroundColor: Color = Color.Black.copy(alpha = 0.25f),
-    backgroundAnimDuration: Int = 150,
     titleHeight: Dp = 48.dp,
     leftMenuTitle: (@Composable BoxScope.() -> Unit)? = null,
     leftMenuContent: @Composable ColumnScope.() -> Unit = {},
@@ -205,51 +184,18 @@ fun DualMenuSubscreen(
     rightMenuContent: @Composable ColumnScope.() -> Unit = {}
 ) {
     val visible = state == MenuState.SHOW
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
-    val animationProgress = remember { Animatable(0f) }
-    var shouldRender by remember { mutableStateOf(false) }
-
-    LaunchedEffect(visible) {
-        if (visible) {
-            shouldRender = true
-            animationProgress.animateTo(
-                targetValue = 1f,
-                animationSpec = tween(backgroundAnimDuration)
-            )
-        } else {
-            animationProgress.animateTo(
-                targetValue = 0f,
-                animationSpec = tween(backgroundAnimDuration)
-            )
-            shouldRender = false
-        }
-    }
-
-    val bgAlpha by remember {
-        derivedStateOf { animationProgress.value }
-    }
-
-    val leftMenuOffset by swapAnimateDpAsState(
-        targetValue = (-40).dp, //从左
-        swapIn = visible,
-        isHorizontal = true,
-        animationSpec = getAnimateTweenJellyBounce()
-    )
-
-    val rightMenuOffset by swapAnimateDpAsState(
-        targetValue = 40.dp, //从右
-        swapIn = visible,
-        isHorizontal = true,
-        animationSpec = getAnimateTweenJellyBounce()
-    )
-
-    if (shouldRender) {
-        Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        AnimatedVisibility(
+            visible = visible,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
             //背景阴影层
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .alpha(bgAlpha)
                     .background(color = backgroundColor)
                     .clickable(
                         indication = null,
@@ -257,61 +203,71 @@ fun DualMenuSubscreen(
                         onClick = closeScreen
                     )
             )
+        }
 
-            //左侧菜单
-            if (animationProgress.value > 0f) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .fillMaxWidth(fraction = 1f / 3f)
-                        .fillMaxHeight()
-                        .padding(top = 12.dp, start = 12.dp, bottom = 12.dp)
-                        .offset {
-                            IntOffset(x = leftMenuOffset.roundToPx(), y = 0)
-                        }
+        //左侧菜单
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .fillMaxWidth(fraction = 1f / 3f)
+                .fillMaxHeight()
+                .padding(top = 12.dp, start = 12.dp, bottom = 12.dp)
+        ) {
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn() + slideInHorizontally(
+                    animationSpec = getAnimateTweenJellyBounce()
                 ) {
-                    BackgroundCard(
-                        shape = shape,
-                        influencedByBackground = false,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .alpha(animationProgress.value),
-                        content = {
-                            leftMenuTitle?.let { titleLayout ->
-                                MenuTitleLayout(titleLayout, titleHeight)
-                            }
-                            leftMenuContent()
-                        }
-                    )
+                    if (isRtl) 40 else -40
+                  },
+                exit = fadeOut() + slideOutHorizontally {
+                    if (isRtl) 40 else -40
                 }
+            ) {
+                BackgroundCard(
+                    shape = shape,
+                    influencedByBackground = false,
+                    modifier = Modifier.fillMaxSize(),
+                    content = {
+                        leftMenuTitle?.let { titleLayout ->
+                            MenuTitleLayout(titleLayout, titleHeight)
+                        }
+                        leftMenuContent()
+                    }
+                )
             }
+        }
 
-            //右侧菜单
-            if (animationProgress.value > 0f) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .fillMaxWidth(fraction = 1f / 3f)
-                        .fillMaxHeight()
-                        .padding(top = 12.dp, end = 12.dp, bottom = 12.dp)
-                        .offset {
-                            IntOffset(x = rightMenuOffset.roundToPx(), y = 0)
-                        }
+        //右侧菜单
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxWidth(fraction = 1f / 3f)
+                .fillMaxHeight()
+                .padding(top = 12.dp, end = 12.dp, bottom = 12.dp)
+        ) {
+            AnimatedVisibility(
+                visible = visible,
+                enter = fadeIn() + slideInHorizontally(
+                    animationSpec = getAnimateTweenJellyBounce()
                 ) {
-                    BackgroundCard(
-                        shape = shape,
-                        influencedByBackground = false,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .alpha(animationProgress.value),
-                        content = {
-                            rightMenuTitle?.let { titleLayout ->
-                                MenuTitleLayout(titleLayout, titleHeight)
-                            }
-                            rightMenuContent()
-                        }
-                    )
+                    if (isRtl) -40 else 40
+                  },
+                exit = fadeOut() + slideOutHorizontally {
+                    if (isRtl) -40 else 40
                 }
+            ) {
+                BackgroundCard(
+                    shape = shape,
+                    influencedByBackground = false,
+                    modifier = Modifier.fillMaxSize(),
+                    content = {
+                        rightMenuTitle?.let { titleLayout ->
+                            MenuTitleLayout(titleLayout, titleHeight)
+                        }
+                        rightMenuContent()
+                    }
+                )
             }
         }
     }
