@@ -22,19 +22,26 @@ val launcherUrl = project.findProperty("url_home") as? String ?: error("The \"ur
 val launcherVersionCode = (project.findProperty("launcher_version_code") as? String)?.toIntOrNull() ?: error("The \"launcher_version_code\" property is not set as an integer in gradle.properties.")
 val launcherVersionName = project.findProperty("launcher_version_name") as? String ?: error("The \"launcher_version_name\" property is not set in gradle.properties.")
 
-val defaultOAuthClientID = project.findProperty("oauth_client_id") as? String
+val fallbackOAuthClientID = "74cb5366-de6c-4e23-ad2d-54f52e3f500b"
+val defaultOAuthClientID = (project.findProperty("oauth_client_id") as? String)
+    ?.trim()
+    ?.takeIf { it.isNotEmpty() }
+    ?: fallbackOAuthClientID
 val defaultStorePassword = project.findProperty("default_store_password") as? String ?: error("The \"default_store_password\" property is not set in gradle.properties.")
 val defaultKeyPassword = project.findProperty("default_key_password") as? String ?: error("The \"default_key_password\" property is not set in gradle.properties.")
 val defaultCurseForgeApiKey = project.findProperty("curseforge_api_key") as? String
+val useDebugSigningForRelease = (project.findProperty("use_debug_signing_for_release") as? String)?.toBoolean() == true
 
 val generatedZalithDir = file("$buildDir/generated/source/zalith/java")
 
 fun getKeyFromLocal(envKey: String, fileName: String? = null, default: String? = null): String {
-    val key = System.getenv(envKey)
-    return key ?: fileName?.let {
+    val key = System.getenv(envKey)?.trim()?.takeIf { it.isNotEmpty() }
+    val fileValue = fileName?.let {
         val file = File(rootDir, fileName)
-        if (file.canRead() && file.isFile) file.readText() else null
-    } ?: default ?: run {
+        if (file.canRead() && file.isFile) file.readText().trim().takeIf { value -> value.isNotEmpty() } else null
+    }
+    val defaultValue = default?.trim()?.takeIf { it.isNotEmpty() }
+    return key ?: fileValue ?: defaultValue ?: run {
         logger.warn("BUILD: $envKey not set; related features may throw exceptions.")
         ""
     }
@@ -80,7 +87,11 @@ android {
         release {
             isMinifyEnabled = false
             isShrinkResources = false
-            signingConfig = signingConfigs.getByName("releaseBuild")
+            signingConfig = if (useDebugSigningForRelease) {
+                signingConfigs.getByName("debugBuild")
+            } else {
+                signingConfigs.getByName("releaseBuild")
+            }
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

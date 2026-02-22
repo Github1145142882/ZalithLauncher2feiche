@@ -42,6 +42,7 @@ import com.movtery.zalithlauncher.ui.screens.main.crashlogs.ShareLinkOperation
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.utils.copyText
 import com.movtery.zalithlauncher.utils.file.shareFile
+import com.movtery.zalithlauncher.utils.file.shareFileToPackage
 import com.movtery.zalithlauncher.utils.getParcelableSafely
 import com.movtery.zalithlauncher.utils.getSerializableSafely
 import com.movtery.zalithlauncher.utils.network.openLink
@@ -56,6 +57,8 @@ private const val BUNDLE_JVM_CRASH = "BUNDLE_JVM_CRASH"
 private const val BUNDLE_CAN_RESTART = "BUNDLE_CAN_RESTART"
 private const val EXIT_JVM = "EXIT_JVM"
 private const val EXIT_LAUNCHER = "EXIT_LAUNCHER"
+private const val CHATGPT_PACKAGE_NAME = "com.openai.chatgpt"
+private const val DOUBAO_PACKAGE_NAME = "com.larus.nova"
 
 fun showExitMessage(context: Context, code: Int, isSignal: Boolean) {
     val intent = Intent(context, ErrorActivity::class.java).apply {
@@ -123,7 +126,9 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
         val canRestart: Boolean = extras.getBoolean(BUNDLE_CAN_RESTART, true)
 
         setContent {
-            ZalithLauncherTheme {
+            ZalithLauncherTheme(
+                applyLauncherSafeArea = true
+            ) {
 
                 ShareLinkOperation(
                     operation = viewModel.operation,
@@ -147,6 +152,40 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
                         onShareLogsClick = {
                             if (logFile.exists() && logFile.isFile) {
                                 shareFile(this@ErrorActivity, logFile)
+                            }
+                        },
+                        onShareToChatGptClick = {
+                            if (errorMessage.crashType == CrashType.GAME_CRASH && logFile.exists() && logFile.isFile) {
+                                runCatching {
+                                    shareFileToPackage(
+                                        context = this@ErrorActivity,
+                                        file = logFile,
+                                        targetPackage = CHATGPT_PACKAGE_NAME
+                                    )
+                                }.onFailure {
+                                    Toast.makeText(
+                                        this@ErrorActivity,
+                                        getString(R.string.crash_share_to_chatgpt_unavailable),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
+                            }
+                        },
+                        onShareToDoubaoClick = {
+                            if (errorMessage.crashType == CrashType.GAME_CRASH && logFile.exists() && logFile.isFile) {
+                                runCatching {
+                                    shareFileToPackage(
+                                        context = this@ErrorActivity,
+                                        file = logFile,
+                                        targetPackage = DOUBAO_PACKAGE_NAME
+                                    )
+                                }.onFailure {
+                                    Toast.makeText(
+                                        this@ErrorActivity,
+                                        getString(R.string.crash_share_to_doubao_unavailable),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             }
                         },
                         onRestartClick = {

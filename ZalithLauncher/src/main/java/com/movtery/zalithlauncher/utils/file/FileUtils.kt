@@ -201,6 +201,8 @@ fun InputStream.readString(): String {
 fun shareFile(
     context: Context,
     file: File,
+    chooserTitle: String = file.name,
+    extraText: String? = null,
     cantProcess: () -> Unit = {}
 ) {
     val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
@@ -208,15 +210,42 @@ fun shareFile(
     val shareIntent = Intent(Intent.ACTION_SEND).apply {
         type = "*/*"
         putExtra(Intent.EXTRA_STREAM, uri)
+        if (!extraText.isNullOrBlank()) {
+            putExtra(Intent.EXTRA_TEXT, extraText)
+        }
         addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
 
-    val chooserIntent = Intent.createChooser(shareIntent, file.name)
+    val chooserIntent = Intent.createChooser(shareIntent, chooserTitle)
     try {
         context.startActivity(chooserIntent)
     } catch (_: ActivityNotFoundException) {
         cantProcess()
     }
+}
+
+fun shareFileToPackage(
+    context: Context,
+    file: File,
+    targetPackage: String,
+    extraText: String? = null
+) {
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        `package` = targetPackage
+        putExtra(Intent.EXTRA_STREAM, uri)
+        if (!extraText.isNullOrBlank()) {
+            putExtra(Intent.EXTRA_TEXT, extraText)
+        }
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+
+    if (shareIntent.resolveActivity(context.packageManager) == null) {
+        throw IllegalStateException("Target package is unavailable: $targetPackage")
+    }
+    context.startActivity(shareIntent)
 }
 
 fun zipDirRecursive(baseDir: File, current: File, zipOut: ZipOutputStream) {
