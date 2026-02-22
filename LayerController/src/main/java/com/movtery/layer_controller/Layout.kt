@@ -52,6 +52,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.movtery.layer_controller.data.HideLayerWhen
 import com.movtery.layer_controller.data.VisibilityType
 import com.movtery.layer_controller.event.EventHandler
+import com.movtery.layer_controller.layout.BackdropBlurConfig
 import com.movtery.layer_controller.layout.TextButton
 import com.movtery.layer_controller.observable.ObservableButtonStyle
 import com.movtery.layer_controller.observable.ObservableControlLayer
@@ -78,6 +79,9 @@ fun ControlBoxLayout(
     isCursorGrabbing: Boolean,
     checkOccupiedPointers: (PointerId) -> Boolean,
     @FloatRange(0.0, 1.0) opacity: Float = 1f,
+    backdropBlurConfig: BackdropBlurConfig? = null,
+    buttonTextShadow: Boolean = false,
+    forceWhiteButtonOutline: Boolean = false,
     markPointerAsMoveOnly: (PointerId) -> Unit = {},
     hideLayerWhen: HideLayerWhen = HideLayerWhen.None,
     isDark: Boolean = isSystemInDarkTheme(),
@@ -107,6 +111,9 @@ fun ControlBoxLayout(
                             eventHandler = eventHandler,
                             checkOccupiedPointers = checkOccupiedPointers,
                             opacity = opacity,
+                            backdropBlurConfig = backdropBlurConfig,
+                            buttonTextShadow = buttonTextShadow,
+                            forceWhiteButtonOutline = forceWhiteButtonOutline,
                             markPointerAsMoveOnly = markPointerAsMoveOnly,
                             isUsingJoystick = isUsingJoystick,
                             isCursorGrabbing = isCursorGrabbing,
@@ -131,6 +138,9 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
     eventHandler: EventHandler,
     checkOccupiedPointers: (PointerId) -> Boolean,
     @FloatRange(0.0, 1.0) opacity: Float,
+    backdropBlurConfig: BackdropBlurConfig?,
+    buttonTextShadow: Boolean,
+    forceWhiteButtonOutline: Boolean,
     markPointerAsMoveOnly: (PointerId) -> Unit,
     isUsingJoystick: Boolean,
     isCursorGrabbing: Boolean,
@@ -302,6 +312,9 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
         ControlsRendererLayer(
             isDark = isDark,
             opacity = opacity,
+            backdropBlurConfig = backdropBlurConfig,
+            buttonTextShadow = buttonTextShadow,
+            forceWhiteButtonOutline = forceWhiteButtonOutline,
             layers = reversedLayers,
             styles = styles,
             screenSize = screenSize,
@@ -316,6 +329,9 @@ private fun BoxWithConstraintsScope.BaseControlBoxLayout(
 private fun ControlsRendererLayer(
     isDark: Boolean,
     @FloatRange(0.0, 1.0) opacity: Float,
+    backdropBlurConfig: BackdropBlurConfig?,
+    buttonTextShadow: Boolean,
+    forceWhiteButtonOutline: Boolean,
     layers: List<ObservableControlLayer>,
     styles: List<ObservableButtonStyle>,
     screenSize: IntSize,
@@ -344,6 +360,9 @@ private fun ControlsRendererLayer(
                         data = data,
                         allStyles = styles,
                         screenSize = screenSize,
+                        backdropBlurConfig = backdropBlurConfig,
+                        textShadow = buttonTextShadow,
+                        forceWhiteOutline = forceWhiteButtonOutline,
                         isDark = isDark,
                         visible = layerVisibility && checkVisibility(isCursorGrabbing, data.visibilityType),
                         getOtherWidgets = { emptyList() }, //不需要计算吸附
@@ -358,6 +377,9 @@ private fun ControlsRendererLayer(
                         data = data,
                         allStyles = styles,
                         screenSize = screenSize,
+                        backdropBlurConfig = backdropBlurConfig,
+                        textShadow = buttonTextShadow,
+                        forceWhiteOutline = forceWhiteButtonOutline,
                         isDark = isDark,
                         visible = layerVisibility && checkVisibility(isCursorGrabbing, data.visibilityType),
                         getOtherWidgets = { emptyList() }, //不需要计算吸附

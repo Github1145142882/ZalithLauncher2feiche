@@ -26,11 +26,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.movtery.layer_controller.layout.ControlLayout
 import com.movtery.layer_controller.layout.loadLayoutFromFile
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
+import com.movtery.zalithlauncher.ui.components.LocalLauncherSafeAreaPadding
 import com.movtery.zalithlauncher.ui.screens.main.control_editor.ControlEditor
 import com.movtery.zalithlauncher.ui.theme.ZalithLauncherTheme
 import com.movtery.zalithlauncher.viewmodel.EditorViewModel
@@ -67,8 +69,16 @@ class ControlEditorActivity : BaseAppCompatActivity() {
         })
 
         setContent {
-            ZalithLauncherTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
+            ZalithLauncherTheme(
+                applyLauncherSafeArea = true
+            ) {
+                val topSafeAreaPadding = LocalLauncherSafeAreaPadding.current.top
+
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = topSafeAreaPadding)
+                ) {
                     BoxWithConstraints(
                         modifier = Modifier.fillMaxSize()
                     ) {

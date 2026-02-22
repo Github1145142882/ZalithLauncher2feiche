@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.control.mouse
 
+import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewTreeObserver
@@ -49,12 +50,15 @@ import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.input.pointer.positionChanged
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalViewConfiguration
+import androidx.compose.ui.unit.dp
 import com.movtery.zalithlauncher.setting.enums.MouseControlMode
 import com.movtery.zalithlauncher.ui.components.FocusableBox
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlin.math.abs
+import kotlin.math.pow
 
 /**
  * 拖动状态数据类
@@ -102,6 +106,9 @@ fun TouchpadLayout(
     onPointerMove: (Offset) -> Unit = {},
     onMouseMove: (Offset) -> Unit = {},
     onMouseScroll: (Offset) -> Unit = {},
+    enableTwoFingerVerticalScroll: Boolean = false,
+    enableCapturedTouchAcceleration: Boolean = false,
+    onTwoFingerScroll: (Float) -> Unit = {},
     onMouseButton: (button: Int, pressed: Boolean) -> Unit = { _, _ -> },
     isMoveOnlyPointer: (PointerId) -> Boolean = { false },
     onOccupiedPointer: (PointerId) -> Unit = {},
@@ -121,6 +128,9 @@ fun TouchpadLayout(
     val currentOnLongPress by rememberUpdatedState(onLongPress)
     val currentOnLongPressEnd by rememberUpdatedState(onLongPressEnd)
     val currentOnPointerMove by rememberUpdatedState(onPointerMove)
+    val currentEnableTwoFingerVerticalScroll by rememberUpdatedState(enableTwoFingerVerticalScroll)
+    val currentEnableCapturedTouchAcceleration by rememberUpdatedState(enableCapturedTouchAcceleration)
+    val currentOnTwoFingerScroll by rememberUpdatedState(onTwoFingerScroll)
 
     FocusableBox(
         modifier = modifier
@@ -128,6 +138,7 @@ fun TouchpadLayout(
             .pointerHoverIcon(pointerIcon)
             .pointerInput(*inputChange) {
                 coroutineScope {
+                    val twoFingerScrollThresholdPx = 16.dp.toPx()
                     /** 所有被占用的指针 */
                     val occupiedPointers = mutableSetOf<PointerId>()
                     /** 当前正在被处理的指针 */
@@ -135,6 +146,40 @@ fun TouchpadLayout(
                     val longPressJobs = mutableMapOf<PointerId, Job>()
                     /** 每个指针的拖动状态 */
                     val dragStates = mutableMapOf<PointerId, DragState>()
+                    /** 双指滚轮手势状态 */
+                    val twoFingerPointers = linkedSetOf<PointerId>()
+                    var twoFingerActive = false
+                    var twoFingerAccumulatedY = 0f
+                    /** 单指滑动加速状态 */
+                    var accelerationFactor = 1f
+                    var lastMoveTimestampMs = 0L
+
+                    fun resetTouchAcceleration() {
+                        accelerationFactor = 1f
+                        lastMoveTimestampMs = 0L
+                    }
+
+                    fun applyTouchAcceleration(delta: Offset): Offset {
+                        if (!currentEnableCapturedTouchAcceleration) return delta
+                        val now = SystemClock.uptimeMillis()
+                        val last = lastMoveTimestampMs
+                        lastMoveTimestampMs = now
+                        if (last <= 0L) return delta
+
+                        val dt = (now - last).coerceAtLeast(1L).toFloat()
+                        val speed = delta.getDistance() / dt
+                        val norm = ((speed - 0.9f) / (3.6f - 0.9f)).coerceIn(0f, 1f)
+                        val target = 1f + norm.toDouble().pow(1.35).toFloat() * 1.2f
+                        accelerationFactor = (accelerationFactor * 0.7f + target * 0.3f).coerceIn(1f, 2.2f)
+                        return delta.scale(accelerationFactor)
+                    }
+
+                    fun stopTwoFingerMode() {
+                        twoFingerActive = false
+                        twoFingerPointers.clear()
+                        twoFingerAccumulatedY = 0f
+                        resetTouchAcceleration()
+                    }
 
                     /** 清除鼠标触摸层的状态 */
                     fun resetTouchState() {
@@ -144,6 +189,8 @@ fun TouchpadLayout(
                         longPressJobs.clear()
                         occupiedPointers.forEach { onReleasePointer(it) }
                         occupiedPointers.clear()
+                        stopTwoFingerMode()
+                        resetTouchAcceleration()
                     }
 
                     awaitPointerEventScope {
@@ -165,9 +212,33 @@ fun TouchpadLayout(
                                         occupiedPointers.add(pointerId)
                                     }
 
+                                    if (currentEnableTwoFingerVerticalScroll && !isMoveOnly) {
+                                        twoFingerPointers.add(pointerId)
+                                        if (!twoFingerActive && twoFingerPointers.size >= 2) {
+                                            val activeDragState = activePointer?.let { dragStates[it] }
+                                            if (activeDragState?.longPressTriggered == true) {
+                                                currentOnLongPressEnd()
+                                            }
+                                            twoFingerActive = true
+                                            val accepted = twoFingerPointers.take(2).toSet()
+                                            twoFingerPointers.retainAll(accepted)
+                                            activePointer = null
+                                            dragStates.clear()
+                                            longPressJobs.values.forEach { it.cancel() }
+                                            longPressJobs.clear()
+                                            twoFingerAccumulatedY = 0f
+                                            resetTouchAcceleration()
+                                        }
+                                    }
+
+                                    if (twoFingerActive) {
+                                        return@forEach
+                                    }
+
                                     //如果没有活跃指针，则开始处理这个指针
                                     if (activePointer == null) {
                                         activePointer = pointerId
+                                        resetTouchAcceleration()
 
                                         dragStates[pointerId] = DragState(startPosition = change.position)
 
@@ -196,45 +267,74 @@ fun TouchpadLayout(
                                     }
                                 }
 
-                            //处理移动事件（仅处理活跃指针）
-                            activePointer?.let { pointerId ->
-                                event.changes
-                                    .firstOrNull { it.id == pointerId && it.positionChanged() && !it.isConsumed }
-                                    ?.let { moveChange ->
-                                        val dragState = dragStates[pointerId] ?: return@let
-                                        //是否被父级标记为仅处理滑动
-                                        val isMoveOnly = isMoveOnlyPointer(pointerId)
+                            if (twoFingerActive) {
+                                val twoFingerMoves = event.changes.filter {
+                                    it.type == PointerType.Touch &&
+                                            it.id in twoFingerPointers &&
+                                            it.pressed &&
+                                            it.positionChanged()
+                                }
+                                if (twoFingerMoves.isNotEmpty()) {
+                                    val avgDeltaY = twoFingerMoves
+                                        .map { it.positionChange().y }
+                                        .average()
+                                        .toFloat()
 
-                                        if (currentControlMode == MouseControlMode.SLIDE) {
-                                            if (currentEnableMouseClick) {
-                                                val distanceFromStart = (moveChange.position - dragState.startPosition).getDistance()
+                                    twoFingerAccumulatedY += avgDeltaY
+                                    while (abs(twoFingerAccumulatedY) >= twoFingerScrollThresholdPx) {
+                                        if (twoFingerAccumulatedY < 0f) {
+                                            currentOnTwoFingerScroll(1f)
+                                            twoFingerAccumulatedY += twoFingerScrollThresholdPx
+                                        } else {
+                                            currentOnTwoFingerScroll(-1f)
+                                            twoFingerAccumulatedY -= twoFingerScrollThresholdPx
+                                        }
+                                    }
 
-                                                if (distanceFromStart > viewConfig.touchSlop && !dragState.isDragging) {
-                                                    //超出了滑动检测距离，说明是真的在进行滑动
+                                    twoFingerMoves.forEach { it.consume() }
+                                }
+                            } else {
+                                //处理移动事件（仅处理活跃指针）
+                                activePointer?.let { pointerId ->
+                                    event.changes
+                                        .firstOrNull { it.id == pointerId && it.positionChanged() && !it.isConsumed }
+                                        ?.let { moveChange ->
+                                            val dragState = dragStates[pointerId] ?: return@let
+                                            //是否被父级标记为仅处理滑动
+                                            val isMoveOnly = isMoveOnlyPointer(pointerId)
+
+                                            if (currentControlMode == MouseControlMode.SLIDE) {
+                                                if (currentEnableMouseClick) {
+                                                    val distanceFromStart = (moveChange.position - dragState.startPosition).getDistance()
+
+                                                    if (distanceFromStart > viewConfig.touchSlop && !dragState.isDragging) {
+                                                        //超出了滑动检测距离，说明是真的在进行滑动
+                                                        dragState.isDragging = true
+                                                        longPressJobs.remove(pointerId)?.cancel() //取消长按计时
+                                                    }
+
+                                                    if (dragState.isDragging || dragState.longPressTriggered) {
+                                                        val delta = applyTouchAcceleration(moveChange.positionChange())
+                                                        currentOnPointerMove(delta)
+                                                    }
+                                                } else {
                                                     dragState.isDragging = true
-                                                    longPressJobs.remove(pointerId)?.cancel() //取消长按计时
-                                                }
-
-                                                if (dragState.isDragging || dragState.longPressTriggered) {
-                                                    val delta = moveChange.positionChange()
+                                                    val delta = applyTouchAcceleration(moveChange.positionChange())
                                                     currentOnPointerMove(delta)
                                                 }
                                             } else {
-                                                dragState.isDragging = true
-                                                val delta = moveChange.positionChange()
-                                                currentOnPointerMove(delta)
+                                                resetTouchAcceleration()
+                                                if (!isMoveOnly && !dragState.longPressTriggered) {
+                                                    dragState.longPressTriggered = true
+                                                    longPressJobs.remove(pointerId)?.cancel()
+                                                    currentOnLongPress()
+                                                }
+                                                currentOnPointerMove(moveChange.position)
                                             }
-                                        } else {
-                                            if (!isMoveOnly && !dragState.longPressTriggered) {
-                                                dragState.longPressTriggered = true
-                                                longPressJobs.remove(pointerId)?.cancel()
-                                                currentOnLongPress()
-                                            }
-                                            currentOnPointerMove(moveChange.position)
-                                        }
 
-                                        moveChange.consume()
-                                    }
+                                            moveChange.consume()
+                                        }
+                                }
                             }
 
                             //释放
@@ -242,8 +342,24 @@ fun TouchpadLayout(
                                 .filter { it.changedToUpIgnoreConsumed() && it.type == PointerType.Touch }
                                 .forEach { change ->
                                     val pointerId = change.id
+                                    val wasTwoFingerActive = twoFingerActive
                                     //是否被父级标记为仅处理滑动
                                     val isMoveOnly = isMoveOnlyPointer(pointerId)
+
+                                    twoFingerPointers.remove(pointerId)
+                                    if (wasTwoFingerActive) {
+                                        if (twoFingerPointers.size < 2) {
+                                            stopTwoFingerMode()
+                                        }
+                                        longPressJobs.remove(pointerId)?.cancel()
+                                        dragStates.remove(pointerId)
+                                        if (!isMoveOnly && pointerId in occupiedPointers) {
+                                            occupiedPointers.remove(pointerId)
+                                            onReleasePointer(pointerId)
+                                        }
+                                        activePointer = null
+                                        return@forEach
+                                    }
 
                                     longPressJobs.remove(pointerId)?.cancel()
                                     val dragState = dragStates.remove(pointerId)
@@ -269,6 +385,7 @@ fun TouchpadLayout(
                                         }
 
                                         activePointer = null
+                                        resetTouchAcceleration()
                                     }
 
                                     if (!isMoveOnly && pointerId in occupiedPointers) {
@@ -441,6 +558,10 @@ private fun Modifier.mouseEventModifier(
             event.changes.forEach { it.consume() }
         }
     }
+}
+
+private fun Offset.scale(factor: Float): Offset {
+    return Offset(x * factor, y * factor)
 }
 
 private fun detectButtonChanges(

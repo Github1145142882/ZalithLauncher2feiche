@@ -18,7 +18,9 @@
 
 package com.movtery.zalithlauncher.ui.components
 
+import android.graphics.Matrix
 import android.net.Uri
+import android.view.TextureView
 import androidx.annotation.FloatRange
 import androidx.annotation.OptIn
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
@@ -36,10 +39,13 @@ import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
+import com.movtery.zalithlauncher.ui.backdrop.BackdropCaptureSource
+import com.movtery.zalithlauncher.ui.backdrop.TextureViewCaptureSource
+import kotlin.math.max
 
 /**
  * 简单的沉浸式视频播放层
@@ -58,7 +64,9 @@ fun VideoPlayer(
     muted: Boolean = true,
     @FloatRange(from = 0.0, to = 1.0) volume: Float = if (muted) 0.0f else 1.0f,
     resizeMode: Int = AspectRatioFrameLayout.RESIZE_MODE_ZOOM,
-    refreshTrigger: Any? = null
+    refreshTrigger: Any? = null,
+    onCaptureSourceChanged: (BackdropCaptureSource?) -> Unit = {},
+    onFrameAvailable: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val player = remember {
@@ -74,18 +82,64 @@ fun VideoPlayer(
         }
     }
 
-    val playerView = remember {
-        PlayerView(context).apply {
-            this.player = player
-            this.resizeMode = resizeMode
-            this.useController = false
+    val textureView = remember {
+        TextureView(context).apply {
+            isOpaque = true
         }
+    }
+    val onCaptureSourceChangedState = rememberUpdatedState(onCaptureSourceChanged)
+    val onFrameAvailableState = rememberUpdatedState(onFrameAvailable)
+    val captureSource = remember(textureView) {
+        TextureViewCaptureSource(
+            textureViewProvider = { textureView },
+            rejectLikelyWhiteFrame = false
+        )
     }
 
     LaunchedEffect(videoUri, refreshTrigger) {
         val mediaItem = MediaItem.fromUri(videoUri)
         player.setMediaItem(mediaItem)
         player.prepare()
+    }
+
+    LaunchedEffect(player, textureView) {
+        player.setVideoTextureView(textureView)
+    }
+
+    DisposableEffect(captureSource) {
+        onCaptureSourceChangedState.value(captureSource)
+        onDispose {
+            onCaptureSourceChangedState.value(null)
+        }
+    }
+
+    DisposableEffect(player, textureView, resizeMode) {
+        val updateTransform = {
+            updateTextureViewTransform(
+                textureView = textureView,
+                videoSize = player.videoSize,
+                resizeMode = resizeMode
+            )
+        }
+        val playerListener = object : Player.Listener {
+            override fun onVideoSizeChanged(videoSize: VideoSize) {
+                updateTransform()
+            }
+
+            override fun onRenderedFirstFrame() {
+                onFrameAvailableState.value()
+            }
+        }
+        val layoutChangeListener = android.view.View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            updateTransform()
+        }
+        player.addListener(playerListener)
+        textureView.addOnLayoutChangeListener(layoutChangeListener)
+        updateTransform()
+        onDispose {
+            player.removeListener(playerListener)
+            textureView.removeOnLayoutChangeListener(layoutChangeListener)
+        }
     }
 
     LaunchedEffect(autoPlay) {
@@ -124,12 +178,42 @@ fun VideoPlayer(
 
     DisposableEffect(Unit) {
         onDispose {
+            player.clearVideoTextureView(textureView)
             player.release()
         }
     }
 
     AndroidView(
-        factory = { playerView },
+        factory = { textureView },
         modifier = modifier.fillMaxSize()
     )
+}
+
+private fun updateTextureViewTransform(
+    textureView: TextureView,
+    videoSize: VideoSize,
+    resizeMode: Int
+) {
+    val viewWidth = textureView.width.toFloat()
+    val viewHeight = textureView.height.toFloat()
+    val videoWidth = videoSize.width.toFloat()
+    val videoHeight = videoSize.height.toFloat()
+    if (viewWidth <= 0f || viewHeight <= 0f || videoWidth <= 0f || videoHeight <= 0f) {
+        textureView.setTransform(null)
+        return
+    }
+
+    if (resizeMode != AspectRatioFrameLayout.RESIZE_MODE_ZOOM) {
+        textureView.setTransform(null)
+        return
+    }
+
+    val scale = max(viewWidth / videoWidth, viewHeight / videoHeight)
+    val scaleX = (videoWidth * scale) / viewWidth
+    val scaleY = (videoHeight * scale) / viewHeight
+
+    val matrix = Matrix().apply {
+        setScale(scaleX, scaleY, viewWidth / 2f, viewHeight / 2f)
+    }
+    textureView.setTransform(matrix)
 }

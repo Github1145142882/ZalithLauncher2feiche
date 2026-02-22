@@ -19,17 +19,26 @@
 package com.movtery.zalithlauncher.ui.screens.content.elements
 
 import android.app.Activity
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Parcelable
 import android.widget.Toast
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntSize
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -47,6 +56,8 @@ import com.movtery.zalithlauncher.game.renderer.RendererInterface
 import com.movtery.zalithlauncher.game.renderer.Renderers
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.ui.backdrop.BackdropCaptureSource
+import com.movtery.zalithlauncher.ui.backdrop.StaticImageCaptureSource
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.VideoPlayer
 import com.movtery.zalithlauncher.utils.checkStoragePermissions
@@ -253,7 +264,9 @@ fun LaunchGameOperation(
 @Composable
 fun Background(
     viewModel: BackgroundViewModel,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCaptureSourceChanged: (BackdropCaptureSource?) -> Unit = {},
+    onFrameAvailable: () -> Unit = {}
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -280,15 +293,25 @@ fun Background(
                 videoUri = Uri.fromFile(viewModel.backgroundFile),
                 modifier = modifier,
                 refreshTrigger = viewModel.refreshTrigger,
-                volume = AllSettings.videoBackgroundVolume.state / 100f
+                volume = AllSettings.videoBackgroundVolume.state / 100f,
+                onCaptureSourceChanged = onCaptureSourceChanged,
+                onFrameAvailable = onFrameAvailable
             )
         }
         viewModel.isImage -> {
             BackgroundImage(
                 modifier = modifier,
                 imageFile = viewModel.backgroundFile,
-                refreshTrigger = viewModel.refreshTrigger
+                refreshTrigger = viewModel.refreshTrigger,
+                onCaptureSourceChanged = onCaptureSourceChanged,
+                onFrameAvailable = onFrameAvailable
             )
+        }
+        else -> {
+            DisposableEffect(Unit) {
+                onCaptureSourceChanged(null)
+                onDispose {}
+            }
         }
     }
 }
@@ -297,9 +320,43 @@ fun Background(
 private fun BackgroundImage(
     refreshTrigger: Any,
     imageFile: File,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCaptureSourceChanged: (BackdropCaptureSource?) -> Unit = {},
+    onFrameAvailable: () -> Unit = {}
 ) {
     val context = LocalContext.current
+    var sourceSize by remember { mutableStateOf(IntSize.Zero) }
+    val onCaptureSourceChangedState = rememberUpdatedState(onCaptureSourceChanged)
+    val onFrameAvailableState = rememberUpdatedState(onFrameAvailable)
+
+    val sourceBitmap by produceState<Bitmap?>(null, refreshTrigger, imageFile.absolutePath) {
+        value = withContext(Dispatchers.IO) {
+            BitmapFactory.decodeFile(imageFile.absolutePath)?.copy(Bitmap.Config.ARGB_8888, false)
+        }
+    }
+
+    val captureSource = remember(sourceBitmap) {
+        sourceBitmap?.let { bitmap ->
+            StaticImageCaptureSource(
+                bitmap = bitmap,
+                sourceSizeProvider = { sourceSize }
+            )
+        }
+    }
+
+    DisposableEffect(captureSource) {
+        onCaptureSourceChangedState.value(captureSource)
+        onDispose {
+            onCaptureSourceChangedState.value(null)
+            captureSource?.release()
+        }
+    }
+
+    LaunchedEffect(captureSource, sourceSize) {
+        if (captureSource != null && sourceSize != IntSize.Zero) {
+            onFrameAvailableState.value()
+        }
+    }
 
     val imageLoader = remember(refreshTrigger) {
         ImageLoader.Builder(context)
@@ -315,7 +372,9 @@ private fun BackgroundImage(
     }
 
     AsyncImage(
-        modifier = modifier,
+        modifier = modifier.onGloballyPositioned { coordinates ->
+            sourceSize = coordinates.size
+        },
         model = request,
         imageLoader = imageLoader,
         contentDescription = null,

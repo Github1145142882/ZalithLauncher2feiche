@@ -152,6 +152,8 @@
     </application>
     <queries>
         <package android:name="net.kdt.pojavlaunch.ffmpeg"/>
+        <package android:name="com.openai.chatgpt"/>
+        <package android:name="com.larus.nova"/>
         <intent>
             <action android:name="android.intent.action.MAIN" />
         </intent>

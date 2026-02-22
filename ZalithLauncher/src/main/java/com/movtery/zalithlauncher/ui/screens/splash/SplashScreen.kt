@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -34,11 +35,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.movtery.zalithlauncher.components.InstallableItem
 import com.movtery.zalithlauncher.info.InfoDistributor
+import com.movtery.zalithlauncher.ui.components.LocalLauncherSafeAreaPadding
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
 import com.movtery.zalithlauncher.viewmodel.SplashBackStackViewModel
@@ -53,14 +56,19 @@ fun SplashScreen(
     unpackItems: List<InstallableItem>,
     screenViewModel: SplashBackStackViewModel
 ) {
+    val safeAreaPadding = LocalLauncherSafeAreaPadding.current
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
         TopBar(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp),
-            color = MaterialTheme.colorScheme.surfaceContainer
+                .height(40.dp + safeAreaPadding.top),
+            color = MaterialTheme.colorScheme.surfaceContainer,
+            topSafeAreaPadding = safeAreaPadding.top,
+            startSafeAreaPadding = safeAreaPadding.start,
+            endSafeAreaPadding = safeAreaPadding.end
         )
 
         Surface(
@@ -83,7 +91,10 @@ fun SplashScreen(
 @Composable
 private fun TopBar(
     modifier: Modifier = Modifier,
-    color: Color
+    color: Color,
+    topSafeAreaPadding: Dp,
+    startSafeAreaPadding: Dp,
+    endSafeAreaPadding: Dp
 ) {
     Surface(
         modifier = modifier,
@@ -91,6 +102,13 @@ private fun TopBar(
         tonalElevation = 3.dp
     ) {
         Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = startSafeAreaPadding,
+                    top = topSafeAreaPadding,
+                    end = endSafeAreaPadding
+                ),
             horizontalArrangement = Arrangement.Center
         ) {
             Text(

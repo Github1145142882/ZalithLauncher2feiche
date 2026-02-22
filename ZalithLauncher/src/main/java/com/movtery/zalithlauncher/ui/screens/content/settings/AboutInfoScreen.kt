@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.settings
 
+import com.movtery.zalithlauncher.ui.components.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,7 +39,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -73,10 +73,6 @@ import com.movtery.zalithlauncher.path.URL_PROJECT
 import com.movtery.zalithlauncher.path.URL_SUPPORT
 import com.movtery.zalithlauncher.path.URL_WEBLATE
 import com.movtery.zalithlauncher.ui.base.BaseScreen
-import com.movtery.zalithlauncher.ui.components.AnimatedLazyColumn
-import com.movtery.zalithlauncher.ui.components.CardTitleLayout
-import com.movtery.zalithlauncher.ui.components.itemLayoutColor
-import com.movtery.zalithlauncher.ui.components.itemLayoutShadowElevation
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.CardPosition
@@ -261,7 +257,8 @@ private fun ChunkLayout(
 ) {
     SettingsCard(
         modifier = modifier,
-        position = CardPosition.Single
+        position = CardPosition.Single,
+        influencedByBackground = true
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             CardTitleLayout {
@@ -296,7 +293,7 @@ private fun LinkIconItem(
     shadowElevation: Dp = itemLayoutShadowElevation(),
     useImage: Boolean = true
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
@@ -381,7 +378,7 @@ private fun ButtonIconItem(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     shadowElevation: Dp = itemLayoutShadowElevation()
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
@@ -432,7 +429,7 @@ private fun PluginInfoItem(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     shadowElevation: Dp = itemLayoutShadowElevation()
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
@@ -508,7 +505,7 @@ private fun LibraryInfoItem(
     openLicense: (Int) -> Unit,
     openLink: (url: String) -> Unit
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
@@ -565,3 +562,5 @@ private fun LibraryInfoItem(
         }
     }
 }
+
+

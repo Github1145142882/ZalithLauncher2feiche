@@ -18,6 +18,8 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.download.assets.elements
 
+import com.movtery.zalithlauncher.ui.components.*
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -47,7 +49,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -73,9 +74,6 @@ import com.movtery.zalithlauncher.game.download.assets.platform.PlatformFilterCo
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformSortField
 import com.movtery.zalithlauncher.game.versioninfo.MinecraftVersions
 import com.movtery.zalithlauncher.game.versioninfo.allGameVersions
-import com.movtery.zalithlauncher.ui.components.LittleTextLabel
-import com.movtery.zalithlauncher.ui.components.SingleLineTextCheck
-import com.movtery.zalithlauncher.ui.components.backgroundLayoutColor
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 import com.movtery.zalithlauncher.utils.string.toSingleLine
@@ -297,7 +295,7 @@ fun BaseFilterLayout(
     content: @Composable () -> Unit
 ) {
     if (onClick != null) {
-        Surface(
+        LauncherBackdropSurface(
             modifier = modifier,
             shape = shape,
             color = color,
@@ -306,7 +304,7 @@ fun BaseFilterLayout(
             content = content
         )
     } else {
-        Surface(
+        LauncherBackdropSurface(
             modifier = modifier,
             shape = shape,
             color = color,
@@ -502,3 +500,5 @@ private fun FilterListItem(
         itemLayout()
     }
 }
+
+

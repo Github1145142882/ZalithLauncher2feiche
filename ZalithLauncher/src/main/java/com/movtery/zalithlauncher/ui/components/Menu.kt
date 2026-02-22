@@ -41,6 +41,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -72,6 +74,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
@@ -198,6 +201,7 @@ fun DualMenuSubscreen(
     shape: Shape = RoundedCornerShape(21.0.dp),
     backgroundColor: Color = Color.Black.copy(alpha = 0.25f),
     backgroundAnimDuration: Int = 150,
+    outerPadding: PaddingValues = PaddingValues(0.dp),
     titleHeight: Dp = 48.dp,
     leftMenuTitle: (@Composable BoxScope.() -> Unit)? = null,
     leftMenuContent: @Composable ColumnScope.() -> Unit = {},
@@ -205,6 +209,7 @@ fun DualMenuSubscreen(
     rightMenuContent: @Composable ColumnScope.() -> Unit = {}
 ) {
     val visible = state == MenuState.SHOW
+    val layoutDirection = LocalLayoutDirection.current
 
     val animationProgress = remember { Animatable(0f) }
     var shouldRender by remember { mutableStateOf(false) }
@@ -265,7 +270,11 @@ fun DualMenuSubscreen(
                         .align(Alignment.CenterStart)
                         .fillMaxWidth(fraction = 1f / 3f)
                         .fillMaxHeight()
-                        .padding(top = 12.dp, start = 12.dp, bottom = 12.dp)
+                        .padding(
+                            top = 12.dp + outerPadding.calculateTopPadding(),
+                            start = 12.dp + outerPadding.calculateStartPadding(layoutDirection),
+                            bottom = 12.dp + outerPadding.calculateBottomPadding()
+                        )
                         .offset {
                             IntOffset(x = leftMenuOffset.roundToPx(), y = 0)
                         }
@@ -293,7 +302,11 @@ fun DualMenuSubscreen(
                         .align(Alignment.CenterEnd)
                         .fillMaxWidth(fraction = 1f / 3f)
                         .fillMaxHeight()
-                        .padding(top = 12.dp, end = 12.dp, bottom = 12.dp)
+                        .padding(
+                            top = 12.dp + outerPadding.calculateTopPadding(),
+                            end = 12.dp + outerPadding.calculateEndPadding(layoutDirection),
+                            bottom = 12.dp + outerPadding.calculateBottomPadding()
+                        )
                         .offset {
                             IntOffset(x = rightMenuOffset.roundToPx(), y = 0)
                         }

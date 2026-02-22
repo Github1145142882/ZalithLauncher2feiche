@@ -26,6 +26,7 @@ import com.movtery.zalithlauncher.game.path.GamePathManager
 import com.movtery.zalithlauncher.game.plugin.PluginLoader
 import com.movtery.zalithlauncher.game.renderer.Renderers
 import com.movtery.zalithlauncher.setting.AllSettings
+import com.movtery.zalithlauncher.setting.enums.LauncherSafeAreaMode
 import com.movtery.zalithlauncher.setting.loadAllSettings
 import com.movtery.zalithlauncher.utils.checkStoragePermissionsForInit
 
@@ -60,10 +61,14 @@ open class BaseAppCompatActivity(
 
     override fun getWindowMode(): WindowMode {
         runCatching {
-            return if (AllSettings.launcherFullScreen.getValue()) {
-                WindowMode.FULL_IMMERSIVE
-            } else {
+            return if (!AllSettings.launcherFullScreen.getValue()) {
                 WindowMode.DEFAULT
+            } else {
+                when (AllSettings.launcherSafeAreaMode.getValue()) {
+                    LauncherSafeAreaMode.IGNORE -> WindowMode.FULL_IMMERSIVE
+                    LauncherSafeAreaMode.FOLLOW_SYSTEM,
+                    LauncherSafeAreaMode.CUSTOM -> WindowMode.DEFAULT
+                }
             }
         }
         //AllSettings初始化出现异常（MMKV在Application未正常初始化）

@@ -332,6 +332,11 @@ fun SwitchableMouseLayout(
                 }
             },
             onMouseScroll = onMouseScroll,
+            enableTwoFingerVerticalScroll = cursorMode == CURSOR_DISABLED,
+            enableCapturedTouchAcceleration = cursorMode == CURSOR_DISABLED,
+            onTwoFingerScroll = { step ->
+                onMouseScroll(Offset(x = 0f, y = step))
+            },
             onMouseButton = onMouseButton,
             isMoveOnlyPointer = isMoveOnlyPointer,
             onOccupiedPointer = onOccupiedPointer,

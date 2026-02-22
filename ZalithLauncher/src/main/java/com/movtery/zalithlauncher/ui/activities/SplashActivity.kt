@@ -75,7 +75,9 @@ class SplashActivity : BaseAppCompatActivity(refreshData = false) {
         }
 
         setContent {
-            ZalithLauncherTheme {
+            ZalithLauncherTheme(
+                applyLauncherSafeArea = true
+            ) {
                 Box(
                     modifier = Modifier.fillMaxSize()
                 ) {

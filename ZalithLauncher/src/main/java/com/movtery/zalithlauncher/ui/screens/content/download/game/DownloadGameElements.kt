@@ -18,6 +18,8 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.download.game
 
+import com.movtery.zalithlauncher.ui.components.*
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
@@ -52,7 +54,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -80,9 +81,6 @@ import com.movtery.zalithlauncher.game.addons.modloader.forgelike.forge.ForgeVer
 import com.movtery.zalithlauncher.game.addons.modloader.forgelike.neoforge.NeoForgeVersion
 import com.movtery.zalithlauncher.game.addons.modloader.modlike.ModVersion
 import com.movtery.zalithlauncher.game.addons.modloader.optifine.OptiFineVersion
-import com.movtery.zalithlauncher.ui.components.backgroundLayoutColor
-import com.movtery.zalithlauncher.ui.components.influencedByBackgroundColor
-import com.movtery.zalithlauncher.ui.components.rememberMaxHeight
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.utils.getTimeAgo
 
@@ -202,7 +200,7 @@ fun <E> AddonListLayout(
         if (incompatibleSet.isNotEmpty()) clear()
     }
 
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
         color = color,
@@ -423,7 +421,7 @@ fun AddonWarningItem(
     ),
     contentColor: Color = MaterialTheme.colorScheme.onErrorContainer
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         shape = MaterialTheme.shapes.large,
         color = color,
@@ -683,3 +681,5 @@ fun ModSummary(
         }
     }
 }
+
+

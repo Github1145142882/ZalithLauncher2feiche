@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.main
 
+import android.os.Build
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
@@ -27,6 +28,7 @@ import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -56,19 +58,24 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
@@ -76,10 +83,12 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.constraintlayout.compose.Dimension
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.movtery.layer_controller.layout.BackdropBlurConfig
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.coroutine.Task
 import com.movtery.zalithlauncher.coroutine.TaskSystem
@@ -88,6 +97,11 @@ import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
 import com.movtery.zalithlauncher.ui.components.CardTitleLayout
+import com.movtery.zalithlauncher.ui.components.LauncherBackdropLayer
+import com.movtery.zalithlauncher.ui.components.LocalLauncherBackdropActive
+import com.movtery.zalithlauncher.ui.components.LocalLauncherBackdropBlurConfig
+import com.movtery.zalithlauncher.ui.components.LocalLauncherBackdropWhiteOutline
+import com.movtery.zalithlauncher.ui.components.LocalLauncherSafeAreaPadding
 import com.movtery.zalithlauncher.ui.components.TextRailItem
 import com.movtery.zalithlauncher.ui.components.itemLayoutColor
 import com.movtery.zalithlauncher.ui.components.itemLayoutShadowElevation
@@ -108,6 +122,8 @@ import com.movtery.zalithlauncher.ui.screens.content.navigateToDownload
 import com.movtery.zalithlauncher.ui.screens.navigateTo
 import com.movtery.zalithlauncher.ui.screens.onBack
 import com.movtery.zalithlauncher.ui.screens.rememberTransitionSpec
+import com.movtery.zalithlauncher.ui.theme.readableShadowFor
+import com.movtery.zalithlauncher.ui.theme.withReadableShadow
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.viewmodel.ErrorViewModel
 import com.movtery.zalithlauncher.viewmodel.EventViewModel
@@ -123,6 +139,8 @@ fun MainScreen(
     launchGameViewModel: LaunchGameViewModel,
     eventViewModel: EventViewModel,
     modpackImportViewModel: ModpackImportViewModel,
+    launcherBackdropConfig: BackdropBlurConfig?,
+    launcherBackdropEnabled: Boolean,
     submitError: (ErrorViewModel.ThrowableMessage) -> Unit
 ) {
     val tasks by TaskSystem.tasksFlow.collectAsStateWithLifecycle()
@@ -148,57 +166,77 @@ fun MainScreen(
         screenBackStackModel.mainScreen.clearWith(NormalNavKey.LauncherMain)
     }
 
+    val mainScreenKey = screenBackStackModel.mainScreen.currentKey
+    val inLauncherScreen = mainScreenKey == null || mainScreenKey is NormalNavKey.LauncherMain
     val isBackgroundValid = LocalBackgroundViewModel.current?.isValid == true
-    val launcherBackgroundOpacity = AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f
-
+    val configuredBackgroundOpacityFactor = AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f
+    val effectiveBackdropConfig = launcherBackdropConfig.takeIf {
+        launcherBackdropEnabled && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    }
+    val homeBackdropActive = inLauncherScreen && effectiveBackdropConfig != null
+    val nonHomeBackgroundBlurActive = !inLauncherScreen && effectiveBackdropConfig != null
     val topBarColor = MaterialTheme.colorScheme.surfaceContainer
     val backgroundColor = MaterialTheme.colorScheme.surface
+    val safeAreaPadding = LocalLauncherSafeAreaPadding.current
+    val topSafeAreaPadding = safeAreaPadding.top
 
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = if (isBackgroundValid) {
-            backgroundColor.copy(alpha = launcherBackgroundOpacity)
+            backgroundColor.copy(
+                alpha = if (homeBackdropActive) 0f else configuredBackgroundOpacityFactor
+            )
         } else {
             backgroundColor
         },
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
-            TopBar(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(40.dp)
-                    .zIndex(10f),
-                mainScreenKey = screenBackStackModel.mainScreen.currentKey,
-                taskRunning = tasks.isEmpty(),
-                isTasksExpanded = isTaskMenuExpanded,
-                color = if (isBackgroundValid) {
-                    topBarColor.copy(alpha = launcherBackgroundOpacity)
-                } else {
-                    topBarColor
-                },
-                contentColor = MaterialTheme.colorScheme.onSurface,
-                onScreenBack = {
-                    screenBackStackModel.mainScreen.backStack.removeFirstOrNull()
-                },
-                toMainScreen = toMainScreen,
-                toSettingsScreen = {
-                    screenBackStackModel.mainScreen.removeAndNavigateTo(
-                        removes = screenBackStackModel.clearBeforeNavKeys,
-                        screenKey = screenBackStackModel.settingsScreen
-                    )
-                },
-                toDownloadScreen = {
-                    screenBackStackModel.navigateToDownload()
-                },
-                toMultiplayerScreen = {
-                    screenBackStackModel.mainScreen.removeAndNavigateTo(
-                        removes = screenBackStackModel.clearBeforeNavKeys,
-                        screenKey = NormalNavKey.Multiplayer
-                    )
-                }
+            ScopedLauncherEffects(
+                blurConfig = effectiveBackdropConfig,
+                whiteOutline = false,
+                forceBackgroundOpacityZero = false,
+                applyReadableTextShadow = effectiveBackdropConfig != null
             ) {
-                changeTasksExpandedState()
+                TopBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(40.dp + topSafeAreaPadding)
+                        .zIndex(10f),
+                    mainScreenKey = mainScreenKey,
+                    taskRunning = tasks.isEmpty(),
+                    isTasksExpanded = isTaskMenuExpanded,
+                    topSafeAreaPadding = topSafeAreaPadding,
+                    startSafeAreaPadding = safeAreaPadding.start,
+                    endSafeAreaPadding = safeAreaPadding.end,
+                    color = if (isBackgroundValid) {
+                        topBarColor.copy(alpha = configuredBackgroundOpacityFactor)
+                    } else {
+                        topBarColor
+                    },
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                    onScreenBack = {
+                        screenBackStackModel.mainScreen.backStack.removeFirstOrNull()
+                    },
+                    toMainScreen = toMainScreen,
+                    toSettingsScreen = {
+                        screenBackStackModel.mainScreen.removeAndNavigateTo(
+                            removes = screenBackStackModel.clearBeforeNavKeys,
+                            screenKey = screenBackStackModel.settingsScreen
+                        )
+                    },
+                    toDownloadScreen = {
+                        screenBackStackModel.navigateToDownload()
+                    },
+                    toMultiplayerScreen = {
+                        screenBackStackModel.mainScreen.removeAndNavigateTo(
+                            removes = screenBackStackModel.clearBeforeNavKeys,
+                            screenKey = NormalNavKey.Multiplayer
+                        )
+                    }
+                ) {
+                    changeTasksExpandedState()
+                }
             }
 
             Box(
@@ -206,26 +244,58 @@ fun MainScreen(
                     .fillMaxWidth()
                     .weight(1f)
             ) {
-                NavigationUI(
-                    modifier = Modifier.fillMaxSize(),
-                    screenBackStackModel = screenBackStackModel,
-                    toMainScreen = toMainScreen,
-                    launchGameViewModel = launchGameViewModel,
-                    eventViewModel = eventViewModel,
-                    modpackImportViewModel = modpackImportViewModel,
-                    submitError = submitError
-                )
+                if (nonHomeBackgroundBlurActive) {
+                    ScopedLauncherEffects(
+                        blurConfig = effectiveBackdropConfig,
+                        whiteOutline = false,
+                        forceBackgroundOpacityZero = false,
+                        applyReadableTextShadow = false
+                    ) {
+                        LauncherBackdropLayer(
+                            modifier = Modifier.fillMaxSize(),
+                            shape = RectangleShape,
+                            drawWhiteOutline = false
+                        ) {}
+                    }
+                }
 
-                TaskMenu(
-                    tasks = tasks,
-                    isExpanded = isTaskMenuExpanded,
+                Box(
                     modifier = Modifier
-                        .fillMaxHeight()
-                        .fillMaxWidth(0.3f)
-                        .align(Alignment.CenterStart)
-                        .padding(all = 6.dp)
+                        .fillMaxSize()
+                        .padding(
+                            start = safeAreaPadding.start,
+                            end = safeAreaPadding.end,
+                            bottom = safeAreaPadding.bottom
+                        )
                 ) {
-                    changeTasksExpandedState()
+                    ScopedLauncherEffects(
+                        blurConfig = if (inLauncherScreen) effectiveBackdropConfig else null,
+                        whiteOutline = false,
+                        forceBackgroundOpacityZero = homeBackdropActive,
+                        applyReadableTextShadow = homeBackdropActive
+                    ) {
+                        NavigationUI(
+                            modifier = Modifier.fillMaxSize(),
+                            screenBackStackModel = screenBackStackModel,
+                            toMainScreen = toMainScreen,
+                            launchGameViewModel = launchGameViewModel,
+                            eventViewModel = eventViewModel,
+                            modpackImportViewModel = modpackImportViewModel,
+                            submitError = submitError
+                        )
+                    }
+
+                    TaskMenu(
+                        tasks = tasks,
+                        isExpanded = isTaskMenuExpanded,
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .fillMaxWidth(0.3f)
+                            .align(Alignment.CenterStart)
+                            .padding(all = 6.dp)
+                    ) {
+                        changeTasksExpandedState()
+                    }
                 }
             }
         }
@@ -237,6 +307,9 @@ private fun TopBar(
     mainScreenKey: NavKey?,
     taskRunning: Boolean,
     isTasksExpanded: Boolean,
+    topSafeAreaPadding: Dp,
+    startSafeAreaPadding: Dp,
+    endSafeAreaPadding: Dp,
     modifier: Modifier = Modifier,
     color: Color,
     contentColor: Color,
@@ -252,147 +325,263 @@ private fun TopBar(
     val inDownloadScreen = mainScreenKey is NestedNavKey.Download
     val inSettingsScreen = mainScreenKey is NestedNavKey.Settings
 
+    val drawWhiteOutline = LocalLauncherBackdropWhiteOutline.current
+    val logoTextVisible = AllSettings.launcherTopBarLogoTextVisible.state
+    val logoColor = MaterialTheme.colorScheme.onSurfaceVariant
+
     Surface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
         tonalElevation = 3.dp
     ) {
-        ConstraintLayout {
-            val (backCenter, title, endButtons) = createRefs()
-
-            val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
-
-            Row(
-                modifier = Modifier
-                    .constrainAs(backCenter) {
-                        start.linkTo(parent.start)
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                    }
-                    .fillMaxHeight()
-            ) {
-                AnimatedVisibility(
-                    visible = !inLauncherScreen
+        LauncherBackdropLayer(
+            modifier = Modifier.fillMaxSize(),
+            shape = RectangleShape,
+            drawWhiteOutline = false
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                ConstraintLayout(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(
+                            start = startSafeAreaPadding,
+                            top = topSafeAreaPadding,
+                            end = endSafeAreaPadding
+                        )
                 ) {
-                    Row(modifier = Modifier.fillMaxHeight()) {
-                        Spacer(Modifier.width(12.dp))
+                    val (backCenter, title, endButtons) = createRefs()
 
-                        IconButton(
-                            modifier = Modifier.fillMaxHeight(),
-                            onClick = {
-                                if (!inLauncherScreen) {
-                                    //不在主屏幕时才允许返回
-                                    backDispatcher?.onBackPressed() ?: run {
-                                        onScreenBack()
-                                    }
-                                }
-                            }
-                        ) {
-                            Icon(
-                                modifier = Modifier.size(24.dp),
-                                imageVector = Icons.AutoMirrored.Filled.KeyboardBackspace,
-                                contentDescription = stringResource(R.string.generic_back)
-                            )
-                        }
+                    val backDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
-                        IconButton(
-                            modifier = Modifier.fillMaxHeight(),
-                            onClick = {
-                                if (!inLauncherScreen) {
-                                    //不在主屏幕时才允许回到主页面
-                                    toMainScreen()
-                                }
-                            }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Home,
-                                contentDescription = stringResource(R.string.generic_main_menu)
-                            )
-                        }
-                    }
-                }
-            }
-
-            AnimatedVisibility(
-                modifier = Modifier
-                    .constrainAs(title) {
-                        centerVerticallyTo(parent)
-                        start.linkTo(backCenter.end, margin = 16.dp)
-                    },
-                enter = fadeIn(),
-                exit = fadeOut(),
-                visible = inLauncherScreen //仅在启动器主屏幕显示
-            ) {
-                Text(text = InfoDistributor.LAUNCHER_IDENTIFIER)
-            }
-
-            Row(
-                modifier = Modifier
-                    .constrainAs(endButtons) {
-                        top.linkTo(parent.top)
-                        bottom.linkTo(parent.bottom)
-                        end.linkTo(parent.end, margin = 12.dp)
-                    },
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                AnimatedVisibility(
-                    visible = !(isTasksExpanded || taskRunning),
-                    enter = slideInVertically(
-                        initialOffsetY = { -50 }
-                    ) + fadeIn(),
-                    exit = slideOutVertically(
-                        targetOffsetY = { -50 }
-                    ) + fadeOut()
-                ) {
                     Row(
                         modifier = Modifier
-                            .clip(shape = MaterialTheme.shapes.large)
-                            .clickable { changeExpandedState() }
-                            .padding(all = 8.dp)
-                            .width(120.dp),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            .constrainAs(backCenter) {
+                                start.linkTo(parent.start)
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                            }
+                            .fillMaxHeight()
+                    ) {
+                        AnimatedVisibility(
+                            visible = !inLauncherScreen
+                        ) {
+                            Row(modifier = Modifier.fillMaxHeight()) {
+                                Spacer(Modifier.width(12.dp))
+
+                                IconButton(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    onClick = {
+                                        if (!inLauncherScreen) {
+                                            //不在主屏幕时才允许返回
+                                            backDispatcher?.onBackPressed() ?: run {
+                                                onScreenBack()
+                                            }
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        modifier = Modifier.size(24.dp),
+                                        imageVector = Icons.AutoMirrored.Filled.KeyboardBackspace,
+                                        contentDescription = stringResource(R.string.generic_back)
+                                    )
+                                }
+
+                                IconButton(
+                                    modifier = Modifier.fillMaxHeight(),
+                                    onClick = {
+                                        if (!inLauncherScreen) {
+                                            //不在主屏幕时才允许回到主页面
+                                            toMainScreen()
+                                        }
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Home,
+                                        contentDescription = stringResource(R.string.generic_main_menu)
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .constrainAs(endButtons) {
+                                top.linkTo(parent.top)
+                                bottom.linkTo(parent.bottom)
+                                end.linkTo(parent.end, margin = 12.dp)
+                            },
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        AnimatedVisibility(
+                            visible = !(isTasksExpanded || taskRunning),
+                            enter = slideInVertically(
+                                initialOffsetY = { -50 }
+                            ) + fadeIn(),
+                            exit = slideOutVertically(
+                                targetOffsetY = { -50 }
+                            ) + fadeOut()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .clip(shape = MaterialTheme.shapes.large)
+                                    .clickable { changeExpandedState() }
+                                    .padding(all = 8.dp)
+                                    .width(120.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                LinearProgressIndicator(modifier = Modifier.weight(1f))
+                                Icon(
+                                    modifier = Modifier.size(22.dp),
+                                    imageVector = Icons.Filled.Task,
+                                    contentDescription = stringResource(R.string.main_task_menu)
+                                )
+                            }
+                        }
+
+                        TopBarRailItem(
+                            selected = inMultiplayerScreen,
+                            icon = Icons.Filled.Group,
+                            text = stringResource(R.string.terracotta),
+                            onClick = {
+                                if (!inMultiplayerScreen) toMultiplayerScreen()
+                            },
+                            color = contentColor
+                        )
+
+                        TopBarRailItem(
+                            selected = inDownloadScreen,
+                            icon = Icons.Filled.Download,
+                            text = stringResource(R.string.generic_download),
+                            onClick = {
+                                if (!inDownloadScreen) toDownloadScreen()
+                            },
+                            color = contentColor
+                        )
+
+                        TopBarRailItem(
+                            selected = inSettingsScreen,
+                            icon = Icons.Filled.Settings,
+                            text = stringResource(R.string.generic_setting),
+                            onClick = {
+                                if (!inSettingsScreen) toSettingsScreen()
+                            },
+                            color = contentColor
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier
+                            .constrainAs(title) {
+                                centerVerticallyTo(parent)
+                                start.linkTo(backCenter.end, margin = 16.dp)
+                                end.linkTo(endButtons.start, margin = 12.dp)
+                                width = Dimension.fillToConstraints
+                            }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        LinearProgressIndicator(modifier = Modifier.weight(1f))
                         Icon(
-                            modifier = Modifier.size(22.dp),
-                            imageVector = Icons.Filled.Task,
-                            contentDescription = stringResource(R.string.main_task_menu)
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(shape = MaterialTheme.shapes.large)
+                                .clickable {
+                                    AllSettings.launcherTopBarLogoTextVisible.save(!logoTextVisible)
+                                },
+                            painter = painterResource(R.drawable.img_launcher),
+                            contentDescription = InfoDistributor.LAUNCHER_IDENTIFIER,
+                            tint = Color.Unspecified
                         )
+                        AnimatedVisibility(
+                            visible = logoTextVisible,
+                            enter = fadeIn(),
+                            exit = fadeOut()
+                        ) {
+                            Row(
+                                modifier = Modifier
+                                    .padding(start = 8.dp)
+                                    .clip(shape = MaterialTheme.shapes.large)
+                                    .clickable {
+                                        AllSettings.launcherTopBarLogoTextVisible.save(!logoTextVisible)
+                                    },
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = InfoDistributor.LAUNCHER_IDENTIFIER,
+                                    color = logoColor
+                                )
+
+                            }
+                        }
                     }
                 }
 
-                TopBarRailItem(
-                    selected = inMultiplayerScreen,
-                    icon = Icons.Filled.Group,
-                    text = stringResource(R.string.terracotta),
-                    onClick = {
-                        if (!inMultiplayerScreen) toMultiplayerScreen()
-                    },
-                    color = contentColor
-                )
+                if (drawWhiteOutline) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .height(1.dp)
+                            .background(Color.White.copy(alpha = 0.95f))
+                    )
+                }
+            }
+        }
+    }
+}
 
-                TopBarRailItem(
-                    selected = inDownloadScreen,
-                    icon = Icons.Filled.Download,
-                    text = stringResource(R.string.generic_download),
-                    onClick = {
-                        if (!inDownloadScreen) toDownloadScreen()
-                    },
-                    color = contentColor
-                )
+@Composable
+private fun ScopedLauncherEffects(
+    blurConfig: BackdropBlurConfig?,
+    whiteOutline: Boolean,
+    forceBackgroundOpacityZero: Boolean,
+    applyReadableTextShadow: Boolean,
+    content: @Composable () -> Unit
+) {
+    val onSurface = MaterialTheme.colorScheme.onSurface
+    val textShadow = remember(applyReadableTextShadow, onSurface) {
+        if (!applyReadableTextShadow || blurConfig == null) {
+            null
+        } else {
+            readableShadowFor(onSurface)
+        }
+    }
+    val baseTypography = MaterialTheme.typography
+    val readableTypography = remember(baseTypography, textShadow) {
+        if (textShadow == null) {
+            baseTypography
+        } else {
+            baseTypography.withReadableShadow(textShadow)
+        }
+    }
+    val baseTextStyle = LocalTextStyle.current
+    val scopedTextStyle = remember(baseTextStyle, textShadow) {
+        if (textShadow == null) {
+            baseTextStyle
+        } else {
+            baseTextStyle.merge(TextStyle(shadow = textShadow))
+        }
+    }
 
-                TopBarRailItem(
-                    selected = inSettingsScreen,
-                    icon = Icons.Filled.Settings,
-                    text = stringResource(R.string.generic_setting),
-                    onClick = {
-                        if (!inSettingsScreen) toSettingsScreen()
-                    },
-                    color = contentColor
-                )
+    CompositionLocalProvider(
+        LocalLauncherBackdropBlurConfig provides blurConfig,
+        LocalLauncherBackdropWhiteOutline provides whiteOutline,
+        LocalLauncherBackdropActive provides forceBackgroundOpacityZero
+    ) {
+        if (textShadow == null) {
+            content()
+        } else {
+            MaterialTheme(
+                colorScheme = MaterialTheme.colorScheme,
+                typography = readableTypography,
+                shapes = MaterialTheme.shapes
+            ) {
+                CompositionLocalProvider(LocalTextStyle provides scopedTextStyle) {
+                    content()
+                }
             }
         }
     }

@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,6 +45,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -54,12 +56,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.ui.activities.CrashType
 import com.movtery.zalithlauncher.ui.components.BackgroundCard
+import com.movtery.zalithlauncher.ui.components.LocalLauncherSafeAreaPadding
 import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.ScalingActionButton
 import com.movtery.zalithlauncher.viewmodel.CrashLogsUploadViewModel
@@ -71,6 +75,8 @@ fun ErrorScreen(
     shareLogs: Boolean = true,
     canRestart: Boolean = true,
     onShareLogsClick: () -> Unit = {},
+    onShareToChatGptClick: () -> Unit = {},
+    onShareToDoubaoClick: () -> Unit = {},
     onRestartClick: () -> Unit = {},
     onExitClick: () -> Unit = {},
     body: @Composable ColumnScope.() -> Unit
@@ -78,13 +84,19 @@ fun ErrorScreen(
     //获取方向信息，展示两套不同的UI
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val safeAreaPadding = LocalLauncherSafeAreaPadding.current
 
     if (isLandscape) {
         ErrorScreenLandscape(
             crashType = crashType,
             shareLogs = shareLogs,
             canRestart = canRestart,
+            topSafeAreaPadding = safeAreaPadding.top,
+            startSafeAreaPadding = safeAreaPadding.start,
+            endSafeAreaPadding = safeAreaPadding.end,
             onShareLogsClick = onShareLogsClick,
+            onShareToChatGptClick = onShareToChatGptClick,
+            onShareToDoubaoClick = onShareToDoubaoClick,
             onRestartClick = onRestartClick,
             onExitClick = onExitClick,
             body = body
@@ -94,7 +106,12 @@ fun ErrorScreen(
             crashType = crashType,
             shareLogs = shareLogs,
             canRestart = canRestart,
+            topSafeAreaPadding = safeAreaPadding.top,
+            startSafeAreaPadding = safeAreaPadding.start,
+            endSafeAreaPadding = safeAreaPadding.end,
             onShareLogsClick = onShareLogsClick,
+            onShareToChatGptClick = onShareToChatGptClick,
+            onShareToDoubaoClick = onShareToDoubaoClick,
             onRestartClick = onRestartClick,
             onExitClick = onExitClick,
             body = body
@@ -110,7 +127,12 @@ private fun ErrorScreenLandscape(
     crashType: CrashType,
     shareLogs: Boolean,
     canRestart: Boolean,
+    topSafeAreaPadding: Dp,
+    startSafeAreaPadding: Dp,
+    endSafeAreaPadding: Dp,
     onShareLogsClick: () -> Unit,
+    onShareToChatGptClick: () -> Unit,
+    onShareToDoubaoClick: () -> Unit,
     onRestartClick: () -> Unit,
     onExitClick: () -> Unit,
     body: @Composable ColumnScope.() -> Unit
@@ -121,11 +143,14 @@ private fun ErrorScreenLandscape(
         TopBar(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(40.dp)
+                .height(40.dp + topSafeAreaPadding)
                 .zIndex(10f),
             crashType = crashType,
             color = MaterialTheme.colorScheme.surfaceContainer,
-            contentColor = MaterialTheme.colorScheme.onSurface
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            topSafeAreaPadding = topSafeAreaPadding,
+            startSafeAreaPadding = startSafeAreaPadding,
+            endSafeAreaPadding = endSafeAreaPadding
         )
 
         Box(
@@ -153,6 +178,8 @@ private fun ErrorScreenLandscape(
                     shareLogs = shareLogs,
                     canRestart = canRestart,
                     onShareLogsClick = onShareLogsClick,
+                    onShareToChatGptClick = onShareToChatGptClick,
+                    onShareToDoubaoClick = onShareToDoubaoClick,
                     onRestartClick = onRestartClick,
                     onExitClick = onExitClick
                 )
@@ -170,7 +197,12 @@ private fun ErrorScreenPortrait(
     crashType: CrashType,
     shareLogs: Boolean,
     canRestart: Boolean,
+    topSafeAreaPadding: Dp,
+    startSafeAreaPadding: Dp,
+    endSafeAreaPadding: Dp,
     onShareLogsClick: () -> Unit,
+    onShareToChatGptClick: () -> Unit,
+    onShareToDoubaoClick: () -> Unit,
     onRestartClick: () -> Unit,
     onExitClick: () -> Unit,
     body: @Composable ColumnScope.() -> Unit
@@ -180,62 +212,103 @@ private fun ErrorScreenPortrait(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(
-                            R.string.crash_type,
-                            stringResource(crashType.textRes)
-                        )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = MaterialTheme.colorScheme.surfaceContainer
+            ) {
+                Column {
+                    Spacer(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(topSafeAreaPadding)
                     )
-                },
-                actions = {
-                    IconButton(
-                        onClick = { showMenu = true }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.MoreVert,
-                            contentDescription = stringResource(R.string.generic_more)
-                        )
-                    }
 
-                    DropdownMenu(
-                        expanded = showMenu,
-                        onDismissRequest = { showMenu = false }
-                    ) {
-                        DropdownMenuItem(
-                            text = {
-                                MarqueeText(text = stringResource(R.string.crash_share_logs))
-                            },
-                            onClick = {
-                                showMenu = false
-                                onShareLogsClick()
-                            },
-                            enabled = shareLogs
-                        )
-                        if (canRestart) {
-                            DropdownMenuItem(
-                                text = {
-                                    MarqueeText(text = stringResource(R.string.crash_restart))
-                                },
-                                onClick = {
-                                    showMenu = false
-                                    onRestartClick()
-                                }
+                    TopAppBar(
+                        modifier = Modifier.padding(
+                            start = startSafeAreaPadding,
+                            end = endSafeAreaPadding
+                        ),
+                        windowInsets = WindowInsets(0, 0, 0, 0),
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceContainer
+                        ),
+                        title = {
+                            Text(
+                                text = stringResource(
+                                    R.string.crash_type,
+                                    stringResource(crashType.textRes)
+                                )
                             )
-                        }
-                        DropdownMenuItem(
-                            text = {
-                                MarqueeText(text = stringResource(R.string.crash_exit))
-                            },
-                            onClick = {
-                                showMenu = false
-                                onExitClick()
+                        },
+                        actions = {
+                            IconButton(
+                                onClick = { showMenu = true }
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Filled.MoreVert,
+                                    contentDescription = stringResource(R.string.generic_more)
+                                )
                             }
-                        )
-                    }
+
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = {
+                                        MarqueeText(text = stringResource(R.string.crash_share_logs))
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        onShareLogsClick()
+                                    },
+                                    enabled = shareLogs
+                                )
+                                if (shareLogs && crashType == CrashType.GAME_CRASH) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            MarqueeText(text = stringResource(R.string.crash_share_to_chatgpt))
+                                        },
+                                        onClick = {
+                                            showMenu = false
+                                            onShareToChatGptClick()
+                                        }
+                                    )
+                                    DropdownMenuItem(
+                                        text = {
+                                            MarqueeText(text = stringResource(R.string.crash_share_to_doubao))
+                                        },
+                                        onClick = {
+                                            showMenu = false
+                                            onShareToDoubaoClick()
+                                        }
+                                    )
+                                }
+                                if (canRestart) {
+                                    DropdownMenuItem(
+                                        text = {
+                                            MarqueeText(text = stringResource(R.string.crash_restart))
+                                        },
+                                        onClick = {
+                                            showMenu = false
+                                            onRestartClick()
+                                        }
+                                    )
+                                }
+                                DropdownMenuItem(
+                                    text = {
+                                        MarqueeText(text = stringResource(R.string.crash_exit))
+                                    },
+                                    onClick = {
+                                        showMenu = false
+                                        onExitClick()
+                                    }
+                                )
+                            }
+                        }
+                    )
                 }
-            )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -272,7 +345,10 @@ private fun TopBar(
     modifier: Modifier = Modifier,
     crashType: CrashType,
     color: Color,
-    contentColor: Color
+    contentColor: Color,
+    topSafeAreaPadding: Dp,
+    startSafeAreaPadding: Dp,
+    endSafeAreaPadding: Dp
 ) {
     Surface(
         modifier = modifier,
@@ -281,7 +357,13 @@ private fun TopBar(
         tonalElevation = 3.dp
     ) {
         Column(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    start = startSafeAreaPadding,
+                    top = topSafeAreaPadding,
+                    end = endSafeAreaPadding
+                ),
             verticalArrangement = Arrangement.Center
         ) {
             val text = when (crashType) {
@@ -326,6 +408,8 @@ private fun ActionContext(
     shareLogs: Boolean,
     canRestart: Boolean,
     onShareLogsClick: () -> Unit = {},
+    onShareToChatGptClick: () -> Unit = {},
+    onShareToDoubaoClick: () -> Unit = {},
     onRestartClick: () -> Unit = {},
     onExitClick: () -> Unit = {}
 ) {
@@ -359,6 +443,22 @@ private fun ActionContext(
                     onClick = onShareLogsClick
                 ) {
                     MarqueeText(text = stringResource(R.string.crash_share_logs))
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+            }
+            if (shareLogs && crashType == CrashType.GAME_CRASH) {
+                ScalingActionButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onShareToChatGptClick
+                ) {
+                    MarqueeText(text = stringResource(R.string.crash_share_to_chatgpt))
+                }
+                Spacer(modifier = Modifier.height(4.dp))
+                ScalingActionButton(
+                    modifier = Modifier.fillMaxWidth(),
+                    onClick = onShareToDoubaoClick
+                ) {
+                    MarqueeText(text = stringResource(R.string.crash_share_to_doubao))
                 }
                 Spacer(modifier = Modifier.height(4.dp))
             }

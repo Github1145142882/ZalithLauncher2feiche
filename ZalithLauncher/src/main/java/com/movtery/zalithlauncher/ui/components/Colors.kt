@@ -88,14 +88,24 @@ fun backgroundLayoutColor(
 @Composable
 fun influencedByBackgroundColor(
     color: Color,
-    influencedAlpha: Float = AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f,
+    influencedAlpha: Float? = null,
     enabled: Boolean = true
 ): Color {
+    val resolvedAlpha = influencedAlpha ?: launcherEffectiveBackgroundOpacityFactor()
     return influencedByBackground(
         value = color,
-        influenced = color.copy(alpha = influencedAlpha),
+        influenced = color.copy(alpha = resolvedAlpha),
         enabled = enabled
     )
+}
+
+@Composable
+fun launcherEffectiveBackgroundOpacityFactor(): Float {
+    return if (LocalLauncherBackdropActive.current) {
+        0f
+    } else {
+        AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f
+    }
 }
 
 /**

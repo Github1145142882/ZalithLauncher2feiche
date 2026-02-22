@@ -22,11 +22,16 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.HorizontalPager
@@ -47,6 +52,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
@@ -102,10 +108,19 @@ fun GameMenuSubscreen(
 ) {
     //检查陀螺仪是否可用
     val context = LocalContext.current
+    val layoutDirection = LocalLayoutDirection.current
+    val safeDrawingPadding = WindowInsets.safeDrawing.asPaddingValues()
+    val menuOuterPadding = PaddingValues(
+        start = safeDrawingPadding.calculateStartPadding(layoutDirection),
+        top = safeDrawingPadding.calculateTopPadding(),
+        end = safeDrawingPadding.calculateEndPadding(layoutDirection),
+        bottom = safeDrawingPadding.calculateBottomPadding()
+    )
 
     DualMenuSubscreen(
         state = state,
         closeScreen = closeScreen,
+        outerPadding = menuOuterPadding,
         leftMenuContent = {
             val pagerState = rememberPagerState(pageCount = { controlTabs.size })
 
@@ -372,6 +387,43 @@ private fun ControlOverview(
                 onValueChange = { AllSettings.controlsOpacity.updateState(it) },
                 onValueChangeFinished = { AllSettings.controlsOpacity.save(it) },
                 suffix = "%"
+            )
+        }
+
+        //控制布局毛玻璃强度
+        item {
+            MenuSliderLayout(
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(R.string.game_menu_option_controls_backdrop_blur_title),
+                value = AllSettings.controlsBackdropBlurRadius.state,
+                valueRange = AllSettings.controlsBackdropBlurRadius.floatRange,
+                onValueChange = { AllSettings.controlsBackdropBlurRadius.updateState(it) },
+                onValueChangeFinished = { AllSettings.controlsBackdropBlurRadius.save(it) },
+                suffix = "dp"
+            )
+        }
+
+        //控制布局毛玻璃采样率
+        item {
+            MenuSliderLayout(
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(R.string.game_menu_option_controls_backdrop_blur_fps_title),
+                value = AllSettings.controlsBackdropBlurSampleFps.state,
+                valueRange = AllSettings.controlsBackdropBlurSampleFps.floatRange,
+                onValueChange = { AllSettings.controlsBackdropBlurSampleFps.updateState(it) },
+                onValueChangeFinished = { AllSettings.controlsBackdropBlurSampleFps.save(it) },
+                suffix = "fps",
+                enabled = AllSettings.controlsBackdropBlurRadius.state > 0
+            )
+        }
+
+        //控制布局白色描边
+        item {
+            MenuSwitchButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.game_menu_option_controls_white_outline),
+                switch = AllSettings.controlsWhiteOutline.state,
+                onSwitch = { AllSettings.controlsWhiteOutline.save(it) }
             )
         }
 

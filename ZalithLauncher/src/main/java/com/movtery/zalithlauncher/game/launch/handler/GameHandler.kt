@@ -23,6 +23,7 @@ import android.view.KeyEvent
 import android.view.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.IntRect
@@ -49,6 +50,7 @@ import com.movtery.zalithlauncher.viewmodel.EventViewModel
 import com.movtery.zalithlauncher.viewmodel.GamepadViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.lwjgl.glfw.CallbackBridge
 
@@ -57,6 +59,7 @@ class GameHandler(
     private val version: Version,
     errorViewModel: ErrorViewModel,
     eventViewModel: EventViewModel,
+    private val backdropFrameFlow: StateFlow<BackdropFrame?>,
     private val gamepadViewModel: GamepadViewModel,
     gameLauncher: GameLauncher,
     onExit: (code: Int) -> Unit
@@ -176,10 +179,13 @@ class GameHandler(
     override fun ComposableLayout(
         textInputMode: TextInputMode
     ) {
+        val backdropFrame by backdropFrameFlow.collectAsStateWithLifecycle()
+
         GameScreen(
             version = version,
             gameHandler = this,
             isGameRendering = isGameRendering,
+            backdropFrame = backdropFrame,
             logState = logState,
             onLogStateChange = { logState = it },
             textInputMode = textInputMode,

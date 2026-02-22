@@ -18,14 +18,19 @@
 
 package com.movtery.layer_controller.layout
 
+import androidx.compose.foundation.border
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -35,12 +40,14 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.movtery.layer_controller.data.TextAlignment
+import com.movtery.layer_controller.data.toAndroidShape
 import com.movtery.layer_controller.observable.*
 import com.movtery.layer_controller.utils.buttonContentColorAsState
 import com.movtery.layer_controller.utils.buttonFontSizeAsState
 import com.movtery.layer_controller.utils.buttonSize
 import com.movtery.layer_controller.utils.buttonStyle
 import com.movtery.layer_controller.utils.editMode
+import com.movtery.layer_controller.utils.getWidgetPosition
 import com.movtery.layer_controller.utils.snap.GuideLine
 import com.movtery.layer_controller.utils.snap.SnapMode
 
@@ -69,6 +76,9 @@ internal fun TextButton(
     data: ObservableWidget,
     allStyles: List<ObservableButtonStyle>,
     screenSize: IntSize,
+    backdropBlurConfig: BackdropBlurConfig? = null,
+    textShadow: Boolean = false,
+    forceWhiteOutline: Boolean = false,
     isDark: Boolean = isSystemInDarkTheme(),
     visible: Boolean = true,
     enableSnap: Boolean = false,
@@ -89,6 +99,13 @@ internal fun TextButton(
             ?: DefaultObservableButtonStyle
 
         val locale = LocalConfiguration.current.locales[0]
+        val renderSize = data.internalRenderSize
+        val themeStyle = if (isDark) style.darkStyle else style.lightStyle
+        val buttonShape = if (isPressed) {
+            themeStyle.pressedBorderRadius.toAndroidShape()
+        } else {
+            themeStyle.borderRadius.toAndroidShape()
+        }
 
         Box(
             modifier = Modifier
@@ -109,6 +126,34 @@ internal fun TextButton(
                 ),
             contentAlignment = Alignment.Center
         ) {
+            if (backdropBlurConfig != null && renderSize.width > 0 && renderSize.height > 0) {
+                val sourceOffset = getWidgetPosition(data, renderSize, screenSize)
+                val sourceRect = backdropBlurConfig.mapSourceRect(
+                    sourceOffset = sourceOffset,
+                    sourceSize = renderSize
+                )
+                if (sourceRect != null) {
+                    BackdropBlurLayer(
+                        modifier = Modifier.fillMaxSize(),
+                        config = backdropBlurConfig,
+                        srcOffset = sourceRect.first,
+                        srcSize = sourceRect.second
+                    )
+                }
+            }
+
+            if (forceWhiteOutline) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .border(
+                            width = 1.dp,
+                            color = Color.White,
+                            shape = buttonShape
+                        )
+                )
+            }
+
             val color by buttonContentColorAsState(
                 style = style,
                 isDark = isDark,
@@ -145,7 +190,16 @@ internal fun TextButton(
                 fontStyle = if (buttonTextStyle.textItalic) FontStyle.Italic else null,
                 textDecoration = if (buttonTextStyle.textUnderline) TextDecoration.Underline else null,
                 style = LocalTextStyle.current.copy(
-                    lineHeight = (fontSize * 1.1).sp
+                    lineHeight = (fontSize * 1.1).sp,
+                    shadow = if (textShadow) {
+                        Shadow(
+                            color = Color.Black.copy(alpha = 0.75f),
+                            offset = Offset(1.5f, 1.5f),
+                            blurRadius = 2.5f
+                        )
+                    } else {
+                        null
+                    }
                 )
             )
         }

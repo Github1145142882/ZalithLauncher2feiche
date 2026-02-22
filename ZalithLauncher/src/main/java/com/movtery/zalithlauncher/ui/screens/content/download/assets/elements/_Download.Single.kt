@@ -18,6 +18,8 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.download.assets.elements
 
+import com.movtery.zalithlauncher.ui.components.*
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -40,7 +42,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -66,10 +67,6 @@ import com.movtery.zalithlauncher.game.download.assets.platform.PlatformProject
 import com.movtery.zalithlauncher.game.download.assets.platform.PlatformVersion
 import com.movtery.zalithlauncher.game.version.installed.Version
 import com.movtery.zalithlauncher.game.version.installed.VersionsManager
-import com.movtery.zalithlauncher.ui.components.MarqueeText
-import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
-import com.movtery.zalithlauncher.ui.components.fadeEdge
-import com.movtery.zalithlauncher.ui.components.itemLayoutColorOnSurface
 import com.movtery.zalithlauncher.ui.screens.content.elements.CommonVersionInfoLayout
 
 /**
@@ -201,7 +198,7 @@ private fun DownloadDialog(
                     .fillMaxHeight(),
                 contentAlignment = Alignment.Center
             ) {
-                Surface(
+                LauncherBackdropSurface(
                     modifier = Modifier
                         .padding(all = 6.dp)
                         .heightIn(max = maxHeight - 12.dp)
@@ -360,7 +357,7 @@ private fun SelectVersionListItem(
     contentColor: Color = MaterialTheme.colorScheme.onSurface,
     shadowElevation: Dp = 1.dp
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         shape = shape,
         color = color,
@@ -438,7 +435,7 @@ private fun AssetsVersionDependencyItem(
     val summary = remember { project.platformSummary() }
     val iconUrl = remember { project.platformIconUrl() }
 
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         onClick = onClick,
         shape = shape,
@@ -478,3 +475,5 @@ private fun AssetsVersionDependencyItem(
         }
     }
 }
+
+
