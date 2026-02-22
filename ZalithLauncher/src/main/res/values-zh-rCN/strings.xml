@@ -98,6 +98,12 @@
     <string name="crash_type_launcher">启动器崩溃</string>
     <string name="crash_type_game">游戏运行崩溃</string>
     <string name="crash_share_logs">分享日志</string>
+    <string name="crash_share_to_chatgpt">分享到 ChatGPT</string>
+    <string name="crash_share_to_doubao">分享到豆包</string>
+    <string name="crash_share_to_chatgpt_chooser">分享到 ChatGPT</string>
+    <string name="crash_share_to_doubao_chooser">分享到豆包</string>
+    <string name="crash_share_to_chatgpt_unavailable">未安装 ChatGPT 或该应用不支持接收此日志文件</string>
+    <string name="crash_share_to_doubao_unavailable">未安装豆包或该应用不支持接收此日志文件</string>
     <string name="crash_restart">重启应用</string>
     <string name="crash_exit">退出应用</string>
     <string name="crash_link_share_button">分享链接</string>
@@ -145,6 +151,21 @@
     <!--  主菜单  -->
     <string name="main_launch_game">启动游戏</string>
     <string name="main_task_menu">任务菜单</string>
+    <string name="launcher_home_renderer_title">渲染器</string>
+    <string name="launcher_home_recent_played_title">最近游玩版本</string>
+    <string name="launcher_home_recent_played_empty">暂无游玩记录</string>
+    <string name="launcher_home_sustained_mode_title">持续性能模式</string>
+    <string name="launcher_home_sustained_mode_summary">当前状态：%s</string>
+    <string name="launcher_home_section_quick_actions">快捷操作</string>
+    <string name="launcher_home_section_status_summary">状态摘要</string>
+    <string name="launcher_home_versions_manage_title">版本管理</string>
+    <string name="launcher_home_versions_manage_summary">管理已安装版本</string>
+    <string name="launcher_home_total_launches_title">总计启动次数</string>
+    <string name="launcher_home_total_play_minutes_title">总计游玩时长（分钟）</string>
+    <string name="launcher_home_status_memory">内存</string>
+    <string name="launcher_home_status_resolution">分辨率</string>
+    <string name="launcher_home_status_java">Java</string>
+    <string name="launcher_home_status_auto">自动</string>
     <!--  下载  -->
     <string name="download_category_game">游戏</string>
     <string name="download_category_modpack">整合包</string>
@@ -388,6 +409,9 @@
     <string name="game_menu_option_show_menu">开启菜单悬浮窗</string>
     <string name="game_menu_option_show_menu_hided">已关闭游戏菜单悬浮窗，您可以通过系统返回键调用游戏菜单</string>
     <string name="game_menu_option_controls_opacity">控制布局不透明度</string>
+    <string name="game_menu_option_controls_backdrop_blur_title">控件毛玻璃强度</string>
+    <string name="game_menu_option_controls_backdrop_blur_fps_title">控件毛玻璃采样率</string>
+    <string name="game_menu_option_controls_white_outline">按键白色描边</string>
     <string name="game_styles_joystick">管理摇杆</string>
     <string name="game_styles_joystick_enable">启用摇杆</string>
     <string name="game_styles_joystick_x">摇杆 X 坐标</string>
@@ -952,7 +976,16 @@
     <string name="settings_launcher_dark_mode_title">深色模式</string>
     <string name="settings_launcher_language">语言</string>
     <string name="settings_launcher_full_screen_title">页面全屏化</string>
-    <string name="settings_launcher_full_screen_summary">使启动器的页面全屏化，忽略刘海屏、挖孔屏等屏幕的安全区</string>
+    <string name="settings_launcher_full_screen_summary">使启动器页面进入全屏模式</string>
+    <string name="settings_launcher_safe_area_mode_title">安全区模式</string>
+    <string name="settings_launcher_safe_area_mode_summary">在页面全屏化时，控制启动器页面如何处理刘海屏、挖孔屏等安全区</string>
+    <string name="settings_launcher_safe_area_mode_follow_system">跟随系统安全区</string>
+    <string name="settings_launcher_safe_area_mode_ignore">忽略安全区</string>
+    <string name="settings_launcher_safe_area_mode_custom">自定义边距</string>
+    <string name="settings_launcher_safe_area_horizontal_title">自定义水平边距</string>
+    <string name="settings_launcher_safe_area_horizontal_summary">在系统安全区基础上，额外增加左右边距</string>
+    <string name="settings_launcher_safe_area_vertical_title">自定义垂直边距</string>
+    <string name="settings_launcher_safe_area_vertical_summary">在系统安全区基础上，额外增加上下边距</string>
     <string name="settings_launcher_animate_speed_title">动画倍速</string>
     <string name="settings_launcher_animate_speed_summary">调整启动器的动画播放时长的倍速</string>
     <string name="settings_launcher_animate_extent_title">动画幅度</string>
@@ -976,8 +1009,17 @@
     <string name="settings_launcher_background_reset_message">你确定要重置启动器的背景吗？</string>
     <string name="settings_launcher_background_opacity_title">背景元素不透明度</string>
     <string name="settings_launcher_background_opacity_summary">调整背景元素的不透明度，以获得更好的视觉效果并避免与背景冲突</string>
+    <string name="settings_launcher_background_opacity_controlled_by_blur_summary">开启主页组件毛玻璃后，仅首页会在运行时被系统接管为 0&#37;，以保证可读性；其他页面仍使用此值。</string>
     <string name="settings_launcher_background_video_volume_title">视频背景音量</string>
     <string name="settings_launcher_background_video_volume_summary">背景内容是视频时，可以通过这个选项调整音量</string>
+    <string name="settings_launcher_components_backdrop_blur_title">主页组件毛玻璃强度</string>
+    <string name="settings_launcher_components_backdrop_blur_summary">为启动器组件启用毛玻璃效果，建议配合自定义背景图片/视频使用</string>
+    <string name="settings_launcher_components_backdrop_blur_fps_title">主页毛玻璃采样率</string>
+    <string name="settings_launcher_components_backdrop_blur_fps_summary">采样率越高，毛玻璃内容更新越频繁，但性能开销也更高</string>
+    <string name="settings_launcher_home_left_feature_card_title">首页左侧功能卡</string>
+    <string name="settings_launcher_home_left_feature_card_summary">控制首页左侧功能卡显示与隐藏</string>
+    <string name="settings_launcher_components_white_outline_title">主页组件细白描边</string>
+    <string name="settings_launcher_components_white_outline_summary">为启动器组件增加细白描边，建议配合自定义背景图片/视频使用</string>
     <!--  控制  -->
     <string name="control_keyboard_bind_title">绑定按键</string>
     <string name="control_keyboard_bind_summary">请在您的键盘上按下想要绑定的按键</string>
