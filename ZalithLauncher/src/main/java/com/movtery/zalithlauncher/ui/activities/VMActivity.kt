@@ -23,6 +23,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.graphics.SurfaceTexture
+import android.os.Build
 import android.os.Bundle
 import android.view.InputDevice
 import android.view.KeyEvent
@@ -74,6 +75,7 @@ import com.movtery.zalithlauncher.game.launch.JvmLaunchInfo
 import com.movtery.zalithlauncher.game.launch.JvmLauncher
 import com.movtery.zalithlauncher.game.launch.Launcher
 import com.movtery.zalithlauncher.game.launch.handler.AbstractHandler
+import com.movtery.zalithlauncher.game.launch.handler.BackdropFrame
 import com.movtery.zalithlauncher.game.launch.handler.GameHandler
 import com.movtery.zalithlauncher.game.launch.handler.HandlerType
 import com.movtery.zalithlauncher.game.launch.handler.JVMHandler
@@ -83,6 +85,9 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
 import com.movtery.zalithlauncher.ui.base.WindowMode
+import com.movtery.zalithlauncher.ui.backdrop.BackdropFrameSampler
+import com.movtery.zalithlauncher.ui.backdrop.BackdropSamplingProfile
+import com.movtery.zalithlauncher.ui.backdrop.PixelCopyTextureCaptureSource
 import com.movtery.zalithlauncher.ui.components.rememberBoxSize
 import com.movtery.zalithlauncher.ui.control.input.TextInputMode
 import com.movtery.zalithlauncher.ui.screens.game.elements.InputMode
@@ -98,6 +103,7 @@ import com.movtery.zalithlauncher.viewmodel.GamepadViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -146,6 +152,7 @@ class VMViewModel : ViewModel() {
         bundle: Bundle,
         errorViewModel: ErrorViewModel,
         eventViewModel: EventViewModel,
+        backdropFrameFlow: StateFlow<BackdropFrame?>,
         gamepadViewModel: GamepadViewModel,
         exitListener: (Int, Boolean) -> Unit
     ) {
@@ -179,6 +186,7 @@ class VMViewModel : ViewModel() {
                         version = version,
                         errorViewModel = errorViewModel,
                         eventViewModel = eventViewModel,
+                        backdropFrameFlow = backdropFrameFlow,
                         gamepadViewModel = gamepadViewModel,
                         gameLauncher = launcher
                     ) { code ->
@@ -313,6 +321,20 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
 
     private var mTextureView: TextureView? = null
     private var mScreenSize: IntSize = IntSize.Zero
+    private val backdropSampler by lazy {
+        BackdropFrameSampler(
+            refreshRateProvider = { display?.refreshRate ?: 60f }
+        )
+    }
+    private val backdropFrame by lazy {
+        backdropSampler.frameFlow
+    }
+    private val gameBackdropSource by lazy {
+        PixelCopyTextureCaptureSource(
+            textureViewProvider = { mTextureView },
+            rejectLikelyWhiteFrame = true
+        )
+    }
 
     private inline fun <T> withHandler(block: AbstractHandler.() -> T): T {
         return vmViewModel.session.handler.block()
@@ -334,6 +356,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
             bundle = bundle,
             errorViewModel = errorViewModel,
             eventViewModel = eventViewModel,
+            backdropFrameFlow = backdropFrame,
             gamepadViewModel = gamepadViewModel,
             exitListener = { exitCode: Int, isSignal: Boolean ->
                 if (exitCode != 0) {
@@ -486,6 +509,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
     override fun onPause() {
         super.onPause()
         withHandler { onPause() }
+        backdropSampler.clear(recycleBuffers = false)
         CallbackBridge.nativeSetWindowAttrib(LwjglGlfwKeycode.GLFW_HOVERED, 0)
     }
 
@@ -541,6 +565,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
 
     override fun onDestroy() {
         withHandler { onDestroy() }
+        backdropSampler.clear(recycleBuffers = true)
         super.onDestroy()
     }
 
@@ -644,11 +669,28 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
 
     override fun onSurfaceTextureDestroyed(surface: SurfaceTexture): Boolean {
         withHandler { mIsSurfaceDestroyed = true }
+        backdropSampler.clear(recycleBuffers = false)
         return true
     }
 
     override fun onSurfaceTextureUpdated(surface: SurfaceTexture) {
+        if (shouldCaptureBackdropFrame()) {
+            backdropSampler.requestCapture(
+                source = gameBackdropSource,
+                userFps = AllSettings.controlsBackdropBlurSampleFps.state,
+                blurRadius = AllSettings.controlsBackdropBlurRadius.state,
+                profile = BackdropSamplingProfile.GAME_ULTRA_PERF
+            )
+        } else {
+            backdropSampler.clear(recycleBuffers = false)
+        }
         withHandler { onGraphicOutput() }
+    }
+
+    private fun shouldCaptureBackdropFrame(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return false
+        if (AllSettings.controlsBackdropBlurRadius.state <= 0) return false
+        return withHandler { type == HandlerType.GAME }
     }
 
     override fun getWindowMode(): WindowMode {
@@ -690,7 +732,7 @@ class VMActivity : BaseAppCompatActivity(), SurfaceTextureListener {
                     },
                 factory = { context ->
                     TextureView(context).apply {
-                        isOpaque = true
+                        isOpaque = false
                         alpha = 1.0f
 
                         surfaceTextureListener = this@VMActivity

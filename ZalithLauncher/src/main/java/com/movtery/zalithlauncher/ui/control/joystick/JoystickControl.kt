@@ -35,6 +35,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
@@ -53,11 +54,18 @@ import androidx.compose.ui.input.pointer.changedToDown
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChanged
+import androidx.compose.ui.layout.boundsInRoot
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import com.movtery.layer_controller.layout.BackdropBlurConfig
+import com.movtery.layer_controller.layout.BackdropBlurLayer
+import com.movtery.layer_controller.layout.mapSourceRect
 import com.movtery.layer_controller.data.DefaultJoystickStyle
 import com.movtery.layer_controller.data.loadFromFile
 import com.movtery.layer_controller.data.saveToFile
@@ -69,6 +77,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import java.io.File
 import kotlin.math.atan2
+import kotlin.math.roundToInt
 
 private const val JSON_FILE_NAME = "joystick.json"
 
@@ -131,6 +140,7 @@ fun StyleableJoystick(
     isDarkTheme: Boolean = isLauncherInDarkTheme(),
     style: ObservableJoystickStyle,
     size: Dp = 120.dp,
+    backdropBlurConfig: BackdropBlurConfig? = null,
     @FloatRange(from = 0.0, to = 1.0)
     deadZoneRatio: Float = 0.5f,
     @FloatRange(from = 0.0, to = 1.0)
@@ -167,6 +177,7 @@ fun StyleableJoystick(
         backgroundShape = backgroundShape,
         joystickShape = joystickShape,
         size = size,
+        backdropBlurConfig = backdropBlurConfig,
         joystickSize = theme.joystickSize,
         deadZoneRatio = deadZoneRatio,
         lockThreshold = lockThreshold,
@@ -212,6 +223,7 @@ fun Joystick(
     backgroundShape: Shape = CircleShape,
     joystickShape: Shape = CircleShape,
     size: Dp = 120.dp,
+    backdropBlurConfig: BackdropBlurConfig? = null,
     @FloatRange(from = 0.0, to = 1.0)
     joystickSize: Float = 0.5f,
     @FloatRange(from = 0.0, to = 1.0)
@@ -294,6 +306,7 @@ fun Joystick(
 
     var internalCanLock by remember { mutableStateOf(false) }
     var direction by remember { mutableStateOf(JoystickDirection.None) }
+    var backdropBounds by remember { mutableStateOf<IntRect?>(null) }
 
     fun updateJoystickState(position: Offset = currentCenterPoint) {
         val clampedPosition = updateJoystickPosition(
@@ -347,6 +360,16 @@ fun Joystick(
     Box(
         modifier = modifier
             .size(size)
+            .onGloballyPositioned { coordinates ->
+                coordinates.boundsInRoot().let { bounds ->
+                    backdropBounds = IntRect(
+                        left = bounds.left.roundToInt(),
+                        top = bounds.top.roundToInt(),
+                        right = bounds.right.roundToInt(),
+                        bottom = bounds.bottom.roundToInt()
+                    )
+                }
+            }
             .pointerInput(Unit) {
                 simpleDrag(
                     onPointerMove = { offset ->
@@ -366,6 +389,30 @@ fun Joystick(
                 )
             }
     ) {
+        if (backdropBlurConfig != null) {
+            val bounds = backdropBounds
+            if (bounds != null) {
+            val sourceRect = backdropBlurConfig.mapSourceRect(
+                sourceOffset = Offset(bounds.left.toFloat(), bounds.top.toFloat()),
+                sourceSize = IntSize(bounds.width, bounds.height)
+            )
+            if (sourceRect != null) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(backgroundShape)
+                ) {
+                    BackdropBlurLayer(
+                        modifier = Modifier.fillMaxSize(),
+                        config = backdropBlurConfig,
+                        srcOffset = sourceRect.first,
+                        srcSize = sourceRect.second
+                    )
+                }
+            }
+            }
+        }
+
         Canvas(
             modifier = Modifier
                 .fillMaxSize()

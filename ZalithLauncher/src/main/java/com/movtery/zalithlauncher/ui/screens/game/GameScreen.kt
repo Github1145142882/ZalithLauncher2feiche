@@ -60,6 +60,7 @@ import com.movtery.layer_controller.ControlBoxLayout
 import com.movtery.layer_controller.data.HideLayerWhen
 import com.movtery.layer_controller.event.ClickEvent
 import com.movtery.layer_controller.event.EventHandler
+import com.movtery.layer_controller.layout.BackdropBlurConfig
 import com.movtery.layer_controller.layout.ControlLayout
 import com.movtery.layer_controller.layout.EmptyControlLayout
 import com.movtery.layer_controller.layout.loadLayoutFromFile
@@ -81,6 +82,7 @@ import com.movtery.zalithlauncher.game.keycodes.SPRING
 import com.movtery.zalithlauncher.game.keycodes.SPRING_VALUE
 import com.movtery.zalithlauncher.game.keycodes.mapToControlEvent
 import com.movtery.zalithlauncher.game.keycodes.mapToKeycode
+import com.movtery.zalithlauncher.game.launch.handler.BackdropFrame
 import com.movtery.zalithlauncher.game.launch.handler.GameHandler
 import com.movtery.zalithlauncher.game.support.touch_controller.touchControllerInputModifier
 import com.movtery.zalithlauncher.game.support.touch_controller.touchControllerTouchModifier
@@ -507,6 +509,7 @@ fun GameScreen(
     version: Version,
     gameHandler: GameHandler,
     isGameRendering: Boolean,
+    backdropFrame: BackdropFrame?,
     logState: LogState,
     onLogStateChange: (LogState) -> Unit,
     textInputMode: TextInputMode,
@@ -520,6 +523,26 @@ fun GameScreen(
     val context = LocalContext.current
     val viewModel = rememberGameViewModel(version) { mode ->
         eventViewModel.sendEvent(EventViewModel.Event.Game.SwitchIme(mode))
+    }
+    val controlsBackdropBlurRadius = AllSettings.controlsBackdropBlurRadius.state.dp
+    val controlsBackdropBlurConfig = remember(
+        backdropFrame?.frameVersion,
+        backdropFrame?.blurRadiusFactor,
+        controlsBackdropBlurRadius
+    ) {
+        val frame = backdropFrame ?: return@remember null
+        if (controlsBackdropBlurRadius <= 0.dp) return@remember null
+        val effectiveRadius = controlsBackdropBlurRadius * frame.blurRadiusFactor
+        if (effectiveRadius < 1.dp) return@remember null
+
+        BackdropBlurConfig(
+            frame = frame.frame,
+            sourceWidth = frame.sourceWidth,
+            sourceHeight = frame.sourceHeight,
+            captureWidth = frame.captureWidth,
+            captureHeight = frame.captureHeight,
+            radiusDp = effectiveRadius
+        )
     }
     val editorViewModel = rememberEditorViewModel("ControlEditor_Times=${viewModel.editorRefresh}")
     val cursorMode by ZLBridgeStates.cursorMode.collectAsStateWithLifecycle()
@@ -614,6 +637,9 @@ fun GameScreen(
                 eventHandler = viewModel.eventHandler,
                 checkOccupiedPointers = { viewModel.occupiedPointers.contains(it) },
                 opacity = (AllSettings.controlsOpacity.state.toFloat() / 100f).coerceIn(0f, 1f),
+                backdropBlurConfig = controlsBackdropBlurConfig,
+                buttonTextShadow = true,
+                forceWhiteButtonOutline = AllSettings.controlsWhiteOutline.state,
                 markPointerAsMoveOnly = { viewModel.moveOnlyPointers.add(it) },
                 isUsingJoystick = isGrabbing && AllSettings.enableJoystickControl.state,
                 isCursorGrabbing = isGrabbing,
@@ -663,6 +689,7 @@ fun GameScreen(
                     isGrabbing = isGrabbing,
                     special = special,
                     defaultStyle = viewModel.launcherJoystickStyle,
+                    backdropBlurConfig = controlsBackdropBlurConfig,
                     hideLayerWhen = viewModel.controlLayerHideState,
                     viewModel = joystickMovementViewModel,
                     onKeyEvent = { event, pressed ->
@@ -1009,6 +1036,7 @@ private fun JoystickControlLayout(
     screenSize: IntSize,
     special: ObservableSpecial,
     defaultStyle: ObservableJoystickStyle,
+    backdropBlurConfig: BackdropBlurConfig?,
     hideLayerWhen: HideLayerWhen,
     viewModel: JoystickMovementViewModel,
     onKeyEvent: (ClickEvent, pressed: Boolean) -> Unit
@@ -1061,6 +1089,7 @@ private fun JoystickControlLayout(
                 defaultStyle
             },
             size = size,
+            backdropBlurConfig = backdropBlurConfig,
             onDirectionChanged = { direction ->
                 viewModel.onListen(direction)
             },

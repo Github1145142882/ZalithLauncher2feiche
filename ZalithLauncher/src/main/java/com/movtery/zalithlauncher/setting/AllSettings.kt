@@ -452,6 +452,21 @@ object AllSettings : SettingsRegistry() {
     val controlsOpacity = intSetting("controlsOpacity", 100, 0..100)
 
     /**
+     * 游戏内控制布局毛玻璃强度（Dp）
+     */
+    val controlsBackdropBlurRadius = intSetting("controlsBackdropBlurRadius", 0, 0..20)
+
+    /**
+     * 游戏内控制布局毛玻璃采样帧率（FPS）
+     */
+    val controlsBackdropBlurSampleFps = intSetting("controlsBackdropBlurSampleFps", 60, 30..120)
+
+    /**
+     * 游戏内控制布局按键白色描边
+     */
+    val controlsWhiteOutline = boolSetting("controlsWhiteOutline", false)
+
+    /**
      * 控制布局编辑器：是否开启控件吸附功能
      */
     val editorEnableWidgetSnap = boolSetting("editorEnableWidgetSnap", true)
