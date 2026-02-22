@@ -199,6 +199,7 @@ class MainActivity : BaseAppCompatActivity() {
 
         setContent {
             ZalithLauncherTheme(
+                applyLauncherSafeArea = true,
                 backgroundViewModel = backgroundViewModel
             ) {
                 Box {

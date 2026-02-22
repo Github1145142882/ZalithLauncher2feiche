@@ -123,7 +123,9 @@ class ErrorActivity : BaseAppCompatActivity(refreshData = false) {
         val canRestart: Boolean = extras.getBoolean(BUNDLE_CAN_RESTART, true)
 
         setContent {
-            ZalithLauncherTheme {
+            ZalithLauncherTheme(
+                applyLauncherSafeArea = true
+            ) {
 
                 ShareLinkOperation(
                     operation = viewModel.operation,
