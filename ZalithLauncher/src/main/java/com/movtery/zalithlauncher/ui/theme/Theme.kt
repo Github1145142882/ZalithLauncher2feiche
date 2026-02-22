@@ -37,6 +37,7 @@ import com.google.android.material.color.utilities.Hct
 import com.google.android.material.color.utilities.Variant
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.isLauncherInDarkTheme
+import com.movtery.zalithlauncher.ui.components.LauncherSafeArea
 import com.movtery.zalithlauncher.utils.animation.getAnimateTween
 import com.movtery.zalithlauncher.viewmodel.BackgroundViewModel
 import com.movtery.zalithlauncher.viewmodel.LocalBackgroundViewModel
@@ -762,6 +763,7 @@ fun ZalithLauncherTheme(
     darkTheme: Boolean = isLauncherInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
+    applyLauncherSafeArea: Boolean = false,
     backgroundViewModel: BackgroundViewModel? = null,
     content: @Composable () -> Unit
 ) {
@@ -809,7 +811,12 @@ fun ZalithLauncherTheme(
         MaterialTheme(
             colorScheme = animatedColorScheme,
             typography = AppTypography,
-            content = content
-        )
+        ) {
+            if (applyLauncherSafeArea) {
+                LauncherSafeArea(content = content)
+            } else {
+                content()
+            }
+        }
     }
 }
