@@ -33,8 +33,9 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.movtery.zalithlauncher.ui.components.BackgroundCard
+import com.movtery.zalithlauncher.ui.components.LauncherBackdropSurface
 import com.movtery.zalithlauncher.ui.components.TitleAndSummary
+import com.movtery.zalithlauncher.ui.components.backgroundLayoutColor
 
 /**
  * 根据卡片在UI组中的位置，选择不同的圆角形状
@@ -98,16 +99,21 @@ fun rememberSettingsCardShape(
 fun SettingsCard(
     modifier: Modifier = Modifier,
     position: CardPosition,
+    influencedByBackground: Boolean = true,
     outerShape: Dp = 28.dp,
     innerShape: Dp = 4.dp,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val shape = rememberSettingsCardShape(position, outerShape, innerShape)
 
-    BackgroundCard(
+    LauncherBackdropSurface(
         modifier = modifier,
+        influencedByBackground = influencedByBackground,
+        color = backgroundLayoutColor(influencedByBackground),
         shape = shape,
-        content = content
+        content = {
+            Column(content = content)
+        }
     )
 }
 
@@ -115,6 +121,7 @@ fun SettingsCard(
 fun SettingsCard(
     modifier: Modifier = Modifier,
     position: CardPosition,
+    influencedByBackground: Boolean = true,
     outerShape: Dp = 28.dp,
     innerShape: Dp = 4.dp,
     onClick: () -> Unit,
@@ -123,12 +130,16 @@ fun SettingsCard(
 ) {
     val shape = rememberSettingsCardShape(position, outerShape, innerShape)
 
-    BackgroundCard(
+    LauncherBackdropSurface(
         modifier = modifier,
+        influencedByBackground = influencedByBackground,
+        color = backgroundLayoutColor(influencedByBackground),
         shape = shape,
         onClick = onClick,
         enabled = enabled,
-        content = content
+        content = {
+            Column(content = content)
+        }
     )
 }
 
@@ -137,6 +148,7 @@ fun SettingsCard(
     position: CardPosition,
     title: String,
     modifier: Modifier = Modifier,
+    influencedByBackground: Boolean = true,
     summary: String? = null,
     titleStyle: TextStyle = MaterialTheme.typography.titleSmall,
     summaryStyle: TextStyle = MaterialTheme.typography.labelSmall,
@@ -148,8 +160,10 @@ fun SettingsCard(
 ) {
     val shape = rememberSettingsCardShape(position, outerShape, innerShape)
 
-    BackgroundCard(
+    LauncherBackdropSurface(
         modifier = modifier,
+        influencedByBackground = influencedByBackground,
+        color = backgroundLayoutColor(influencedByBackground),
         shape = shape,
         onClick = onClick,
         enabled = enabled

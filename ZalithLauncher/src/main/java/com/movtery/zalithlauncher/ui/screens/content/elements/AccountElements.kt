@@ -89,9 +89,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Color.Companion.Transparent
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -289,13 +291,6 @@ fun AccountAvatar(
                 maxLines = 1,
                 style = MaterialTheme.typography.titleSmall
             )
-            if (account != null) {
-                Text(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    text = getAccountTypeName(account),
-                    style = MaterialTheme.typography.labelSmall
-                )
-            }
         }
     }
 }
@@ -308,16 +303,19 @@ fun PlayerFace(
     refreshKey: Any? = null
 ) {
     val context = LocalContext.current
-    val avatarBitmap = remember(account, refreshKey, AccountsManager.refreshAccountAvatar) {
-        getSkinAvatarFromAccount(context, account, avatarSize).asImageBitmap()
+    val density = LocalDensity.current
+    val avatarSizePx = remember(avatarSize, density) {
+        with(density) { avatarSize.dp.roundToPx().coerceAtLeast(8) }
+    }
+    val avatarBitmap = remember(account, refreshKey, AccountsManager.refreshAccountAvatar, avatarSizePx) {
+        getSkinAvatarFromAccount(context, account, avatarSizePx).asImageBitmap()
     }
 
-    val newAvatarSize = avatarBitmap.width.dp
-
     Image(
-        modifier = modifier.size(newAvatarSize),
+        modifier = modifier.size(avatarSize.dp),
         bitmap = avatarBitmap,
-        contentDescription = null
+        contentDescription = null,
+        filterQuality = FilterQuality.None
     )
 }
 
@@ -1269,7 +1267,12 @@ private fun getSkinAvatar(skin: Bitmap, size: Int): Bitmap {
     matrix = Matrix()
     matrix.postScale(hatScale, hatScale)
     val newHatBitmap = Bitmap.createBitmap(hatBitmap, 0, 0, faceSize, faceSize, matrix, false)
-    canvas.drawBitmap(newFaceBitmap, faceOffset, faceOffset, Paint(Paint.ANTI_ALIAS_FLAG))
-    canvas.drawBitmap(newHatBitmap, 0f, 0f, Paint(Paint.ANTI_ALIAS_FLAG))
+    val pixelPaint = Paint().apply {
+        isAntiAlias = false
+        isFilterBitmap = false
+        isDither = false
+    }
+    canvas.drawBitmap(newFaceBitmap, faceOffset, faceOffset, pixelPaint)
+    canvas.drawBitmap(newHatBitmap, 0f, 0f, pixelPaint)
     return avatar
 }

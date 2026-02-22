@@ -332,7 +332,8 @@ private fun TabMenu(
                         maxLines = 1,
                         style = MaterialTheme.typography.labelMedium
                     )
-                }
+                },
+                alwaysShowLabel = true
             )
 
             Spacer(modifier = Modifier.height(8.dp))

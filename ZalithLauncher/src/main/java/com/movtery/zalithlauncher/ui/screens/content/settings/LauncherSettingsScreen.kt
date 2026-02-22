@@ -56,6 +56,7 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.setting.enums.AppLanguage
 import com.movtery.zalithlauncher.setting.enums.DarkMode
+import com.movtery.zalithlauncher.setting.enums.LauncherSafeAreaMode
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
 import com.movtery.zalithlauncher.setting.enums.applyLanguage
 import com.movtery.zalithlauncher.setting.unit.floatRange
@@ -190,9 +191,67 @@ fun LauncherSettingsScreen(
                 }
             }
 
+            AnimatedItem(scope) { yOffset ->
+                val launcherFullScreen = AllSettings.launcherFullScreen.state
+                val safeAreaMode = AllSettings.launcherSafeAreaMode.state
+                val showCustomSafeAreaPadding = launcherFullScreen && safeAreaMode == LauncherSafeAreaMode.CUSTOM
+
+                SettingsCardColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .offset { IntOffset(x = 0, y = yOffset.roundToPx()) }
+                ) {
+                    ListSettingsCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        position = if (showCustomSafeAreaPadding) CardPosition.Top else CardPosition.Single,
+                        unit = AllSettings.launcherSafeAreaMode,
+                        items = LauncherSafeAreaMode.entries,
+                        title = stringResource(R.string.settings_launcher_safe_area_mode_title),
+                        summary = stringResource(R.string.settings_launcher_safe_area_mode_summary),
+                        getItemText = { stringResource(it.textRes) },
+                        enabled = launcherFullScreen,
+                        onValueChange = {
+                            eventViewModel.sendEvent(EventViewModel.Event.RefreshFullScreen)
+                        }
+                    )
+
+                    if (showCustomSafeAreaPadding) {
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.launcherSafeAreaHorizontal,
+                            title = stringResource(R.string.settings_launcher_safe_area_horizontal_title),
+                            summary = stringResource(R.string.settings_launcher_safe_area_horizontal_summary),
+                            valueRange = AllSettings.launcherSafeAreaHorizontal.floatRange,
+                            suffix = "dp",
+                            fineTuningControl = true
+                        )
+
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Bottom,
+                            unit = AllSettings.launcherSafeAreaVertical,
+                            title = stringResource(R.string.settings_launcher_safe_area_vertical_title),
+                            summary = stringResource(R.string.settings_launcher_safe_area_vertical_summary),
+                            valueRange = AllSettings.launcherSafeAreaVertical.floatRange,
+                            suffix = "dp",
+                            fineTuningControl = true
+                        )
+                    }
+                }
+            }
+
             //启动器背景设置板块
             LocalBackgroundViewModel.current?.let { backgroundViewModel ->
                 AnimatedItem(scope) { yOffset ->
+                    val homepageBlurEnabled =
+                        backgroundViewModel.isValid && AllSettings.launcherComponentsBackdropBlurRadius.state > 0
+                    val backgroundOpacitySummary = if (homepageBlurEnabled) {
+                        stringResource(R.string.settings_launcher_background_opacity_controlled_by_blur_summary)
+                    } else {
+                        stringResource(R.string.settings_launcher_background_opacity_summary)
+                    }
+
                     SettingsCardColumn(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -214,7 +273,7 @@ fun LauncherSettingsScreen(
                             position = CardPosition.Middle,
                             unit = AllSettings.launcherBackgroundOpacity,
                             title = stringResource(R.string.settings_launcher_background_opacity_title),
-                            summary = stringResource(R.string.settings_launcher_background_opacity_summary),
+                            summary = backgroundOpacitySummary,
                             valueRange = AllSettings.launcherBackgroundOpacity.floatRange,
                             suffix = "%",
                             enabled = backgroundViewModel.isValid,
@@ -223,7 +282,7 @@ fun LauncherSettingsScreen(
 
                         IntSliderSettingsCard(
                             modifier = Modifier.fillMaxWidth(),
-                            position = CardPosition.Bottom,
+                            position = CardPosition.Middle,
                             unit = AllSettings.videoBackgroundVolume,
                             title = stringResource(R.string.settings_launcher_background_video_volume_title),
                             summary = stringResource(R.string.settings_launcher_background_video_volume_summary),
@@ -231,6 +290,38 @@ fun LauncherSettingsScreen(
                             suffix = "%",
                             enabled = backgroundViewModel.isValid && backgroundViewModel.isVideo,
                             fineTuningControl = true
+                        )
+
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.launcherComponentsBackdropBlurRadius,
+                            title = stringResource(R.string.settings_launcher_components_backdrop_blur_title),
+                            summary = stringResource(R.string.settings_launcher_components_backdrop_blur_summary),
+                            valueRange = AllSettings.launcherComponentsBackdropBlurRadius.floatRange,
+                            suffix = "dp",
+                            enabled = backgroundViewModel.isValid,
+                            fineTuningControl = true
+                        )
+
+                        IntSliderSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Middle,
+                            unit = AllSettings.launcherComponentsBackdropBlurSampleFps,
+                            title = stringResource(R.string.settings_launcher_components_backdrop_blur_fps_title),
+                            summary = stringResource(R.string.settings_launcher_components_backdrop_blur_fps_summary),
+                            valueRange = AllSettings.launcherComponentsBackdropBlurSampleFps.floatRange,
+                            suffix = "fps",
+                            enabled = backgroundViewModel.isValid && AllSettings.launcherComponentsBackdropBlurRadius.state > 0,
+                            fineTuningControl = true
+                        )
+
+                        SwitchSettingsCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            position = CardPosition.Bottom,
+                            unit = AllSettings.launcherShowHomeLeftFeatureCard,
+                            title = stringResource(R.string.settings_launcher_home_left_feature_card_title),
+                            summary = stringResource(R.string.settings_launcher_home_left_feature_card_summary)
                         )
                     }
                 }

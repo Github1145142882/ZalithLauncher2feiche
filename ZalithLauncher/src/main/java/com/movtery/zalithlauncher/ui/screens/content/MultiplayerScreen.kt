@@ -65,6 +65,7 @@ import com.movtery.zalithlauncher.ui.components.MarqueeText
 import com.movtery.zalithlauncher.ui.components.NotificationCheck
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.components.influencedByBackgroundColor
+import com.movtery.zalithlauncher.ui.components.launcherEffectiveBackgroundOpacityFactor
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.CardPosition
 import com.movtery.zalithlauncher.ui.screens.content.settings.layouts.SettingsCard
@@ -305,7 +306,7 @@ private fun TutorialMenu(
         SecondaryTabRow(
             containerColor = influencedByBackgroundColor(
                 color = TabRowDefaults.secondaryContainerColor.copy(alpha = 0.5f),
-                influencedAlpha = 0.5f * (AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f)
+                influencedAlpha = 0.5f * launcherEffectiveBackgroundOpacityFactor()
             ),
             selectedTabIndex = selectedTabIndex
         ) {

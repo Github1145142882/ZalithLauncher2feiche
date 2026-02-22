@@ -18,6 +18,7 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.settings
 
+import com.movtery.zalithlauncher.ui.components.*
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +57,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -105,20 +105,6 @@ import com.movtery.zalithlauncher.path.PathManager
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.activities.startEditorActivity
 import com.movtery.zalithlauncher.ui.base.BaseScreen
-import com.movtery.zalithlauncher.ui.components.AnimatedRow
-import com.movtery.zalithlauncher.ui.components.BackgroundCard
-import com.movtery.zalithlauncher.ui.components.CardTitleLayout
-import com.movtery.zalithlauncher.ui.components.EdgeDirection
-import com.movtery.zalithlauncher.ui.components.IconTextButton
-import com.movtery.zalithlauncher.ui.components.MarqueeText
-import com.movtery.zalithlauncher.ui.components.ScalingActionButton
-import com.movtery.zalithlauncher.ui.components.ScalingLabel
-import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
-import com.movtery.zalithlauncher.ui.components.SimpleEditDialog
-import com.movtery.zalithlauncher.ui.components.SingleLineTextCheck
-import com.movtery.zalithlauncher.ui.components.fadeEdge
-import com.movtery.zalithlauncher.ui.components.itemLayoutColor
-import com.movtery.zalithlauncher.ui.components.itemLayoutShadowElevation
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
 import com.movtery.zalithlauncher.ui.screens.content.elements.ImportMultipleFileButton
@@ -417,6 +403,7 @@ private fun ControlLayoutList(
 ) {
     BackgroundCard(
         modifier = modifier.fillMaxHeight(),
+        influencedByBackground = true,
         shape = MaterialTheme.shapes.extraLarge
     ) {
         if (isLoading) {
@@ -572,14 +559,14 @@ private fun ControlLayoutItem(
     LaunchedEffect(Unit) {
         scale.animateTo(targetValue = 1f, animationSpec = getAnimateTween())
     }
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier.graphicsLayer(scaleY = scale.value, scaleX = scale.value),
         color = color,
         contentColor = contentColor,
         shape = MaterialTheme.shapes.large,
         shadowElevation = shadowElevation,
         onClick = {
-            if (selected) return@Surface
+            if (selected) return@LauncherBackdropSurface
             onSelected()
         }
     ) {
@@ -658,6 +645,7 @@ private fun ControlLayoutInfo(
 ) {
     BackgroundCard(
         modifier = modifier.fillMaxHeight(),
+        influencedByBackground = true,
         shape = MaterialTheme.shapes.extraLarge
     ) {
         if (isLoading) {
@@ -836,7 +824,7 @@ private fun ControlInfoItem(
     shadowElevation: Dp = itemLayoutShadowElevation(),
     content: @Composable RowScope.() -> Unit
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
@@ -907,7 +895,7 @@ private fun CreateNewLayoutDialog(
             modifier = Modifier.fillMaxHeight(),
             contentAlignment = Alignment.Center
         ) {
-            Surface(
+            LauncherBackdropSurface(
                 modifier = Modifier
                     .padding(all = 6.dp)
                     .heightIn(max = maxHeight - 12.dp)
@@ -1068,3 +1056,5 @@ private fun CreateNewLayoutDialog(
         }
     }
 }
+
+

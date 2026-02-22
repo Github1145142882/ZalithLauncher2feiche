@@ -18,6 +18,8 @@
 
 package com.movtery.zalithlauncher.ui.screens.content.download.assets.elements
 
+import com.movtery.zalithlauncher.ui.components.*
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,7 +28,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -54,7 +55,6 @@ import coil3.request.crossfade
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.download.assets.platform.Platform
 import com.movtery.zalithlauncher.game.download.modpack.platform.PackPlatform
-import com.movtery.zalithlauncher.ui.components.ShimmerBox
 import com.movtery.zalithlauncher.utils.logging.Logger.lWarning
 
 /**
@@ -70,7 +70,7 @@ fun PlatformIdentifier(
     shape: Shape = MaterialTheme.shapes.large,
     textStyle: TextStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
@@ -182,7 +182,7 @@ fun PackIdentifier(
     shape: Shape = MaterialTheme.shapes.large,
     textStyle: TextStyle = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp)
 ) {
-    Surface(
+    LauncherBackdropSurface(
         modifier = modifier,
         color = color,
         contentColor = contentColor,
@@ -205,3 +205,5 @@ fun PackIdentifier(
         }
     }
 }
+
+
