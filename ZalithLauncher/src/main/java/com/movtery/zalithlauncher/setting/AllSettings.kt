@@ -520,7 +520,7 @@ object AllSettings : SettingsRegistry() {
     /**
      * 摇杆前进锁判定范围
      */
-    val joystickLockThreshold = intSetting("joystickLockThreshold", 30, 5..50)
+    val joystickLockThreshold = intSetting("joystickLockThreshold", 30, 5..100)
 
     /**
      * 游戏中摇杆移动组件是否可锁定
