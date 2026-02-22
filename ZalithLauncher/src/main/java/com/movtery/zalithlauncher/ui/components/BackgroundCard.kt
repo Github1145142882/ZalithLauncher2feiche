@@ -34,7 +34,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.UiComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import com.movtery.zalithlauncher.setting.AllSettings
 
 /**
  * 背景卡片组件，
@@ -59,7 +58,14 @@ fun BackgroundCard(
         colors = colors,
         elevation = elevation,
         border = border,
-        content = content
+        content = {
+            LauncherBackdropLayer(
+                shape = shape,
+                enabled = influencedByBackground
+            ) {
+                Column(content = content)
+            }
+        }
     )
 }
 
@@ -91,7 +97,14 @@ fun BackgroundCard(
         border = border,
         onClick = onClick,
         enabled = enabled,
-        content = content
+        content = {
+            LauncherBackdropLayer(
+                shape = shape,
+                enabled = influencedByBackground
+            ) {
+                Column(content = content)
+            }
+        }
     )
 }
 
@@ -110,7 +123,7 @@ fun CardTitleLayout(
 ) {
     val influencedColor = influencedByBackgroundColor(
         color = color.copy(alpha = alpha),
-        influencedAlpha = alpha * (AllSettings.launcherBackgroundOpacity.state.toFloat() / 100f),
+        influencedAlpha = alpha * launcherEffectiveBackgroundOpacityFactor(),
         enabled = influencedByBackground
     )
 

@@ -21,25 +21,38 @@ package com.movtery.zalithlauncher.ui.activities
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.movtery.layer_controller.layout.BackdropBlurConfig
 import com.movtery.zalithlauncher.R
 import com.movtery.zalithlauncher.game.control.ControlManager
 import com.movtery.zalithlauncher.notification.NotificationManager
 import com.movtery.zalithlauncher.path.URL_SUPPORT
 import com.movtery.zalithlauncher.setting.AllSettings
 import com.movtery.zalithlauncher.ui.base.BaseAppCompatActivity
+import com.movtery.zalithlauncher.ui.backdrop.BackdropCaptureSource
+import com.movtery.zalithlauncher.ui.backdrop.BackdropFrameSampler
+import com.movtery.zalithlauncher.ui.backdrop.BackdropSamplingProfile
+import com.movtery.zalithlauncher.ui.components.LauncherSafeArea
 import com.movtery.zalithlauncher.ui.components.SimpleAlertDialog
 import com.movtery.zalithlauncher.ui.screens.NestedNavKey
 import com.movtery.zalithlauncher.ui.screens.NormalNavKey
@@ -62,6 +75,7 @@ import com.movtery.zalithlauncher.viewmodel.ModpackImportViewModel
 import com.movtery.zalithlauncher.viewmodel.ModpackVersionNameOperation
 import com.movtery.zalithlauncher.viewmodel.ScreenBackStackViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -105,6 +119,12 @@ class MainActivity : BaseAppCompatActivity() {
      * 是否开启捕获按键模式
      */
     private var isCaptureKey = false
+    private val launcherBackdropSampler by lazy {
+        BackdropFrameSampler(
+            refreshRateProvider = { display?.refreshRate ?: 60f }
+        )
+    }
+    private var launcherBackdropSource: BackdropCaptureSource? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -199,45 +219,115 @@ class MainActivity : BaseAppCompatActivity() {
 
         setContent {
             ZalithLauncherTheme(
+                applyLauncherSafeArea = false,
                 backgroundViewModel = backgroundViewModel
             ) {
-                Box {
-                    Background(
-                        modifier = Modifier.fillMaxSize(),
-                        viewModel = backgroundViewModel
-                    )
+                LauncherSafeArea(
+                    applyContentPadding = false,
+                    drawBackground = false
+                ) {
+                    val launcherBackdropFrame by launcherBackdropSampler.frameFlow.collectAsStateWithLifecycle()
+                    val blurRadius = AllSettings.launcherComponentsBackdropBlurRadius.state.dp
+                    val blurEnabled = backgroundViewModel.isValid && blurRadius > 0.dp
 
-                    MainScreen(
-                        screenBackStackModel = screenBackStackModel,
-                        launchGameViewModel = launchGameViewModel,
-                        eventViewModel = eventViewModel,
-                        modpackImportViewModel = modpackImportViewModel,
-                        submitError = {
-                            errorViewModel.showError(it)
+                    val launcherBackdropConfig = remember(
+                        launcherBackdropFrame?.frameVersion,
+                        blurRadius,
+                        blurEnabled
+                    ) {
+                        if (!blurEnabled) {
+                            null
+                        } else {
+                            launcherBackdropFrame?.let { frame ->
+                                BackdropBlurConfig(
+                                    frame = frame.frame,
+                                    sourceWidth = frame.sourceWidth,
+                                    sourceHeight = frame.sourceHeight,
+                                    captureWidth = frame.captureWidth,
+                                    captureHeight = frame.captureHeight,
+                                    radiusDp = blurRadius
+                                )
+                            }
                         }
-                    )
+                    }
+                    val launcherBackdropActive = blurEnabled &&
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+                        launcherBackdropConfig != null
 
-                    //启动游戏操作流程
-                    LaunchGameOperation(
-                        activity = this@MainActivity,
-                        launchGameOperation = launchGameViewModel.launchGameOperation,
-                        updateOperation = { launchGameViewModel.updateOperation(it) },
-                        exitActivity = {
-                            this@MainActivity.finish()
-                        },
-                        submitError = {
-                            errorViewModel.showError(it)
-                        },
-                        toAccountManageScreen = {
-                            screenBackStackModel.mainScreen.navigateTo(NormalNavKey.AccountManager)
-                        },
-                        toVersionManageScreen = {
-                            screenBackStackModel.mainScreen.removeAndNavigateTo(
-                                remove = NestedNavKey.VersionSettings::class,
-                                screenKey = NormalNavKey.VersionsManager
-                            )
+                    LaunchedEffect(blurEnabled, AllSettings.launcherComponentsBackdropBlurSampleFps.state) {
+                        if (!blurEnabled) {
+                            launcherBackdropSampler.clear(recycleBuffers = false)
+                        } else {
+                            captureLauncherBackdrop(force = true)
                         }
-                    )
+                    }
+
+                    // 视频背景下主动按采样率轮询抓帧，避免仅依赖回调导致毛玻璃静止。
+                    LaunchedEffect(
+                        blurEnabled,
+                        backgroundViewModel.isVideo,
+                        AllSettings.launcherComponentsBackdropBlurSampleFps.state
+                    ) {
+                        if (!blurEnabled || !backgroundViewModel.isVideo) return@LaunchedEffect
+                        while (true) {
+                            captureLauncherBackdrop(force = false)
+                            val fps = AllSettings.launcherComponentsBackdropBlurSampleFps.state.coerceIn(30, 120)
+                            delay((1000L / fps).coerceAtLeast(8L))
+                        }
+                    }
+
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(MaterialTheme.colorScheme.surface)
+                        )
+
+                        Background(
+                            modifier = Modifier.fillMaxSize(),
+                            viewModel = backgroundViewModel,
+                            onCaptureSourceChanged = { source ->
+                                updateLauncherBackdropSource(source)
+                            },
+                            onFrameAvailable = {
+                                captureLauncherBackdrop(force = false)
+                            }
+                        )
+
+                        MainScreen(
+                            screenBackStackModel = screenBackStackModel,
+                            launchGameViewModel = launchGameViewModel,
+                            eventViewModel = eventViewModel,
+                            modpackImportViewModel = modpackImportViewModel,
+                            launcherBackdropConfig = launcherBackdropConfig,
+                            launcherBackdropEnabled = launcherBackdropActive,
+                            submitError = {
+                                errorViewModel.showError(it)
+                            }
+                        )
+
+                        //启动游戏操作流程
+                        LaunchGameOperation(
+                            activity = this@MainActivity,
+                            launchGameOperation = launchGameViewModel.launchGameOperation,
+                            updateOperation = { launchGameViewModel.updateOperation(it) },
+                            exitActivity = {
+                                this@MainActivity.finish()
+                            },
+                            submitError = {
+                                errorViewModel.showError(it)
+                            },
+                            toAccountManageScreen = {
+                                screenBackStackModel.mainScreen.navigateTo(NormalNavKey.AccountManager)
+                            },
+                            toVersionManageScreen = {
+                                screenBackStackModel.mainScreen.removeAndNavigateTo(
+                                    remove = NestedNavKey.VersionSettings::class,
+                                    screenKey = NormalNavKey.VersionsManager
+                                )
+                            }
+                        )
+                    }
                 }
 
                 //显示赞助支持的小弹窗
@@ -361,9 +451,48 @@ class MainActivity : BaseAppCompatActivity() {
         return uri != null
     }
 
+    private fun updateLauncherBackdropSource(source: BackdropCaptureSource?) {
+        if (launcherBackdropSource === source) return
+        launcherBackdropSource?.release()
+        launcherBackdropSource = source
+        launcherBackdropSampler.clear(recycleBuffers = false)
+        captureLauncherBackdrop(force = true)
+    }
+
+    private fun captureLauncherBackdrop(force: Boolean) {
+        if (!backgroundViewModel.isValid) {
+            launcherBackdropSampler.clear(recycleBuffers = false)
+            return
+        }
+        if (AllSettings.launcherComponentsBackdropBlurRadius.state <= 0) {
+            launcherBackdropSampler.clear(recycleBuffers = false)
+            return
+        }
+        launcherBackdropSampler.requestCapture(
+            source = launcherBackdropSource,
+            userFps = AllSettings.launcherComponentsBackdropBlurSampleFps.state,
+            blurRadius = AllSettings.launcherComponentsBackdropBlurRadius.state,
+            profile = BackdropSamplingProfile.LAUNCHER_BALANCED,
+            force = force
+        )
+    }
+
     override fun onResume() {
         super.onResume()
         ControlManager.checkDefaultAndRefresh(this@MainActivity)
+        captureLauncherBackdrop(force = true)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        launcherBackdropSampler.clear(recycleBuffers = false)
+    }
+
+    override fun onDestroy() {
+        launcherBackdropSource?.release()
+        launcherBackdropSource = null
+        launcherBackdropSampler.clear(recycleBuffers = true)
+        super.onDestroy()
     }
 
     @SuppressLint("RestrictedApi")

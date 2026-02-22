@@ -28,6 +28,7 @@ import com.movtery.zalithlauncher.info.InfoDistributor
 import com.movtery.zalithlauncher.setting.enums.AppLanguage
 import com.movtery.zalithlauncher.setting.enums.DarkMode
 import com.movtery.zalithlauncher.setting.enums.GestureActionType
+import com.movtery.zalithlauncher.setting.enums.LauncherSafeAreaMode
 import com.movtery.zalithlauncher.setting.enums.MirrorSourceType
 import com.movtery.zalithlauncher.setting.enums.MouseControlMode
 import com.movtery.zalithlauncher.ui.control.HotbarRule
@@ -335,6 +336,21 @@ object AllSettings : SettingsRegistry() {
     val launcherFullScreen = boolSetting("launcherFullScreen", true)
 
     /**
+     * 启动器页面安全区处理策略
+     */
+    val launcherSafeAreaMode = enumSetting("launcherSafeAreaMode", LauncherSafeAreaMode.FOLLOW_SYSTEM)
+
+    /**
+     * 启动器页面安全区水平补偿边距（Dp）
+     */
+    val launcherSafeAreaHorizontal = intSetting("launcherSafeAreaHorizontal", 0, 0..120)
+
+    /**
+     * 启动器页面安全区垂直补偿边距（Dp）
+     */
+    val launcherSafeAreaVertical = intSetting("launcherSafeAreaVertical", 0, 0..120)
+
+    /**
      * 动画倍速
      */
     val launcherAnimateSpeed = intSetting("launcherAnimateSpeed", 5, 0..10)
@@ -358,6 +374,31 @@ object AllSettings : SettingsRegistry() {
      * 启动器视频背景音量
      */
     val videoBackgroundVolume = intSetting("videoBackgroundVolume", 0, 0..100)
+
+    /**
+     * 启动器组件毛玻璃强度（Dp）
+     */
+    val launcherComponentsBackdropBlurRadius = intSetting("launcherComponentsBackdropBlurRadius", 0, 0..20)
+
+    /**
+     * 启动器组件毛玻璃采样帧率（FPS）
+     */
+    val launcherComponentsBackdropBlurSampleFps = intSetting("launcherComponentsBackdropBlurSampleFps", 60, 30..120)
+
+    /**
+     * 启动器组件细白描边
+     */
+    val launcherComponentsWhiteOutline = boolSetting("launcherComponentsWhiteOutline", false)
+
+    /**
+     * 首页左侧功能卡显示开关
+     */
+    val launcherShowHomeLeftFeatureCard = boolSetting("launcherShowHomeLeftFeatureCard", true)
+
+    /**
+     * 顶栏 Logo 右侧文案显示状态
+     */
+    val launcherTopBarLogoTextVisible = boolSetting("launcherTopBarLogoTextVisible", false)
 
     /**
      * 启动器上次检查更新时，用户选择忽略的版本号
@@ -450,6 +491,21 @@ object AllSettings : SettingsRegistry() {
      * 游戏内控制布局的整体不透明度
      */
     val controlsOpacity = intSetting("controlsOpacity", 100, 0..100)
+
+    /**
+     * 游戏内控制布局毛玻璃强度（Dp）
+     */
+    val controlsBackdropBlurRadius = intSetting("controlsBackdropBlurRadius", 0, 0..20)
+
+    /**
+     * 游戏内控制布局毛玻璃采样帧率（FPS）
+     */
+    val controlsBackdropBlurSampleFps = intSetting("controlsBackdropBlurSampleFps", 60, 30..120)
+
+    /**
+     * 游戏内控制布局按键白色描边
+     */
+    val controlsWhiteOutline = boolSetting("controlsWhiteOutline", false)
 
     /**
      * 控制布局编辑器：是否开启控件吸附功能
@@ -546,6 +602,16 @@ object AllSettings : SettingsRegistry() {
      * 玩家结束运行游戏的次数
      */
     val finishedGame = intSetting("finishedGame", 0)
+
+    /**
+     * 最近一次游玩的版本名
+     */
+    val launcherLastPlayedVersionName = stringSetting("launcherLastPlayedVersionName", "")
+
+    /**
+     * 累计游玩时长（秒）
+     */
+    val launcherTotalPlaySeconds = longSetting("launcherTotalPlaySeconds", 0L, 0L..Long.MAX_VALUE)
 
     /**
      * 是否在打开启动器时，根据特定的运行游戏次数，显示赞助支持弹窗
