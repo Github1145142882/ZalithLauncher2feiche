@@ -126,7 +126,8 @@ fun JavaManageScreen(
                 .fillMaxSize()
                 .padding(all = 12.dp)
                 .offset { IntOffset(x = 0, y = yOffset.roundToPx()) },
-            position = CardPosition.Single
+            position = CardPosition.Single,
+            influencedByBackground = true
         ) {
             CardTitleLayout {
                 Row(

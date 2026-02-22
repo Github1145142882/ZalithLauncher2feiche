@@ -261,7 +261,8 @@ private fun ChunkLayout(
 ) {
     SettingsCard(
         modifier = modifier,
-        position = CardPosition.Single
+        position = CardPosition.Single,
+        influencedByBackground = true
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             CardTitleLayout {

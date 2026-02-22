@@ -98,6 +98,7 @@ fun rememberSettingsCardShape(
 fun SettingsCard(
     modifier: Modifier = Modifier,
     position: CardPosition,
+    influencedByBackground: Boolean = true,
     outerShape: Dp = 28.dp,
     innerShape: Dp = 4.dp,
     content: @Composable ColumnScope.() -> Unit
@@ -106,6 +107,7 @@ fun SettingsCard(
 
     BackgroundCard(
         modifier = modifier,
+        influencedByBackground = influencedByBackground,
         shape = shape,
         content = content
     )
@@ -115,6 +117,7 @@ fun SettingsCard(
 fun SettingsCard(
     modifier: Modifier = Modifier,
     position: CardPosition,
+    influencedByBackground: Boolean = true,
     outerShape: Dp = 28.dp,
     innerShape: Dp = 4.dp,
     onClick: () -> Unit,
@@ -125,6 +128,7 @@ fun SettingsCard(
 
     BackgroundCard(
         modifier = modifier,
+        influencedByBackground = influencedByBackground,
         shape = shape,
         onClick = onClick,
         enabled = enabled,
@@ -137,6 +141,7 @@ fun SettingsCard(
     position: CardPosition,
     title: String,
     modifier: Modifier = Modifier,
+    influencedByBackground: Boolean = true,
     summary: String? = null,
     titleStyle: TextStyle = MaterialTheme.typography.titleSmall,
     summaryStyle: TextStyle = MaterialTheme.typography.labelSmall,
@@ -150,6 +155,7 @@ fun SettingsCard(
 
     BackgroundCard(
         modifier = modifier,
+        influencedByBackground = influencedByBackground,
         shape = shape,
         onClick = onClick,
         enabled = enabled

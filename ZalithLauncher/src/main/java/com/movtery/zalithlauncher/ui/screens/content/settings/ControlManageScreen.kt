@@ -417,6 +417,7 @@ private fun ControlLayoutList(
 ) {
     BackgroundCard(
         modifier = modifier.fillMaxHeight(),
+        influencedByBackground = true,
         shape = MaterialTheme.shapes.extraLarge
     ) {
         if (isLoading) {
@@ -658,6 +659,7 @@ private fun ControlLayoutInfo(
 ) {
     BackgroundCard(
         modifier = modifier.fillMaxHeight(),
+        influencedByBackground = true,
         shape = MaterialTheme.shapes.extraLarge
     ) {
         if (isLoading) {
