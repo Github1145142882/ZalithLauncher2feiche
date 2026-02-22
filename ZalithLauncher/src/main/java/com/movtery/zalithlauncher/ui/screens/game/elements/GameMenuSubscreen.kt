@@ -375,6 +375,43 @@ private fun ControlOverview(
             )
         }
 
+        //控制布局毛玻璃强度
+        item {
+            MenuSliderLayout(
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(R.string.game_menu_option_controls_backdrop_blur_title),
+                value = AllSettings.controlsBackdropBlurRadius.state,
+                valueRange = AllSettings.controlsBackdropBlurRadius.floatRange,
+                onValueChange = { AllSettings.controlsBackdropBlurRadius.updateState(it) },
+                onValueChangeFinished = { AllSettings.controlsBackdropBlurRadius.save(it) },
+                suffix = "dp"
+            )
+        }
+
+        //控制布局毛玻璃采样率
+        item {
+            MenuSliderLayout(
+                modifier = Modifier.fillMaxWidth(),
+                title = stringResource(R.string.game_menu_option_controls_backdrop_blur_fps_title),
+                value = AllSettings.controlsBackdropBlurSampleFps.state,
+                valueRange = AllSettings.controlsBackdropBlurSampleFps.floatRange,
+                onValueChange = { AllSettings.controlsBackdropBlurSampleFps.updateState(it) },
+                onValueChangeFinished = { AllSettings.controlsBackdropBlurSampleFps.save(it) },
+                suffix = "fps",
+                enabled = AllSettings.controlsBackdropBlurRadius.state > 0
+            )
+        }
+
+        //控制布局白色描边
+        item {
+            MenuSwitchButton(
+                modifier = Modifier.fillMaxWidth(),
+                text = stringResource(R.string.game_menu_option_controls_white_outline),
+                switch = AllSettings.controlsWhiteOutline.state,
+                onSwitch = { AllSettings.controlsWhiteOutline.save(it) }
+            )
+        }
+
         //管理摇杆
         item {
             MenuTextButton(

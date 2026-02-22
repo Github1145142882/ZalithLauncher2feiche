@@ -388,6 +388,9 @@
     <string name="game_menu_option_show_menu">开启菜单悬浮窗</string>
     <string name="game_menu_option_show_menu_hided">已关闭游戏菜单悬浮窗，您可以通过系统返回键调用游戏菜单</string>
     <string name="game_menu_option_controls_opacity">控制布局不透明度</string>
+    <string name="game_menu_option_controls_backdrop_blur_title">控件毛玻璃强度</string>
+    <string name="game_menu_option_controls_backdrop_blur_fps_title">控件毛玻璃采样率</string>
+    <string name="game_menu_option_controls_white_outline">按键白色描边</string>
     <string name="game_styles_joystick">管理摇杆</string>
     <string name="game_styles_joystick_enable">启用摇杆</string>
     <string name="game_styles_joystick_x">摇杆 X 坐标</string>

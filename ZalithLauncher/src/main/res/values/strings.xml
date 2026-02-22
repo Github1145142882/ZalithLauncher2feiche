@@ -389,6 +389,9 @@
     <string name="game_menu_option_show_menu">Enable Menu Overlay</string>
     <string name="game_menu_option_show_menu_hided">Game menu overlay has been disabled. You can open the game menu using the system back button</string>
     <string name="game_menu_option_controls_opacity">Control Layout Opacity</string>
+    <string name="game_menu_option_controls_backdrop_blur_title">Control Glass Blur Strength</string>
+    <string name="game_menu_option_controls_backdrop_blur_fps_title">Control Blur Sample Rate</string>
+    <string name="game_menu_option_controls_white_outline">White Button Outline</string>
     <string name="game_styles_joystick">Manage Joystick</string>
     <string name="game_styles_joystick_enable">Enable Joystick</string>
     <string name="game_styles_joystick_x">Joystick X Position</string>
